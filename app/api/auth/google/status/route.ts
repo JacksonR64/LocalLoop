@@ -12,6 +12,18 @@ import { createGoogleCalendarAuth } from '@/lib/google-auth'
  * - Validates token health without revealing sensitive information
  */
 
+// Simple in-memory cache for connection status (5 minutes)
+const statusCache = new Map<string, { data: any; timestamp: number }>()
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+
+// Timeout wrapper for slow operations
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+    const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Operation timed out')), timeoutMs)
+    })
+    return Promise.race([promise, timeoutPromise])
+}
+
 export async function GET(request: Request) {
     try {
         const url = new URL(request.url)
@@ -32,13 +44,34 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
         }
 
-        const googleAuth = createGoogleCalendarAuth()
-        const connectionStatus = await googleAuth.getConnectionStatus(user.id)
+        // Check cache first
+        const cacheKey = `status_${user.id}`
+        const cached = statusCache.get(cacheKey)
+        if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+            return NextResponse.json(cached.data)
+        }
 
-        // Test connection if connected
+        const googleAuth = createGoogleCalendarAuth()
+
+        // Add timeout to prevent hanging requests
+        const connectionStatus = await withTimeout(
+            googleAuth.getConnectionStatus(user.id),
+            10000 // 10 second timeout
+        )
+
+        // Test connection if connected (with timeout)
         let connectionTest = null
         if (connectionStatus.connected) {
-            connectionTest = await googleAuth.testUserConnection(user.id)
+            try {
+                connectionTest = await withTimeout(
+                    googleAuth.testUserConnection(user.id),
+                    8000 // 8 second timeout for connection test
+                )
+            } catch (error) {
+                console.warn('Connection test timed out or failed:', error)
+                // Continue without connection test if it fails
+                connectionTest = { connected: false }
+            }
         }
 
         const isHealthy = connectionStatus.connected &&
@@ -61,6 +94,9 @@ export async function GET(request: Request) {
             lastChecked: new Date().toISOString(),
             requiresReconnection: connectionStatus.connected && !isHealthy
         }
+
+        // Cache the response
+        statusCache.set(cacheKey, { data: response, timestamp: Date.now() })
 
         return NextResponse.json(response)
 
