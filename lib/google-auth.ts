@@ -173,8 +173,6 @@ export class GoogleCalendarAuth {
      */
     async getUserTokens(userId: string): Promise<GoogleCalendarTokens | null> {
         try {
-            console.log('[DEBUG] getUserTokens - Starting token retrieval for user:', userId)
-
             const supabaseServer = await createServerSupabaseClient()
 
             const { data, error } = await supabaseServer
@@ -183,20 +181,7 @@ export class GoogleCalendarAuth {
                 .eq('id', userId)
                 .single()
 
-            console.log('[DEBUG] getUserTokens - Database query result:', {
-                hasData: !!data,
-                hasError: !!error,
-                hasToken: !!data?.google_calendar_token,
-                isConnected: data?.google_calendar_connected,
-                expiresAt: data?.google_calendar_expires_at,
-                error: error?.message
-            })
-
             if (error || !data?.google_calendar_token || !data.google_calendar_connected) {
-                console.log('[DEBUG] getUserTokens - Token retrieval failed:', {
-                    reason: error ? 'database_error' : !data?.google_calendar_token ? 'no_token' : 'not_connected',
-                    error: error?.message
-                })
                 return null
             }
 

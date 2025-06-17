@@ -13,53 +13,37 @@ import { createGoogleCalendarAuth } from '@/lib/google-auth'
  */
 
 export async function GET(request: Request) {
-    console.log('[API] GET /api/auth/google/status - Request received')
-
     try {
         const url = new URL(request.url)
         const userIdParam = url.searchParams.get('userId')
 
         const supabase = await createServerSupabaseClient()
-        console.log('[API] Supabase client created successfully')
-
         let user = null
 
         // Try to get user from Supabase session first
         const { data: { user: sessionUser }, error: authError } = await supabase.auth.getUser()
 
         if (sessionUser) {
-            console.log('[API] User authenticated via Supabase session:', sessionUser.id)
             user = sessionUser
         } else if (userIdParam) {
-            console.log('[API] No Supabase session, but userId provided:', userIdParam)
             // Create a minimal user object for Google Calendar status check
             user = { id: userIdParam }
         } else {
-            console.log('[API] No authentication and no userId parameter')
-            console.log('[API] Auth check result:', {
-                hasUser: false,
-                userId: undefined,
-                authError: authError?.message
-            })
             return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
         }
 
-        console.log('[API] User authenticated, getting connection status for:', user.id)
         const googleAuth = createGoogleCalendarAuth()
         const connectionStatus = await googleAuth.getConnectionStatus(user.id)
-        console.log('[API] Connection status result:', connectionStatus)
 
         // Test connection if connected
         let connectionTest = null
         if (connectionStatus.connected) {
             connectionTest = await googleAuth.testUserConnection(user.id)
         }
-        console.log('[API] Connection test result:', connectionTest)
 
         const isHealthy = connectionStatus.connected &&
             connectionTest &&
             connectionTest.connected
-        console.log('[API] Connection health test result:', isHealthy)
 
         // Calculate days until expiration
         const daysUntilExpiration = connectionStatus.expiresAt
@@ -78,7 +62,6 @@ export async function GET(request: Request) {
             requiresReconnection: connectionStatus.connected && !isHealthy
         }
 
-        console.log('[API] Final response:', response)
         return NextResponse.json(response)
 
     } catch (error) {

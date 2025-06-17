@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import {
     Elements,
@@ -394,11 +394,11 @@ export default function CheckoutForm({
     const [orderDetails, setOrderDetails] = useState<CheckoutResponse | null>(null)
     const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null)
 
-    // Get customer information
-    const customerInfo = {
+    // Get customer information (memoized to prevent infinite re-renders)
+    const customerInfo = useMemo(() => ({
         email: guestInfo?.email || user?.email || '',
         name: guestInfo?.name || user?.user_metadata?.full_name || user?.user_metadata?.name || ''
-    }
+    }), [guestInfo?.email, guestInfo?.name, user?.email, user?.user_metadata?.full_name, user?.user_metadata?.name])
 
     // Create checkout session
     useEffect(() => {
@@ -447,7 +447,7 @@ export default function CheckoutForm({
             }
         }
 
-        if (selectedTickets.length > 0 && customerInfo.email) {
+        if (selectedTickets.length > 0) {
             createCheckoutSession()
         }
     }, [selectedTickets, eventId, customerInfo.email, customerInfo.name])

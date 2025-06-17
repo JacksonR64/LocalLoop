@@ -191,8 +191,8 @@ export async function POST(request: NextRequest) {
             } else {
                 // Create new Stripe customer for registered user
                 const customer = await stripe.customers.create({
-                    email: user.email || customer_info.email,
-                    name: customer_info.name,
+                    email: user.email || customer_info?.email || 'user@placeholder.local',
+                    name: customer_info?.name || 'User',
                     metadata: {
                         user_id: user.id
                     }
@@ -208,8 +208,8 @@ export async function POST(request: NextRequest) {
         } else {
             // Create Stripe customer for guest checkout
             const customer = await stripe.customers.create({
-                email: customer_info.email,
-                name: customer_info.name,
+                email: customer_info?.email || 'guest@placeholder.local',
+                name: customer_info?.name || 'Guest User',
                 metadata: {
                     checkout_type: 'guest'
                 }
