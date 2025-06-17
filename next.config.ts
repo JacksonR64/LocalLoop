@@ -192,8 +192,19 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Turbopack configuration removed due to resolveAlias type warnings
-  // Client-side library exclusions are handled via webpack fallback instead
+  // Turbopack configuration - properly typed resolveAlias
+  turbopack: {
+    resolveAlias: {
+      // Use empty modules instead of false for proper typing
+      'react-leaflet': require.resolve('./lib/utils/empty-module.js'),
+      'leaflet': require.resolve('./lib/utils/empty-module.js'),
+      // Additional client-side only libraries
+      'web-vitals': require.resolve('./lib/utils/empty-module.js'),
+      '@vercel/analytics': require.resolve('./lib/utils/empty-module.js'),
+      '@stripe/stripe-js': require.resolve('./lib/utils/empty-module.js'),
+      '@stripe/react-stripe-js': require.resolve('./lib/utils/empty-module.js'),
+    },
+  },
 };
 
 export default nextConfig;
