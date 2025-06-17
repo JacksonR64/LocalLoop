@@ -21,113 +21,123 @@ export default function AuthCallback() {
                 const error = searchParams.get('error')
                 const errorDescription = searchParams.get('error_description')
 
-                console.log('📊 OAuth callback parameters:', {
-                    hasCode: !!code,
-                    hasError: !!error,
-                    error: error,
-                    errorDescription: errorDescription,
-                    codePrefix: code ? code.substring(0, 10) + '...' : 'none'
-                })
-
                 // Handle OAuth errors from provider
                 if (error) {
                     console.error('❌ OAuth provider error:', { error, errorDescription })
-                    router.replace('/auth/login?error=access_denied')
+                    router.replace(`/auth/login?error=${encodeURIComponent(error)}`)
                     return
                 }
 
-                // Handle missing authorization code
+                // Ensure we have an authorization code
                 if (!code) {
-                    console.error('❌ No authorization code in callback')
+                    console.error('❌ No authorization code provided')
                     router.replace('/auth/login?error=no_code')
                     return
                 }
 
-                // Get return URL from session storage
-                const returnUrl = typeof window !== 'undefined'
-                    ? sessionStorage.getItem('authReturnUrl') || '/'
-                    : '/'
+                console.log('✅ Authorization code received, exchanging for session...')
 
-                console.log('🔄 Exchanging authorization code for session...')
-                console.log('📍 Return URL will be:', returnUrl)
+                // Create a promise for the OAuth exchange with retry logic
+                const exchangeCodeWithRetry = async (retries = 2): Promise<any> => {
+                    for (let attempt = 0; attempt <= retries; attempt++) {
+                        try {
+                            console.log(`🔄 OAuth exchange attempt ${attempt + 1}/${retries + 1}`)
 
-                // Add timeout wrapper around the code exchange
-                const exchangePromise = supabase.auth.exchangeCodeForSession(code)
-                const timeoutPromise = new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('OAuth exchange timeout')), 8000)
-                )
+                            const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
-                const { data, error: exchangeError } = await Promise.race([
-                    exchangePromise,
-                    timeoutPromise
-                ]) as any
+                            if (error) {
+                                console.error(`❌ OAuth exchange error (attempt ${attempt + 1}):`, error)
+                                if (attempt === retries) throw error
+                                // Wait before retry
+                                await new Promise(resolve => setTimeout(resolve, 1000))
+                                continue
+                            }
 
-                console.log('📊 Code exchange result:', {
-                    hasSession: !!data?.session,
-                    hasUser: !!data?.user,
-                    hasError: !!exchangeError,
-                    error: exchangeError?.message,
-                    userId: data?.user?.id?.substring(0, 8) + '...' || 'none'
+                            console.log('✅ OAuth exchange successful:', {
+                                hasSession: !!data.session,
+                                hasUser: !!data.user,
+                                userEmail: data.user?.email
+                            })
+                            return data
+                        } catch (err) {
+                            console.error(`💥 OAuth exchange failed (attempt ${attempt + 1}):`, err)
+                            if (attempt === retries) throw err
+                            // Wait before retry
+                            await new Promise(resolve => setTimeout(resolve, 1000))
+                        }
+                    }
+                }
+
+                // Set up timeout with longer duration (20 seconds)
+                const timeoutPromise = new Promise((_, reject) => {
+                    setTimeout(() => {
+                        reject(new Error('OAuth exchange timeout'))
+                    }, 20000) // Increased to 20 seconds
                 })
 
-                if (exchangeError) {
-                    console.error('❌ Error exchanging code for session:', exchangeError)
-                    router.replace('/auth/login?error=exchange_failed')
-                    return
-                }
+                // Race between OAuth exchange and timeout
+                const data = await Promise.race([
+                    exchangeCodeWithRetry(),
+                    timeoutPromise
+                ])
 
-                if (!data?.session) {
-                    console.error('❌ No session returned from code exchange')
-                    router.replace('/auth/login?error=no_session')
-                    return
-                }
+                if (data && data.session) {
+                    console.log('🎉 Authentication successful! Redirecting...')
 
-                // Clear return URL from session storage
-                if (typeof window !== 'undefined') {
+                    // Get return URL from session storage or default to home
+                    const returnUrl = sessionStorage.getItem('authReturnUrl') || '/'
                     sessionStorage.removeItem('authReturnUrl')
+
+                    console.log('📍 Redirecting to:', returnUrl)
+
+                    // Small delay to ensure session is fully established
+                    setTimeout(() => {
+                        router.replace(returnUrl)
+                    }, 500)
+                } else {
+                    console.error('❌ No session data received')
+                    router.replace('/auth/login?error=no_session')
                 }
 
-                console.log('✅ OAuth authentication successful! Redirecting to:', returnUrl)
+            } catch (error: any) {
+                console.error('💥 OAuth callback error:', error)
 
-                // Small delay to ensure session is fully established
-                setTimeout(() => {
-                    router.replace(returnUrl)
-                }, 100)
-
-            } catch (error) {
-                console.error('💥 Unexpected error in OAuth callback:', error)
-
-                // Handle timeout specifically
-                if (error instanceof Error && error.message === 'OAuth exchange timeout') {
-                    console.error('⏰ OAuth code exchange timed out after 8 seconds')
+                // Handle specific error types
+                if (error.message === 'OAuth exchange timeout') {
+                    console.warn('⏰ OAuth code exchange timed out after 20 seconds')
                     router.replace('/auth/login?error=timeout')
+                } else if (error.message?.includes('Invalid')) {
+                    console.error('🔑 Invalid authorization code')
+                    router.replace('/auth/login?error=invalid_code')
                 } else {
-                    router.replace('/auth/login?error=callback_failed')
+                    console.error('🚫 General OAuth error')
+                    router.replace('/auth/login?error=auth_failed')
                 }
             }
         }
 
-        // Add overall timeout as backup
-        const callbackTimeout = setTimeout(() => {
-            console.error('🚨 OAuth callback process timed out completely')
-            router.replace('/auth/login?error=callback_timeout')
-        }, 10000)
-
-        handleAuthCallback().finally(() => {
-            clearTimeout(callbackTimeout)
-        })
-
+        // Only run callback handling if we have URL parameters
+        if (searchParams.toString()) {
+            handleAuthCallback().catch((err) => {
+                console.error('🚨 Unhandled OAuth callback error:', err)
+                router.replace('/auth/login?error=callback_failed')
+            })
+        } else {
+            // No parameters, redirect to login
+            console.log('ℹ️ No OAuth parameters, redirecting to login')
+            router.replace('/auth/login')
+        }
     }, [router, searchParams])
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="min-h-screen bg-background flex items-center justify-center">
             <div className="text-center space-y-4">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                <h2 className="text-xl font-semibold text-foreground">
+                <h2 className="text-lg font-semibold text-foreground">
                     Completing authentication...
                 </h2>
-                <p className="text-muted-foreground">
-                    Processing your login, please wait
+                <p className="text-sm text-muted-foreground">
+                    Please wait while we finish setting up your account.
                 </p>
             </div>
         </div>
