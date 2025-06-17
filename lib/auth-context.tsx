@@ -118,8 +118,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const signOut = async () => {
-        const { error } = await supabase.auth.signOut()
-        if (error) throw error
+        console.log('🚪 Signing out user...')
+        try {
+            const { error } = await supabase.auth.signOut()
+            if (error) {
+                console.error('❌ Error during sign out:', error)
+                throw error
+            }
+
+            // Clear all local state immediately
+            setSession(null)
+            setUser(null)
+            setLoading(false)
+
+            console.log('✅ Sign out successful')
+
+            // Force redirect to home page
+            if (typeof window !== 'undefined') {
+                window.location.href = '/'
+            }
+        } catch (error) {
+            console.error('💥 Sign out failed:', error)
+            // Even if sign out fails, clear local state
+            setSession(null)
+            setUser(null)
+            setLoading(false)
+
+            // Still redirect to home
+            if (typeof window !== 'undefined') {
+                window.location.href = '/'
+            }
+        }
     }
 
     const signInWithGoogle = async () => {
@@ -127,13 +156,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             throw new Error('Google authentication is currently disabled')
         }
 
+        console.log('🔄 Starting Google OAuth flow...')
+
+        // Store current URL as return URL (but not if we're already on auth pages)
+        if (typeof window !== 'undefined') {
+            const currentPath = window.location.pathname
+            if (!currentPath.startsWith('/auth/')) {
+                sessionStorage.setItem('authReturnUrl', currentPath)
+                console.log('📍 Stored return URL:', currentPath)
+            }
+        }
+
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
                 redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/auth/callback`,
+                queryParams: {
+                    access_type: 'offline',
+                    prompt: 'consent',
+                }
             },
         })
-        if (error) throw error
+
+        if (error) {
+            console.error('❌ Google OAuth initiation failed:', error)
+            throw error
+        }
+
+        console.log('✅ Google OAuth initiated successfully')
     }
 
     const signInWithApple = async () => {

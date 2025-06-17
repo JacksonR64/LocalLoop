@@ -26,11 +26,21 @@ export function ProfileDropdown() {
   // Handle sign out
   const handleSignOut = async () => {
     try {
-      await signOut()
+      console.log('🚪 ProfileDropdown: Starting sign out...')
       setIsOpen(false)
-      router.push('/')
+
+      // Use the main auth context signOut method
+      await signOut()
+
+      console.log('✅ ProfileDropdown: Sign out completed')
     } catch (error) {
-      console.error('Error signing out:', error)
+      console.error('❌ ProfileDropdown: Error signing out:', error)
+
+      // Even if signOut fails, force a page reload to clear state
+      if (typeof window !== 'undefined') {
+        console.log('🔄 ProfileDropdown: Forcing page reload to clear auth state')
+        window.location.href = '/'
+      }
     }
   }
 
