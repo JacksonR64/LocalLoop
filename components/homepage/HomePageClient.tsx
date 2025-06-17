@@ -95,35 +95,35 @@ export function HomePageClient({ featuredEvents, nonFeaturedEvents }: HomePageCl
           <div className="flex flex-wrap justify-center gap-2 sm:gap-3 text-sm px-4" data-test-id="category-pills">
             <button
               onClick={() => handleCategoryFilter('workshop')}
-              className="bg-white/20 hover:bg-white/30 px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer"
+              className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
               data-test-id="category-pill-workshop"
             >
               Workshop
             </button>
             <button
               onClick={() => handleCategoryFilter('community')}
-              className="bg-white/20 hover:bg-white/30 px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer"
+              className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
               data-test-id="category-pill-community"
             >
               Community
             </button>
             <button
               onClick={() => handleCategoryFilter('arts')}
-              className="bg-white/20 hover:bg-white/30 px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer"
+              className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
               data-test-id="category-pill-arts"
             >
               Arts
             </button>
             <button
               onClick={() => handleCategoryFilter('business')}
-              className="bg-white/20 hover:bg-white/30 px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer"
+              className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
               data-test-id="category-pill-business"
             >
               Business
             </button>
             <button
               onClick={() => handleCategoryFilter('family')}
-              className="bg-white/20 hover:bg-white/30 px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer"
+              className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
               data-test-id="category-pill-family"
             >
               Family
@@ -137,7 +137,7 @@ export function HomePageClient({ featuredEvents, nonFeaturedEvents }: HomePageCl
         {/* Featured Events */}
         {featuredEvents.length > 0 && (
           <section className="mb-12 sm:mb-16" data-test-id="featured-events-section">
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6" data-test-id="featured-events-title">Featured Events</h3>
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6" data-test-id="featured-events-title">Featured Events</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" data-test-id="featured-events-grid">
               {featuredEvents.map((event) => (
                 <div key={event.id} data-test-id={`featured-event-${event.id}`}>
@@ -156,7 +156,7 @@ export function HomePageClient({ featuredEvents, nonFeaturedEvents }: HomePageCl
         {/* Upcoming Events */}
         <section id="upcoming-events" data-test-id="upcoming-events-section">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
-            <h3 className="text-xl sm:text-2xl font-bold text-foreground" data-test-id="upcoming-events-title">Upcoming Events</h3>
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground" data-test-id="upcoming-events-title">Upcoming Events</h2>
             <button
               onClick={handleViewAll}
               className="text-primary hover:text-primary/80 font-medium text-left sm:text-right"
