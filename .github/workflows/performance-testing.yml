@@ -223,58 +223,8 @@ jobs:
             echo "⚠️ Load test completed with warnings/errors"
           fi
 
-  # Memory and CPU profiling
-  resource-profiling:
-    name: 🧠 Resource Profiling
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    if: github.event.inputs.test_type == 'comprehensive' || github.event_name == 'schedule'
-
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: 📦 Install dependencies
-        run: npm ci
-
-      - name: 🧠 Install profiling tools
-        run: |
-          npm install -g clinic
-          npm install -g autocannon
-
-      - name: 🏗️ Build application
-        run: npm run build
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-
-      - name: 🧠 Profile application startup
-        run: |
-          echo "Starting memory and CPU profiling..."
-          
-          # Start the app with profiling
-          timeout 120s clinic doctor --on-port 'autocannon -c10 -d30 http://localhost:3000' -- npm start || true
-          
-          # Generate flame graphs if available
-          if [ -f ".clinic/doctor.html" ]; then
-            echo "✅ Profiling report generated"
-          fi
-
-      - name: 📊 Upload profiling reports
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: profiling-reports-${{ github.run_number }}
-          path: |
-            .clinic/
-            reports/profiling/
-          retention-days: 7
+  # Resource profiling moved to dedicated workflow: performance-profiling.yml
+  # This keeps the main performance testing workflow fast and focused
 
   # Bundle analysis
   bundle-analysis:
