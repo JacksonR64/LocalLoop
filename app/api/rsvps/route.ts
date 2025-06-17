@@ -4,7 +4,40 @@ import { sendRSVPConfirmationEmail } from '@/lib/email-service'
 import { z } from 'zod'
 
 // Performance optimization: Simple in-memory cache for RSVP checks (5 minutes)
-const rsvpCache = new Map<string, { data: any; timestamp: number }>()
+interface RsvpCacheData {
+    hasRSVP?: boolean;
+    rsvp?: {
+        id: string;
+        event_id: string;
+        user_id?: string;
+        status: string;
+        created_at: string;
+        events?: {
+            id: string;
+            title: string;
+            start_time: string;
+            end_time: string;
+            location?: string;
+            image_url?: string;
+        };
+    } | null;
+    rsvps?: Array<{
+        id: string;
+        event_id: string;
+        status: string;
+        created_at: string;
+        notes?: string;
+        events?: {
+            id: string;
+            title: string;
+            start_time: string;
+            end_time: string;
+            location?: string;
+            image_url?: string;
+        };
+    }>;
+}
+const rsvpCache = new Map<string, { data: RsvpCacheData; timestamp: number }>()
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
 // RSVP creation schema

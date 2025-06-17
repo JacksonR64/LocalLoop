@@ -13,7 +13,18 @@ import { createGoogleCalendarAuth } from '@/lib/google-auth'
  */
 
 // Simple in-memory cache for connection status (5 minutes)
-const statusCache = new Map<string, { data: any; timestamp: number }>()
+interface StatusCacheData {
+    connected: boolean;
+    healthy: boolean;
+    connectedAt?: string;
+    expiresAt?: string;
+    daysUntilExpiration?: number | null;
+    syncEnabled: boolean;
+    primaryCalendar?: unknown;
+    lastChecked: string;
+    requiresReconnection: boolean;
+}
+const statusCache = new Map<string, { data: StatusCacheData; timestamp: number }>()
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
 // Timeout wrapper for slow operations

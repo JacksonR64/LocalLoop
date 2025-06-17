@@ -4,7 +4,42 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
 export const dynamic = 'force-dynamic'
 
 // Performance optimization: Simple in-memory cache for event details (10 minutes)
-const eventCache = new Map<string, { data: any; timestamp: number }>()
+interface EventCacheData {
+    event: {
+        id: string;
+        title: string;
+        slug?: string;
+        description?: string;
+        short_description?: string;
+        start_time: string;
+        end_time: string;
+        timezone?: string;
+        location?: string;
+        location_details?: string;
+        latitude?: number;
+        longitude?: number;
+        is_online: boolean;
+        online_url?: string;
+        category?: string;
+        tags?: string[];
+        capacity?: number;
+        is_paid: boolean;
+        image_url?: string;
+        image_alt_text?: string;
+        featured: boolean;
+        published: boolean;
+        cancelled: boolean;
+        created_at: string;
+        updated_at: string;
+        organizer_id: string;
+        organizer?: {
+            id: string;
+            display_name?: string;
+            avatar_url?: string;
+        };
+    };
+}
+const eventCache = new Map<string, { data: EventCacheData; timestamp: number }>()
 const CACHE_DURATION = 10 * 60 * 1000 // 10 minutes
 
 export async function GET(
