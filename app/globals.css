@@ -6,15 +6,15 @@
   --border: #e5e7eb;
   --muted: #f9fafb;
   --muted-foreground: #6b7280;
-  --ring: #3b82f6;
+  --ring: #1d4ed8;
   --ring-offset-background: #ffffff;
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
 
-  /* Primary colors for consistent theming */
-  --primary: #3b82f6;
-  --primary-hover: #2563eb;
+  /* Primary colors for consistent theming - Fixed for better contrast */
+  --primary: #1d4ed8;
+  --primary-hover: #1e40af;
   --primary-foreground: #ffffff;
 
   /* Surface colors */
