@@ -445,10 +445,9 @@ export class GoogleCalendarAuth {
      * @param userId - Supabase user ID
      * @param enabled - Whether to enable sync
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async setSyncEnabled(userId: string, enabled: boolean): Promise<void> {
         try {
-            const supabaseServer = await createServerSupabaseClient()
-
             // Note: google_calendar_sync_enabled column doesn't exist yet
             // This method is a placeholder for future implementation
             console.warn('setSyncEnabled: google_calendar_sync_enabled column not implemented yet')

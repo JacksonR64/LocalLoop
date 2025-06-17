@@ -22,7 +22,7 @@ export const FilterButton = React.forwardRef<HTMLButtonElement, FilterButtonProp
     children,
     isOpen = false,
     onClick,
-    hasActiveFilter = false,
+    hasActiveFilter = false, // eslint-disable-line @typescript-eslint/no-unused-vars
     placeholder,
     className = '',
     onMouseEnter,

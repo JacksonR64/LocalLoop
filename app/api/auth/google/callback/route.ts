@@ -71,8 +71,6 @@ export async function GET(request: NextRequest) {
         const userId = oAuthState.userId
         console.log('[DEBUG] User ID from OAuth state:', userId)
 
-        // Create Supabase client for database operations
-        const supabase = await createServerSupabaseClient()
         console.log('[DEBUG] Supabase client created successfully')
 
         // Validate user ID format (basic security check)

@@ -21,7 +21,7 @@ export async function GET(request: Request) {
         let user = null
 
         // Try to get user from Supabase session first
-        const { data: { user: sessionUser }, error: authError } = await supabase.auth.getUser()
+        const { data: { user: sessionUser } } = await supabase.auth.getUser()
 
         if (sessionUser) {
             user = sessionUser

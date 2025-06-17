@@ -121,7 +121,7 @@ export default function GoogleCalendarConnect({
     action = 'connect',
     returnUrl,
     className = '',
-    onStatusChange, // eslint-disable-line @typescript-eslint/no-unused-vars
+    onStatusChange,  
     eventData
 }: GoogleCalendarConnectProps) {
     // const router = useRouter() // Will be used in disconnect functionality later
