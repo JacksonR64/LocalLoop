@@ -34,7 +34,7 @@ export function Navigation({
     }
 
     return (
-        <header className={`bg-card shadow-sm border-b border-border sticky top-0 z-50 ${className}`}>
+        <header className={`bg-card shadow-sm border-b border-border sticky top-0 z-50 ${className}`} data-test-id="homepage-header">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Left side - Logo (always shown, always clickable home button) */}
@@ -42,16 +42,17 @@ export function Navigation({
                         <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                             <Calendar className="w-5 h-5 text-primary-foreground" />
                         </div>
-                        <h1 className="text-xl font-bold text-card-foreground">LocalLoop</h1>
+                        <h1 className="text-xl font-bold text-card-foreground" data-test-id="homepage-title">LocalLoop</h1>
                     </Link>
 
                     {/* Right side - Full Navigation (always shown) */}
                     <>
                         {/* Desktop Navigation */}
-                        <nav className="hidden md:flex items-center gap-6">
+                        <nav className="hidden md:flex items-center gap-6" data-test-id="desktop-navigation">
                             <button
                                 onClick={handleBrowseEvents}
                                 className="text-muted-foreground hover:text-foreground transition-colors"
+                                data-test-id="browse-events-button"
                             >
                                 Browse Events
                             </button>
@@ -62,8 +63,19 @@ export function Navigation({
                                 </Link>
                             )}
 
-                            <Link href="/my-events" className="text-muted-foreground hover:text-foreground transition-colors">
+                            <Link
+                                href="/my-events"
+                                className="text-muted-foreground hover:text-foreground transition-colors"
+                            >
                                 My Events
+                            </Link>
+
+                            <Link
+                                href="/create-event"
+                                className="text-muted-foreground hover:text-foreground transition-colors"
+                                data-test-id="create-event-link"
+                            >
+                                Create Event
                             </Link>
 
                             <ThemeToggle />
@@ -88,6 +100,7 @@ export function Navigation({
                             className="md:hidden p-2 rounded-lg hover:bg-accent transition-colors"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             aria-label="Toggle mobile menu"
+                            data-test-id="mobile-menu-button"
                         >
                             {isMobileMenuOpen ? (
                                 <X className="w-6 h-6 text-muted-foreground" />
@@ -128,6 +141,14 @@ export function Navigation({
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 My Events
+                            </Link>
+
+                            <Link
+                                href="/create-event"
+                                className="text-muted-foreground hover:text-foreground transition-colors py-2"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                Create Event
                             </Link>
 
                             <ThemeToggle />
