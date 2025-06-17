@@ -33,6 +33,7 @@ export interface SortOptionConfig {
     value: SortOption;
     label: string;
     icon?: string;
+    tooltip: string;
 }
 
 export interface ActiveFilter {
@@ -139,12 +140,36 @@ export const DATE_RANGE_PRESETS: DateRangePreset[] = [
 
 // Sort options configuration
 export const SORT_OPTIONS: SortOptionConfig[] = [
-    { value: 'date_asc', label: 'Date (Earliest First)' },
-    { value: 'date_desc', label: 'Date (Latest First)' },
-    { value: 'title_asc', label: 'Title (A-Z)' },
-    { value: 'title_desc', label: 'Title (Z-A)' },
-    { value: 'price_asc', label: 'Price (Low to High)' },
-    { value: 'price_desc', label: 'Price (High to Low)' }
+    {
+        value: 'date_asc',
+        label: 'Date ↑',
+        tooltip: 'Sort by date, earliest first'
+    },
+    {
+        value: 'date_desc',
+        label: 'Date ↓',
+        tooltip: 'Sort by date, latest first'
+    },
+    {
+        value: 'title_asc',
+        label: 'Title A-Z',
+        tooltip: 'Sort by title, A to Z'
+    },
+    {
+        value: 'title_desc',
+        label: 'Title Z-A',
+        tooltip: 'Sort by title, Z to A'
+    },
+    {
+        value: 'price_asc',
+        label: 'Price ↑',
+        tooltip: 'Sort by price, low to high'
+    },
+    {
+        value: 'price_desc',
+        label: 'Price ↓',
+        tooltip: 'Sort by price, high to low'
+    }
 ];
 
 // Price filter options

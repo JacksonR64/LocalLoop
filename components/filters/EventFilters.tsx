@@ -140,7 +140,7 @@ export function EventFilters({
             {showSearch && (
                 <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Search className="h-4 w-4 text-gray-400" />
+                        <Search className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <input
                         type="text"
@@ -150,7 +150,7 @@ export function EventFilters({
                         onFocus={() => setIsSearchFocused(true)}
                         onBlur={() => setTimeout(() => setIsSearchFocused(false), 100)}
                         onKeyDown={handleSearchKeyDown}
-                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        className="block w-full pl-10 pr-3 py-2 border border-border rounded-md leading-5 bg-background placeholder:text-muted-foreground text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring text-sm"
                         aria-autocomplete="list"
                         aria-controls="search-suggestions"
                         aria-activedescendant={highlightedIndex >= 0 ? `suggestion-${highlightedIndex}` : undefined}
@@ -159,7 +159,7 @@ export function EventFilters({
                     {isSearchFocused && suggestions.length > 0 && (
                         <ul
                             id="search-suggestions"
-                            className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
+                            className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-60 overflow-auto"
                             role="listbox"
                         >
                             {suggestions.map((suggestion, idx) => (
@@ -168,7 +168,7 @@ export function EventFilters({
                                     id={`suggestion-${idx}`}
                                     role="option"
                                     aria-selected={highlightedIndex === idx}
-                                    className={`px-3 py-2 cursor-pointer hover:bg-blue-50 ${highlightedIndex === idx ? 'bg-blue-100' : ''}`}
+                                    className={`px-3 py-2 cursor-pointer hover:bg-accent text-popover-foreground ${highlightedIndex === idx ? 'bg-accent' : ''}`}
                                     onMouseDown={() => handleSuggestionSelect(suggestion)}
                                 >
                                     {suggestion}
@@ -217,12 +217,12 @@ export function EventFilters({
             )}
 
             {/* Filter Summary */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm text-gray-600">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm text-muted-foreground">
                 <span>{filterSummary}</span>
                 {hasActiveFilters({ ...filters, searchQuery }) && (
                     <button
                         onClick={handleClearAll}
-                        className="text-blue-600 hover:text-blue-800 focus:outline-none focus:underline text-left sm:text-right"
+                        className="text-primary hover:text-primary/80 focus:outline-none focus:underline text-left sm:text-right"
                     >
                         Clear all filters
                     </button>

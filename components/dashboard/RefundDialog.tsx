@@ -129,8 +129,8 @@ export default function RefundDialog({
                 <DialogContent className="sm:max-w-md">
                     <div className="text-center py-6">
                         <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Refund Processed</h3>
-                        <p className="text-gray-600">Your refund has been submitted and will appear in your account within 5-10 business days.</p>
+                        <h3 className="text-lg font-semibold text-foreground mb-2">Refund Processed</h3>
+                        <p className="text-muted-foreground">Your refund has been submitted and will appear in your account within 5-10 business days.</p>
                     </div>
                 </DialogContent>
             </Dialog>
@@ -155,9 +155,9 @@ export default function RefundDialog({
 
                 <div className="py-4 space-y-6">
                     {/* Event Details */}
-                    <div className="bg-gray-50 rounded-lg p-4">
-                        <h4 className="font-medium text-gray-900 mb-2">{order.event.title}</h4>
-                        <div className="space-y-1 text-sm text-gray-600">
+                    <div className="bg-muted rounded-lg p-4">
+                        <h4 className="font-medium text-foreground mb-2">{order.event.title}</h4>
+                        <div className="space-y-1 text-sm text-muted-foreground">
                             <div className="flex items-center gap-2">
                                 <Calendar className="w-4 h-4" />
                                 <span>{new Date(order.event.start_date).toLocaleDateString()}</span>
@@ -178,23 +178,23 @@ export default function RefundDialog({
 
                     {/* Tickets */}
                     <div>
-                        <h4 className="font-medium text-gray-900 mb-3">Tickets to Refund</h4>
+                        <h4 className="font-medium text-foreground mb-3">Tickets to Refund</h4>
                         <div className="space-y-2">
                             {order.tickets.map((ticket) => (
-                                <div key={ticket.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div key={ticket.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                                     <div className="flex items-center gap-3">
-                                        <Ticket className="w-4 h-4 text-gray-500" />
+                                        <Ticket className="w-4 h-4 text-muted-foreground" />
                                         <div>
-                                            <div className="font-medium text-gray-900">
+                                            <div className="font-medium text-foreground">
                                                 {ticket.ticket_type.name}
                                             </div>
-                                            <div className="text-sm text-gray-600">
+                                            <div className="text-sm text-muted-foreground">
                                                 Quantity: {ticket.quantity} • ${ticket.ticket_type.price.toFixed(2)} each
                                             </div>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="font-medium text-gray-900">
+                                        <div className="font-medium text-foreground">
                                             ${(ticket.ticket_type.price * ticket.quantity).toFixed(2)}
                                         </div>
                                     </div>

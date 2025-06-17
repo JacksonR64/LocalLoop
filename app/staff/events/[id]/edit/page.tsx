@@ -1,6 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
-import { Navigation } from '@/components/ui/Navigation'
 import StaffEventEditClient from './StaffEventEditClient'
 
 export default async function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
@@ -45,18 +44,14 @@ export default async function EditEventPage({ params }: { params: Promise<{ id: 
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <Navigation />
-            {/* Main Content */}
-            <main className="py-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="mb-6">
-                        <h1 className="text-3xl font-bold text-gray-900">Edit Event</h1>
-                        <p className="mt-2 text-gray-600">Editing: {event.title}</p>
-                    </div>
-                    <StaffEventEditClient eventId={eventId} />
+        <div className="min-h-screen bg-background">
+            <div className="max-w-4xl mx-auto py-8 px-4">
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold text-foreground">Edit Event</h1>
+                    <p className="mt-2 text-muted-foreground">Editing: {event.title}</p>
                 </div>
-            </main>
+                <StaffEventEditClient eventId={eventId} />
+            </div>
         </div>
     )
 } 

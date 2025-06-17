@@ -68,8 +68,11 @@ export function useAuth(): UseAuthReturn {
             const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
 
             if (authError) {
-                console.error('Auth error:', authError)
-                setError('Authentication failed')
+                // Only log actual errors, not missing sessions
+                if (authError.message !== 'Auth session missing!') {
+                    console.error('Auth error:', authError)
+                    setError('Authentication failed')
+                }
                 setUser(null)
                 return
             }
@@ -82,8 +85,11 @@ export function useAuth(): UseAuthReturn {
             const userProfile = await fetchUserProfile(authUser)
             setUser(userProfile)
         } catch (err) {
-            console.error('Error refreshing auth:', err)
-            setError('Failed to refresh authentication')
+            // Only log unexpected errors, not auth session missing errors
+            if (err instanceof Error && !err.message.includes('Auth session missing')) {
+                console.error('Error refreshing auth:', err)
+                setError('Failed to refresh authentication')
+            }
             setUser(null)
         } finally {
             setLoading(false)

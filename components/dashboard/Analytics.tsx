@@ -213,8 +213,8 @@ export default function Analytics() {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-12">
-                <RefreshCw className="h-8 w-8 animate-spin text-gray-400" />
-                <span className="ml-2 text-gray-500">Loading analytics...</span>
+                <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-muted-foreground">Loading analytics...</span>
             </div>
         )
     }
@@ -224,8 +224,8 @@ export default function Analytics() {
             <Card className="p-6">
                 <div className="text-center py-8">
                     <BarChart3 className="h-12 w-12 text-red-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Failed to Load Analytics</h3>
-                    <p className="text-gray-600 mb-4">{error}</p>
+                    <h3 className="text-lg font-medium text-foreground mb-2">Failed to Load Analytics</h3>
+                    <p className="text-muted-foreground mb-4">{error}</p>
                     <Button onClick={handleRefresh}>
                         <RefreshCw className="h-4 w-4 mr-2" />
                         Try Again
@@ -242,8 +242,8 @@ export default function Analytics() {
             {/* Header with Controls */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-2xl font-semibold text-gray-900">Analytics Dashboard</h2>
-                    <p className="text-gray-600">Insights and performance metrics for your events</p>
+                    <h2 className="text-2xl font-semibold text-foreground">Analytics Dashboard</h2>
+                    <p className="text-muted-foreground">Insights and performance metrics for your events</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <Select value={timeRange} onValueChange={setTimeRange}>
@@ -297,7 +297,7 @@ export default function Analytics() {
                         <div className="text-2xl font-bold">
                             {analyticsData.overview.totalAttendees.toLocaleString()}
                         </div>
-                        <p className="text-xs text-gray-600">
+                        <p className="text-xs text-muted-foreground">
                             Avg {analyticsData.overview.averageAttendance} per event
                         </p>
                     </CardContent>
@@ -312,7 +312,7 @@ export default function Analytics() {
                         <div className="text-2xl font-bold">
                             {formatPercentage(analyticsData.overview.conversionRate)}
                         </div>
-                        <p className="text-xs text-gray-600">
+                        <p className="text-xs text-muted-foreground">
                             Registration to attendance
                         </p>
                     </CardContent>
@@ -333,26 +333,26 @@ export default function Analytics() {
                             <div key={event.id} className="flex items-center justify-between p-4 border rounded-lg">
                                 <div className="flex-1">
                                     <h4 className="font-medium">{event.title}</h4>
-                                    <p className="text-sm text-gray-600">{event.date}</p>
+                                    <p className="text-sm text-muted-foreground">{event.date}</p>
                                 </div>
                                 <div className="grid grid-cols-4 gap-8 text-sm">
                                     <div className="text-center">
                                         <div className="font-medium">{event.attendees}</div>
-                                        <div className="text-gray-600">Attendees</div>
+                                        <div className="text-muted-foreground">Attendees</div>
                                     </div>
                                     <div className="text-center">
                                         <div className="font-medium">{formatCurrency(event.revenue)}</div>
-                                        <div className="text-gray-600">Revenue</div>
+                                        <div className="text-muted-foreground">Revenue</div>
                                     </div>
                                     <div className="text-center">
                                         <div className="font-medium">
                                             {Math.round((event.attendees / event.capacity) * 100)}%
                                         </div>
-                                        <div className="text-gray-600">Capacity</div>
+                                        <div className="text-muted-foreground">Capacity</div>
                                     </div>
                                     <div className="text-center">
                                         <div className="font-medium">{formatPercentage(event.conversionRate)}</div>
-                                        <div className="text-gray-600">Conversion</div>
+                                        <div className="text-muted-foreground">Conversion</div>
                                     </div>
                                 </div>
                             </div>
@@ -422,7 +422,7 @@ export default function Analytics() {
                                     {analyticsData.attendeeInsights.demographics.locations.slice(0, 3).map((location) => (
                                         <div key={location.city} className="flex justify-between text-sm">
                                             <span>{location.city}</span>
-                                            <span className="text-gray-600">{location.count}</span>
+                                            <span className="text-muted-foreground">{location.count}</span>
                                         </div>
                                     ))}
                                 </div>

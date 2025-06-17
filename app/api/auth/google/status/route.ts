@@ -12,54 +12,82 @@ import { createGoogleCalendarAuth } from '@/lib/google-auth'
  * - Validates token health without revealing sensitive information
  */
 
-export async function GET(request: Request) {
-    console.log('[API] GET /api/auth/google/status - Request received')
+// Simple in-memory cache for connection status (5 minutes)
+interface StatusCacheData {
+    connected: boolean;
+    healthy: boolean | null; // Can be null from the API response
+    connectedAt?: string;
+    expiresAt?: string;
+    daysUntilExpiration?: number | null;
+    syncEnabled: boolean | undefined;
+    primaryCalendar?: unknown;
+    lastChecked: string;
+    requiresReconnection: boolean;
+}
+const statusCache = new Map<string, { data: StatusCacheData; timestamp: number }>()
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
+// Timeout wrapper for slow operations
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+    const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Operation timed out')), timeoutMs)
+    })
+    return Promise.race([promise, timeoutPromise])
+}
+
+export async function GET(request: Request) {
     try {
         const url = new URL(request.url)
         const userIdParam = url.searchParams.get('userId')
 
         const supabase = await createServerSupabaseClient()
-        console.log('[API] Supabase client created successfully')
-
         let user = null
 
         // Try to get user from Supabase session first
-        const { data: { user: sessionUser }, error: authError } = await supabase.auth.getUser()
+        const { data: { user: sessionUser } } = await supabase.auth.getUser()
 
         if (sessionUser) {
-            console.log('[API] User authenticated via Supabase session:', sessionUser.id)
             user = sessionUser
         } else if (userIdParam) {
-            console.log('[API] No Supabase session, but userId provided:', userIdParam)
             // Create a minimal user object for Google Calendar status check
             user = { id: userIdParam }
         } else {
-            console.log('[API] No authentication and no userId parameter')
-            console.log('[API] Auth check result:', {
-                hasUser: false,
-                userId: undefined,
-                authError: authError?.message
-            })
             return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
         }
 
-        console.log('[API] User authenticated, getting connection status for:', user.id)
-        const googleAuth = createGoogleCalendarAuth()
-        const connectionStatus = await googleAuth.getConnectionStatus(user.id)
-        console.log('[API] Connection status result:', connectionStatus)
+        // Check cache first
+        const cacheKey = `status_${user.id}`
+        const cached = statusCache.get(cacheKey)
+        if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+            return NextResponse.json(cached.data)
+        }
 
-        // Test connection if connected
+        const googleAuth = createGoogleCalendarAuth()
+
+        // Add timeout to prevent hanging requests
+        const connectionStatus = await withTimeout(
+            googleAuth.getConnectionStatus(user.id),
+            10000 // 10 second timeout
+        )
+
+        // Test connection if connected (with timeout)
         let connectionTest = null
         if (connectionStatus.connected) {
-            connectionTest = await googleAuth.testUserConnection(user.id)
+            try {
+                connectionTest = await withTimeout(
+                    googleAuth.testUserConnection(user.id),
+                    8000 // 8 second timeout for connection test
+                )
+            } catch (error) {
+                console.warn('Connection test timed out or failed:', error)
+                // Continue without connection test if it fails
+                connectionTest = { connected: false }
+            }
         }
-        console.log('[API] Connection test result:', connectionTest)
 
         const isHealthy = connectionStatus.connected &&
             connectionTest &&
             connectionTest.connected
-        console.log('[API] Connection health test result:', isHealthy)
 
         // Calculate days until expiration
         const daysUntilExpiration = connectionStatus.expiresAt
@@ -78,7 +106,9 @@ export async function GET(request: Request) {
             requiresReconnection: connectionStatus.connected && !isHealthy
         }
 
-        console.log('[API] Final response:', response)
+        // Cache the response
+        statusCache.set(cacheKey, { data: response, timestamp: Date.now() })
+
         return NextResponse.json(response)
 
     } catch (error) {

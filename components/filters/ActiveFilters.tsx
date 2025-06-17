@@ -18,13 +18,13 @@ export function ActiveFilters({ activeFilters, onClearAll, className = '' }: Act
     return (
         <div className={`space-y-2 ${className}`}>
             <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-muted-foreground">
                     Active filters ({activeFilters.length})
                 </span>
                 {onClearAll && activeFilters.length > 1 && (
                     <button
                         onClick={onClearAll}
-                        className="text-xs text-blue-600 hover:text-blue-800 focus:outline-none focus:underline"
+                        className="text-xs text-primary hover:text-primary/80 focus:outline-none focus:underline"
                     >
                         Clear all
                     </button>
@@ -51,15 +51,15 @@ function FilterChip({ filter }: FilterChipProps) {
     const getChipColor = (type: ActiveFilter['type']): string => {
         switch (type) {
             case 'category':
-                return 'bg-blue-100 text-blue-800 border-blue-200';
+                return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800';
             case 'dateRange':
-                return 'bg-green-100 text-green-800 border-green-200';
+                return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800';
             case 'priceType':
-                return 'bg-purple-100 text-purple-800 border-purple-200';
+                return 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800';
             case 'searchQuery':
-                return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+                return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-800';
             default:
-                return 'bg-gray-100 text-gray-800 border-gray-200';
+                return 'bg-muted text-muted-foreground border-border';
         }
     };
 

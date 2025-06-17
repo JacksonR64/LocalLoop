@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Calendar, ChevronDown, X } from 'lucide-react';
+import { Calendar, X } from 'lucide-react';
 import { DateRange, DATE_RANGE_PRESETS } from '@/lib/types/filters';
+import { FilterButton, FilterDropdown, FilterContainer } from '@/components/ui/FilterButton';
 
 interface DateFilterProps {
     selectedRange: DateRange | null;
@@ -100,87 +101,84 @@ export function DateFilter({ selectedRange, onRangeChange, className = '' }: Dat
     }, [selectedRange]);
 
     return (
-        <div className={`relative ${className}`} ref={dropdownRef}>
-            <button
+        <FilterContainer ref={dropdownRef} className={className}>
+            <FilterButton
+                isOpen={isOpen}
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center justify-between w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                hasActiveFilter={!!selectedRange}
+                placeholder="Any date"
                 aria-expanded={isOpen}
                 aria-haspopup="listbox"
             >
-                <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-gray-400" />
-                    <span className={selectedRange ? 'text-gray-900' : 'text-gray-500'}>
-                        {getDisplayText()}
-                    </span>
-                </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-muted-foreground hover:text-foreground transition-colors">{getDisplayText()}</span>
+                    </div>
                     {selectedRange && (
                         <button
                             onClick={handleClear}
-                            className="p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-gray-600"
+                            className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground ml-2"
                             aria-label="Clear date filter"
                         >
                             <X className="w-3 h-3" />
                         </button>
                     )}
-                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                 </div>
-            </button>
+            </FilterButton>
 
-            {isOpen && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
-                    <div className="py-1">
-                        {/* Preset Options */}
-                        <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide border-b border-gray-100">
-                            Quick Select
+            <FilterDropdown isOpen={isOpen}>
+                <div className="py-1">
+                    {/* Preset Options */}
+                    <div className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b border-border">
+                        Quick Select
+                    </div>
+                    {DATE_RANGE_PRESETS.map((preset) => (
+                        <button
+                            key={preset.value}
+                            onClick={() => handlePresetSelect(preset)}
+                            className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-accent focus:bg-accent focus:outline-none"
+                        >
+                            {preset.label}
+                        </button>
+                    ))}
+
+                    {/* Custom Date Range */}
+                    <div className="border-t border-border pt-2">
+                        <div className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                            Custom Range
                         </div>
-                        {DATE_RANGE_PRESETS.map((preset) => (
+                        <div className="px-3 pb-3 space-y-2">
+                            <div>
+                                <label className="block text-xs text-muted-foreground mb-1">Start Date</label>
+                                <input
+                                    type="date"
+                                    value={customStart}
+                                    onChange={(e) => setCustomStart(e.target.value)}
+                                    className="w-full px-2 py-1 text-sm border border-border bg-background text-foreground rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs text-muted-foreground mb-1">End Date</label>
+                                <input
+                                    type="date"
+                                    value={customEnd}
+                                    onChange={(e) => setCustomEnd(e.target.value)}
+                                    min={customStart}
+                                    className="w-full px-2 py-1 text-sm border border-border bg-background text-foreground rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                                />
+                            </div>
                             <button
-                                key={preset.value}
-                                onClick={() => handlePresetSelect(preset)}
-                                className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
+                                onClick={handleCustomRange}
+                                disabled={!customStart || !customEnd}
+                                className="w-full px-3 py-1 text-sm bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed"
                             >
-                                {preset.label}
+                                Apply Range
                             </button>
-                        ))}
-
-                        {/* Custom Date Range */}
-                        <div className="border-t border-gray-100 pt-2">
-                            <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                                Custom Range
-                            </div>
-                            <div className="px-3 pb-3 space-y-2">
-                                <div>
-                                    <label className="block text-xs text-gray-600 mb-1">Start Date</label>
-                                    <input
-                                        type="date"
-                                        value={customStart}
-                                        onChange={(e) => setCustomStart(e.target.value)}
-                                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs text-gray-600 mb-1">End Date</label>
-                                    <input
-                                        type="date"
-                                        value={customEnd}
-                                        onChange={(e) => setCustomEnd(e.target.value)}
-                                        min={customStart}
-                                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                    />
-                                </div>
-                                <button
-                                    onClick={handleCustomRange}
-                                    disabled={!customStart || !customEnd}
-                                    className="w-full px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                >
-                                    Apply Range
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>
-            )}
-        </div>
+            </FilterDropdown>
+        </FilterContainer>
     );
 } 

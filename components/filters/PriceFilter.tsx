@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { DollarSign, ChevronDown } from 'lucide-react';
+import { DollarSign } from 'lucide-react';
 import { PriceFilterType, PRICE_FILTER_OPTIONS } from '@/lib/types/filters';
+import { FilterButton, FilterDropdown, FilterContainer } from '@/components/ui/FilterButton';
 
 interface PriceFilterProps {
     selectedPrice: PriceFilterType;
@@ -61,49 +62,46 @@ export function PriceFilter({
     };
 
     return (
-        <div className={`relative ${className}`} ref={dropdownRef}>
-            <button
+        <FilterContainer ref={dropdownRef} className={className}>
+            <FilterButton
+                isOpen={isOpen}
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center justify-between w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                hasActiveFilter={selectedPrice !== 'all'}
+                placeholder="All Events"
                 aria-expanded={isOpen}
                 aria-haspopup="listbox"
             >
                 <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-900">
-                        {getDisplayText()}
-                    </span>
+                    <DollarSign className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground hover:text-foreground transition-colors">{getDisplayText()}</span>
                 </div>
-                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-            </button>
+            </FilterButton>
 
-            {isOpen && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
-                    <div className="py-1">
-                        {PRICE_FILTER_OPTIONS.map((option) => {
-                            const count = getCountForType(option.value);
-                            const isSelected = selectedPrice === option.value;
+            <FilterDropdown isOpen={isOpen}>
+                <div className="py-1">
+                    {PRICE_FILTER_OPTIONS.map((option) => {
+                        const count = getCountForType(option.value);
+                        const isSelected = selectedPrice === option.value;
 
-                            return (
-                                <button
-                                    key={option.value}
-                                    onClick={() => handleOptionSelect(option.value)}
-                                    className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 focus:bg-gray-50 focus:outline-none flex items-center justify-between ${isSelected ? 'bg-blue-50 text-blue-700' : 'text-gray-900'
-                                        }`}
-                                >
-                                    <span>{option.label}</span>
-                                    {count !== undefined && (
-                                        <span className={`text-xs ${isSelected ? 'text-blue-600' : 'text-gray-500'
-                                            }`}>
-                                            {count}
-                                        </span>
-                                    )}
-                                </button>
-                            );
-                        })}
-                    </div>
+                        return (
+                            <button
+                                key={option.value}
+                                onClick={() => handleOptionSelect(option.value)}
+                                className={`w-full px-3 py-2 text-left text-sm hover:bg-accent focus:bg-accent focus:outline-none flex items-center justify-between ${isSelected ? 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300' : 'text-foreground'
+                                    }`}
+                            >
+                                <span>{option.label}</span>
+                                {count !== undefined && (
+                                    <span className={`text-xs ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'
+                                        }`}>
+                                        {count}
+                                    </span>
+                                )}
+                            </button>
+                        );
+                    })}
                 </div>
-            )}
-        </div>
+            </FilterDropdown>
+        </FilterContainer>
     );
 } 

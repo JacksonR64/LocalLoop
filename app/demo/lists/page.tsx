@@ -160,16 +160,16 @@ export default function EventListDemoPage() {
     }, {} as Record<string, typeof demoEvents>);
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-background">
             {/* Header */}
-            <header className="bg-white shadow-sm border-b">
+            <header className="bg-card shadow-sm border-b">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 rounded-lg flex items-center justify-center">
                                 <Calendar className="w-5 h-5 text-white" />
                             </div>
-                            <h1 className="text-xl font-bold text-gray-900">LocalLoop - Event Lists Demo</h1>
+                            <h1 className="text-xl font-bold text-foreground">LocalLoop - Event Lists Demo</h1>
                         </div>
                         <div className="flex gap-4">
                             <Link href="/demo" className="text-blue-600 hover:text-blue-800">← Card Demo</Link>
@@ -181,20 +181,20 @@ export default function EventListDemoPage() {
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="mb-8">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-4">Event List Component Showcase</h2>
-                    <p className="text-gray-600">
+                    <h2 className="text-3xl font-bold text-foreground mb-4">Event List Component Showcase</h2>
+                    <p className="text-muted-foreground">
                         Demonstrating the different styles and configurations of the EventList component system.
                     </p>
                 </div>
 
                 {/* Controls */}
-                <div className="bg-white rounded-lg p-6 mb-8 shadow-sm border">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">List Controls</h3>
+                <div className="bg-card rounded-lg p-6 mb-8 shadow-sm border">
+                    <h3 className="text-lg font-semibold text-foreground mb-4">List Controls</h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                         {/* Style Selection */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">List Style</label>
+                            <label className="block text-sm font-medium text-muted-foreground mb-2">List Style</label>
                             <div className="space-y-2">
                                 {(['grid', 'preview', 'full', 'compact', 'timeline'] as EventListStyle[]).map((style) => (
                                     <label key={style} className="flex items-center">
@@ -215,7 +215,7 @@ export default function EventListDemoPage() {
                         {/* Grid Columns (only for grid style) */}
                         {selectedStyle === 'grid' && (
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Grid Columns</label>
+                                <label className="block text-sm font-medium text-muted-foreground mb-2">Grid Columns</label>
                                 <div className="space-y-2">
                                     {(['auto', '1', '2', '3', '4'] as EventListGrid[]).map((grid) => (
                                         <label key={grid} className="flex items-center">
@@ -236,7 +236,7 @@ export default function EventListDemoPage() {
 
                         {/* Options */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Options</label>
+                            <label className="block text-sm font-medium text-muted-foreground mb-2">Options</label>
                             <div className="space-y-2">
                                 <label className="flex items-center">
                                     <input
@@ -261,13 +261,13 @@ export default function EventListDemoPage() {
 
                         {/* Style Icons */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Style Preview</label>
+                            <label className="block text-sm font-medium text-muted-foreground mb-2">Style Preview</label>
                             <div className="flex gap-2">
-                                {selectedStyle === 'grid' && <LayoutGrid className="w-6 h-6 text-blue-600" />}
-                                {selectedStyle === 'preview' && <List className="w-6 h-6 text-blue-600" />}
-                                {selectedStyle === 'full' && <Grid className="w-6 h-6 text-blue-600" />}
-                                {selectedStyle === 'compact' && <List className="w-6 h-6 text-blue-600" />}
-                                {selectedStyle === 'timeline' && <Clock className="w-6 h-6 text-blue-600" />}
+                                {selectedStyle === 'grid' && <LayoutGrid className="w-6 h-6 text-blue-600 dark:text-blue-400" />}
+                                {selectedStyle === 'preview' && <List className="w-6 h-6 text-blue-600 dark:text-blue-400" />}
+                                {selectedStyle === 'full' && <Grid className="w-6 h-6 text-blue-600 dark:text-blue-400" />}
+                                {selectedStyle === 'compact' && <List className="w-6 h-6 text-blue-600 dark:text-blue-400" />}
+                                {selectedStyle === 'timeline' && <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />}
                             </div>
                         </div>
                     </div>
@@ -275,8 +275,8 @@ export default function EventListDemoPage() {
 
                 {/* Basic Event List */}
                 <section className="mb-16">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Basic Event List</h3>
-                    <p className="text-gray-600 mb-6">Basic EventList component with current settings.</p>
+                    <h3 className="text-2xl font-bold text-foreground mb-6">Basic Event List</h3>
+                    <p className="text-muted-foreground mb-6">Basic EventList component with current settings.</p>
 
                     <EventList
                         events={demoEvents}
@@ -291,8 +291,8 @@ export default function EventListDemoPage() {
 
                 {/* Event List with Header */}
                 <section className="mb-16">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Event List with Header</h3>
-                    <p className="text-gray-600 mb-6">EventListWithHeader component with title, subtitle, and action buttons.</p>
+                    <h3 className="text-2xl font-bold text-foreground mb-6">Event List with Header</h3>
+                    <p className="text-muted-foreground mb-6">EventListWithHeader component with title, subtitle, and action buttons.</p>
 
                     <EventListWithHeader
                         title="Upcoming Community Events"
@@ -303,7 +303,7 @@ export default function EventListDemoPage() {
                                 <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
                                     Create Event
                                 </button>
-                                <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">
+                                <button className="border border-border text-muted-foreground px-4 py-2 rounded-lg text-sm hover:bg-muted">
                                     Filter
                                 </button>
                             </div>
@@ -318,8 +318,8 @@ export default function EventListDemoPage() {
 
                 {/* Grouped Event List */}
                 <section className="mb-16">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Grouped Event List</h3>
-                    <p className="text-gray-600 mb-6">GroupedEventList component organizing events by category.</p>
+                    <h3 className="text-2xl font-bold text-foreground mb-6">Grouped Event List</h3>
+                    <p className="text-muted-foreground mb-6">GroupedEventList component organizing events by category.</p>
 
                     <GroupedEventList
                         groupedEvents={groupedEvents}
@@ -334,8 +334,8 @@ export default function EventListDemoPage() {
 
                 {/* Empty State Demo */}
                 <section className="mb-16">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Empty State</h3>
-                    <p className="text-gray-600 mb-6">How the list appears when no events are available.</p>
+                    <h3 className="text-2xl font-bold text-foreground mb-6">Empty State</h3>
+                    <p className="text-muted-foreground mb-6">How the list appears when no events are available.</p>
 
                     <EventList
                         events={[]}
@@ -346,12 +346,12 @@ export default function EventListDemoPage() {
                 </section>
 
                 {/* Technical Information */}
-                <section className="bg-blue-50 rounded-lg p-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-4">Technical Implementation</h3>
+                <section className="bg-blue-50 dark:bg-blue-950 rounded-lg p-6">
+                    <h3 className="text-xl font-bold text-foreground mb-4">Technical Implementation</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
                         <div>
-                            <h4 className="font-medium text-gray-800 mb-2">List Styles Available:</h4>
-                            <ul className="list-disc list-inside text-gray-600 space-y-1">
+                            <h4 className="font-medium text-foreground mb-2">List Styles Available:</h4>
+                            <ul className="list-disc list-inside text-muted-foreground space-y-1">
                                 <li><code>grid</code> - Responsive card grid layout (default)</li>
                                 <li><code>preview</code> - Horizontal compact cards</li>
                                 <li><code>full</code> - Detailed view cards with actions</li>
@@ -360,8 +360,8 @@ export default function EventListDemoPage() {
                             </ul>
                         </div>
                         <div>
-                            <h4 className="font-medium text-gray-800 mb-2">Features:</h4>
-                            <ul className="list-disc list-inside text-gray-600 space-y-1">
+                            <h4 className="font-medium text-foreground mb-2">Features:</h4>
+                            <ul className="list-disc list-inside text-muted-foreground space-y-1">
                                 <li>Multiple grid column options (1-4, auto)</li>
                                 <li>Loading states with skeleton animations</li>
                                 <li>Empty state handling with custom messages</li>

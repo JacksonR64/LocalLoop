@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import {
     Elements,
@@ -175,24 +175,24 @@ function PaymentForm({
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium text-foreground">
                         {orderDetails.event.title}
                     </div>
 
                     {orderDetails.ticket_items.map((item, index) => (
-                        <div key={index} className="flex justify-between text-sm">
+                        <div key={index} className="flex justify-between text-sm text-foreground">
                             <span>{item.quantity}x {item.ticket_type_name}</span>
                             <span>{formatPrice(item.total_price)}</span>
                         </div>
                     ))}
 
                     <div className="border-t pt-3 space-y-1">
-                        <div className="flex justify-between text-sm text-gray-600">
+                        <div className="flex justify-between text-sm text-muted-foreground">
                             <span>Subtotal</span>
                             <span>{formatPrice(orderDetails.subtotal)}</span>
                         </div>
                         {orderDetails.fees > 0 && (
-                            <div className="flex justify-between text-sm text-gray-600">
+                            <div className="flex justify-between text-sm text-muted-foreground">
                                 <span>Processing fees</span>
                                 <span>{formatPrice(orderDetails.fees)}</span>
                             </div>
@@ -220,18 +220,18 @@ function PaymentForm({
                                 Email Address *
                             </label>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <input
                                     id="customer-email"
                                     type="email"
                                     value={customerDetails.email}
                                     onChange={(e) => setCustomerDetails(prev => ({ ...prev, email: e.target.value }))}
-                                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full pl-10 pr-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
                                     placeholder="your@email.com"
                                     required
                                 />
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-muted-foreground mt-1">
                                 Your ticket confirmation will be sent to this email
                             </p>
                         </div>
@@ -240,18 +240,18 @@ function PaymentForm({
                                 Full Name *
                             </label>
                             <div className="relative">
-                                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <input
                                     id="customer-name"
                                     type="text"
                                     value={customerDetails.name}
                                     onChange={(e) => setCustomerDetails(prev => ({ ...prev, name: e.target.value }))}
-                                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full pl-10 pr-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
                                     placeholder="Your full name"
                                     required
                                 />
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-muted-foreground mt-1">
                                 Name as it should appear on your ticket
                             </p>
                         </div>
@@ -340,13 +340,13 @@ function PaymentSuccess({
                 <h2 className="text-2xl font-bold text-green-700 mb-2">
                     Payment Successful!
                 </h2>
-                <p className="text-gray-600 mb-6">
+                <p className="text-muted-foreground mb-6">
                     Your tickets have been purchased successfully.
                 </p>
 
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 text-left">
-                    <h3 className="font-semibold text-green-800 mb-2">Order Details</h3>
-                    <div className="space-y-1 text-sm text-green-700">
+                <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6 text-left">
+                    <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">Order Details</h3>
+                    <div className="space-y-1 text-sm text-green-700 dark:text-green-300">
                         <div>Payment ID: {paymentIntentId}</div>
                         <div>Event: {orderDetails.event.title}</div>
                         <div>Total: {formatPrice(orderDetails.amount)}</div>
@@ -358,7 +358,7 @@ function PaymentSuccess({
                     </div>
                 </div>
 
-                <div className="text-sm text-gray-600 mb-6">
+                <div className="text-sm text-muted-foreground mb-6">
                     A confirmation email with your tickets has been sent to your email address.
                     Please save this email as it contains important information for event entry.
                 </div>
@@ -394,11 +394,11 @@ export default function CheckoutForm({
     const [orderDetails, setOrderDetails] = useState<CheckoutResponse | null>(null)
     const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null)
 
-    // Get customer information
-    const customerInfo = {
+    // Get customer information (memoized to prevent infinite re-renders)
+    const customerInfo = useMemo(() => ({
         email: guestInfo?.email || user?.email || '',
         name: guestInfo?.name || user?.user_metadata?.full_name || user?.user_metadata?.name || ''
-    }
+    }), [guestInfo?.email, guestInfo?.name, user?.email, user?.user_metadata?.full_name, user?.user_metadata?.name])
 
     // Create checkout session
     useEffect(() => {
@@ -447,7 +447,7 @@ export default function CheckoutForm({
             }
         }
 
-        if (selectedTickets.length > 0 && customerInfo.email) {
+        if (selectedTickets.length > 0) {
             createCheckoutSession()
         }
     }, [selectedTickets, eventId, customerInfo.email, customerInfo.name])
@@ -465,7 +465,7 @@ export default function CheckoutForm({
             <Card>
                 <CardContent className="flex items-center justify-center py-8">
                     <LoadingSpinner size="lg" />
-                    <span className="ml-3 text-gray-600">Setting up checkout...</span>
+                    <span className="ml-3 text-muted-foreground">Setting up checkout...</span>
                 </CardContent>
             </Card>
         )

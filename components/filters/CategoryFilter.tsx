@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Check, X } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { FilterOption } from '@/lib/types/filters';
+import { FilterButton, FilterDropdown, FilterContainer } from '@/components/ui/FilterButton';
 
 interface CategoryFilterProps {
     selectedCategories: string[];
@@ -57,76 +58,72 @@ export function CategoryFilter({
     };
 
     return (
-        <div ref={dropdownRef} className={`relative ${className}`}>
+        <FilterContainer ref={dropdownRef} className={className}>
             {/* Main Button */}
-            <button
-                type="button"
+            <FilterButton
+                isOpen={isOpen}
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full flex items-center justify-between px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                hasActiveFilter={selectedCategories.length > 0}
+                placeholder={placeholder}
                 aria-expanded={isOpen}
                 aria-haspopup="listbox"
             >
-                <span className={`truncate ${selectedCategories.length === 0 ? 'text-gray-500' : 'text-gray-900'}`}>
-                    {getDisplayText()}
-                </span>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center justify-between w-full">
+                    <span className="truncate text-muted-foreground hover:text-foreground transition-colors">
+                        {getDisplayText()}
+                    </span>
                     {selectedCategories.length > 0 && (
                         <button
                             type="button"
                             onClick={clearSelection}
-                            className="p-0.5 hover:bg-gray-100 rounded"
+                            className="p-0.5 hover:bg-accent rounded ml-2"
                             aria-label="Clear selection"
                         >
-                            <X className="w-3 h-3 text-gray-400" />
+                            <X className="w-3 h-3 text-muted-foreground" />
                         </button>
                     )}
-                    <ChevronDown
-                        className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-                    />
                 </div>
-            </button>
+            </FilterButton>
 
             {/* Dropdown Menu */}
-            {isOpen && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
-                    {availableCategories.length === 0 ? (
-                        <div className="px-3 py-2 text-sm text-gray-500">
-                            No categories available
-                        </div>
-                    ) : (
-                        <div className="py-1">
-                            {availableCategories.map((category) => {
-                                const isSelected = selectedCategories.includes(category.value);
-                                return (
-                                    <button
-                                        key={category.value}
-                                        type="button"
-                                        onClick={() => handleCategoryToggle(category.value)}
-                                        className="w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50"
-                                        role="option"
-                                        aria-selected={isSelected}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-4 h-4 border rounded flex items-center justify-center ${isSelected
-                                                    ? 'bg-blue-600 border-blue-600 text-white'
-                                                    : 'border-gray-300'
-                                                }`}>
-                                                {isSelected && <Check className="w-3 h-3" />}
-                                            </div>
-                                            <span className="text-gray-900">{category.label}</span>
+            <FilterDropdown isOpen={isOpen} className="max-h-60 overflow-auto">
+                {availableCategories.length === 0 ? (
+                    <div className="px-3 py-2 text-sm text-muted-foreground">
+                        No categories available
+                    </div>
+                ) : (
+                    <div className="py-1">
+                        {availableCategories.map((category) => {
+                            const isSelected = selectedCategories.includes(category.value);
+                            return (
+                                <button
+                                    key={category.value}
+                                    type="button"
+                                    onClick={() => handleCategoryToggle(category.value)}
+                                    className="w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-accent focus:outline-none focus:bg-accent"
+                                    role="option"
+                                    aria-selected={isSelected}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-4 h-4 border rounded flex items-center justify-center ${isSelected
+                                            ? 'bg-primary border-primary text-primary-foreground'
+                                            : 'border-border'
+                                            }`}>
+                                            {isSelected && <Check className="w-3 h-3" />}
                                         </div>
-                                        {category.count !== undefined && (
-                                            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                                                {category.count}
-                                            </span>
-                                        )}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-            )}
-        </div>
+                                        <span className="text-foreground">{category.label}</span>
+                                    </div>
+                                    {category.count !== undefined && (
+                                        <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                                            {category.count}
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
+            </FilterDropdown>
+        </FilterContainer>
     );
 } 

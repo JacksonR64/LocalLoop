@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -107,15 +108,15 @@ const nextConfig: NextConfig = {
       : 'http://localhost:3000',
   },
 
-  // Webpack optimizations  
+  // Webpack optimizations for performance
   webpack: (config, { dev, isServer }) => {
     // Handle client-side only libraries
     if (isServer) {
       config.resolve = config.resolve || {}
       config.resolve.fallback = {
         ...config.resolve.fallback,
-        'leaflet': false,
-        'react-leaflet': false,
+        'leaflet': false as any,
+        'react-leaflet': false as any,
         'web-vitals': false,
         '@vercel/analytics': false,
         '@stripe/stripe-js': false,
@@ -136,13 +137,34 @@ const nextConfig: NextConfig = {
       }
     }
 
-    // Simplified production optimizations
+    // Enhanced production optimizations for performance
     if (!dev && !isServer) {
       config.optimization = {
         ...config.optimization,
         sideEffects: false,
+        minimize: true,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
+              maxSize: 244000, // 244KB max chunk size
+            },
+            common: {
+              name: 'common',
+              minChunks: 2,
+              chunks: 'all',
+              maxSize: 244000,
+            },
+          },
+        },
       }
     }
+
+    // Performance optimizations for all builds (removed problematic React aliasing)
+    // Note: React aliasing was causing module resolution issues with jsx-runtime
 
     // Bundle analyzer in development (optional)
     if (dev && process.env.ANALYZE === 'true') {
@@ -156,6 +178,32 @@ const nextConfig: NextConfig = {
     }
 
     return config;
+  },
+
+  // Experimental features for performance
+  experimental: {
+    optimizePackageImports: [
+      'lucide-react',
+      '@radix-ui/react-select',
+      '@radix-ui/react-checkbox',
+      '@radix-ui/react-label',
+      '@radix-ui/react-switch',
+      '@radix-ui/react-tabs',
+    ],
+  },
+
+  // Turbopack configuration - properly typed resolveAlias
+  turbopack: {
+    resolveAlias: {
+      // Use empty modules instead of false for proper typing
+      'react-leaflet': require.resolve('./lib/utils/empty-module.js'),
+      'leaflet': require.resolve('./lib/utils/empty-module.js'),
+      // Additional client-side only libraries
+      'web-vitals': require.resolve('./lib/utils/empty-module.js'),
+      '@vercel/analytics': require.resolve('./lib/utils/empty-module.js'),
+      '@stripe/stripe-js': require.resolve('./lib/utils/empty-module.js'),
+      '@stripe/react-stripe-js': require.resolve('./lib/utils/empty-module.js'),
+    },
   },
 };
 

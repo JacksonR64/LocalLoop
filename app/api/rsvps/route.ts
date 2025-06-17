@@ -3,6 +3,43 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { sendRSVPConfirmationEmail } from '@/lib/email-service'
 import { z } from 'zod'
 
+// Performance optimization: Simple in-memory cache for RSVP checks (5 minutes)
+interface RsvpCacheData {
+    hasRSVP?: boolean;
+    rsvp?: {
+        id: string;
+        event_id: string;
+        user_id?: string;
+        status: string;
+        created_at: string;
+        events?: {
+            id: string;
+            title: string;
+            start_time: string;
+            end_time: string;
+            location?: string;
+            image_url?: string;
+        }[];
+    } | null;
+    rsvps?: Array<{
+        id: string;
+        event_id: string;
+        status: string;
+        created_at: string;
+        notes?: string;
+        events?: {
+            id: string;
+            title: string;
+            start_time: string;
+            end_time: string;
+            location?: string;
+            image_url?: string;
+        }[];
+    }>;
+}
+const rsvpCache = new Map<string, { data: RsvpCacheData; timestamp: number }>()
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+
 // RSVP creation schema
 const rsvpSchema = z.object({
     event_id: z.string().min(1, 'Event ID is required'),
@@ -25,6 +62,7 @@ const rsvpSchema = z.object({
 export async function GET(request: NextRequest) {
     try {
         const supabase = await createServerSupabaseClient()
+
         const { data: { user } } = await supabase.auth.getUser()
 
         if (!user) {
@@ -48,10 +86,22 @@ export async function GET(request: NextRequest) {
                 )
             }
 
+            // Check cache first
+            const cacheKey = `rsvp:${eventId}:${userId}`
+            const cached = rsvpCache.get(cacheKey)
+            if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+                return NextResponse.json(cached.data)
+            }
+
+            // Optimize: Use more specific query
             const { data: rsvp, error } = await supabase
                 .from('rsvps')
                 .select(`
-                    *,
+                    id,
+                    event_id,
+                    user_id,
+                    status,
+                    created_at,
                     events:event_id (
                         id,
                         title,
@@ -74,17 +124,26 @@ export async function GET(request: NextRequest) {
                 )
             }
 
-            return NextResponse.json({
+            const result = {
                 hasRSVP: !!rsvp,
                 rsvp: rsvp || null
-            })
+            }
+
+            // Cache the result
+            rsvpCache.set(cacheKey, { data: result, timestamp: Date.now() })
+
+            return NextResponse.json(result)
         }
 
-        // Default behavior: get all RSVPs for current user
+        // Default behavior: get all RSVPs for current user with optimization
         const { data: rsvps, error } = await supabase
             .from('rsvps')
             .select(`
-                *,
+                id,
+                event_id,
+                status,
+                created_at,
+                notes,
                 events:event_id (
                     id,
                     title,
@@ -97,6 +156,7 @@ export async function GET(request: NextRequest) {
             .eq('user_id', user.id)
             .eq('status', 'confirmed')
             .order('created_at', { ascending: false })
+            .limit(50) // Limit results for performance
 
         if (error) {
             console.error('Error fetching RSVPs:', error)
@@ -157,7 +217,7 @@ export async function POST(request: NextRequest) {
                 status: 'confirmed' as const,
             }
 
-        // Check if event exists and is open for registration
+        // Check if event exists and is open for registration with optimized query
         const { data: event, error: eventError } = await supabase
             .from('events')
             .select(`
@@ -198,7 +258,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Get current RSVP count from the rsvps table
-        const { count: currentRSVPs, error: countError } = await supabase
+        const { count: currentRsvpCount, error: countError } = await supabase
             .from('rsvps')
             .select('*', { count: 'exact', head: true })
             .eq('event_id', rsvpData.event_id)
@@ -212,28 +272,38 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Check if event is at capacity
-        if (event.capacity && currentRSVPs !== null && currentRSVPs >= event.capacity) {
+        // Check capacity if event has a limit
+        if (event.capacity && currentRsvpCount !== null && currentRsvpCount >= event.capacity) {
             return NextResponse.json(
                 { error: 'Event is at full capacity' },
                 { status: 400 }
             )
         }
 
-        // Check for existing RSVP to prevent duplicates
-        let existingRsvpQuery = supabase
-            .from('rsvps')
-            .select('id')
-            .eq('event_id', rsvpData.event_id)
-            .eq('status', 'confirmed')
+        // Check if user/guest already has an RSVP for this event
+        const existingRsvpQuery = user
+            ? supabase
+                .from('rsvps')
+                .select('id')
+                .eq('event_id', rsvpData.event_id)
+                .eq('user_id', user.id)
+                .eq('status', 'confirmed')
+            : supabase
+                .from('rsvps')
+                .select('id')
+                .eq('event_id', rsvpData.event_id)
+                .eq('guest_email', rsvpData.guest_email!)
+                .eq('status', 'confirmed')
 
-        if (user) {
-            existingRsvpQuery = existingRsvpQuery.eq('user_id', user.id)
-        } else {
-            existingRsvpQuery = existingRsvpQuery.eq('guest_email', rsvpData.guest_email!)
+        const { data: existingRsvp, error: existingError } = await existingRsvpQuery.maybeSingle()
+
+        if (existingError) {
+            console.error('Error checking existing RSVP:', existingError)
+            return NextResponse.json(
+                { error: 'Failed to check existing RSVP' },
+                { status: 500 }
+            )
         }
-
-        const { data: existingRsvp } = await existingRsvpQuery.single()
 
         if (existingRsvp) {
             return NextResponse.json(
@@ -243,25 +313,34 @@ export async function POST(request: NextRequest) {
         }
 
         // Create the RSVP
-        const { data: newRsvp, error: rsvpError } = await supabase
+        const { data: newRsvp, error: createError } = await supabase
             .from('rsvps')
             .insert(finalRsvpData)
             .select()
             .single()
 
-        if (rsvpError) {
-            console.error('Error creating RSVP:', rsvpError)
+        if (createError) {
+            console.error('Error creating RSVP:', createError)
             return NextResponse.json(
                 { error: 'Failed to create RSVP' },
                 { status: 500 }
             )
         }
 
-        // Send confirmation email
-        try {
-            const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || rsvpData.guest_name!
-            const userEmail = user?.email || rsvpData.guest_email!
+        // Clear cache for this event/user combination
+        if (user) {
+            const cacheKey = `rsvp:${rsvpData.event_id}:${user.id}`
+            rsvpCache.delete(cacheKey)
+        }
 
+        // Send confirmation email (non-blocking for performance)
+        const emailRecipient = user ? user.email : rsvpData.guest_email!
+        const recipientName = user
+            ? (user.user_metadata?.display_name || user.email?.split('@')[0] || 'Guest')
+            : rsvpData.guest_name!
+
+        // Send confirmation email (async, don't block response)
+        if (emailRecipient) {
             // Handle organizer data from Supabase join
             const organizer = Array.isArray(event.users) ? event.users[0] : event.users
             const organizerData = organizer as { id: string; email: string; display_name: string } | null
@@ -291,10 +370,11 @@ export async function POST(request: NextRequest) {
                     hour12: true
                 })
 
-            const emailResult = await sendRSVPConfirmationEmail({
-                to: userEmail,
-                userName,
-                userEmail,
+            // Don't await email sending to improve response time
+            sendRSVPConfirmationEmail({
+                to: emailRecipient,
+                userName: recipientName,
+                userEmail: emailRecipient,
                 eventTitle: event.title,
                 eventDescription: event.description || 'No description provided',
                 eventDate,
@@ -304,25 +384,14 @@ export async function POST(request: NextRequest) {
                 organizerName: organizerData?.display_name || 'Event Organizer',
                 organizerEmail: organizerData?.email || 'organizer@localloop.app',
                 rsvpId: newRsvp.id,
-                guestCount: 1, // Default to 1, can be enhanced later for multiple guests
+                guestCount: 1,
                 isAuthenticated: !!user,
                 eventSlug: event.slug,
                 cancellationDeadline
+            }).catch(error => {
+                console.error('Failed to send RSVP confirmation email:', error)
             })
-
-            if (!emailResult.success) {
-                console.warn('Failed to send confirmation email:', emailResult.error)
-                // Don't fail the RSVP creation if email fails - just log it
-            } else {
-                console.log('Confirmation email sent successfully:', emailResult.messageId)
-            }
-
-        } catch (emailError) {
-            console.error('Error sending confirmation email:', emailError)
-            // Don't fail the RSVP creation if email fails
         }
-
-        // TODO: Add to Google Calendar if opted in
 
         return NextResponse.json({
             message: 'RSVP created successfully',
@@ -331,6 +400,67 @@ export async function POST(request: NextRequest) {
 
     } catch (error) {
         console.error('Unexpected error in POST /api/rsvps:', error)
+        return NextResponse.json(
+            { error: 'Internal server error' },
+            { status: 500 }
+        )
+    }
+}
+
+// DELETE /api/rsvps - Cancel RSVP
+export async function DELETE(request: NextRequest) {
+    try {
+        const supabase = await createServerSupabaseClient()
+
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (!user) {
+            return NextResponse.json(
+                { error: 'Authentication required' },
+                { status: 401 }
+            )
+        }
+
+        const { searchParams } = new URL(request.url)
+        const eventId = searchParams.get('eventId')
+
+        if (!eventId) {
+            return NextResponse.json(
+                { error: 'Event ID is required' },
+                { status: 400 }
+            )
+        }
+
+        // Find and delete the RSVP
+        const { data: deletedRsvp, error } = await supabase
+            .from('rsvps')
+            .delete()
+            .eq('event_id', eventId)
+            .eq('user_id', user.id)
+            .eq('status', 'confirmed')
+            .select()
+            .single()
+
+        if (error) {
+            console.error('Error deleting RSVP:', error)
+            return NextResponse.json(
+                { error: 'Failed to cancel RSVP' },
+                { status: 500 }
+            )
+        }
+
+        // Clear cache for this event/user combination
+        const cacheKey = `rsvp:${eventId}:${user.id}`
+        rsvpCache.delete(cacheKey)
+
+        return NextResponse.json({
+            message: 'RSVP cancelled successfully',
+            rsvp: deletedRsvp
+        })
+
+    } catch (error) {
+        console.error('Unexpected error in DELETE /api/rsvps:', error)
         return NextResponse.json(
             { error: 'Internal server error' },
             { status: 500 }

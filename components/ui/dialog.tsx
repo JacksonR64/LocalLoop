@@ -41,7 +41,7 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
                 {/* Close button */}
                 <button
                     onClick={() => onOpenChange(false)}
-                    className="absolute -top-2 -right-2 bg-white hover:bg-gray-100 text-gray-900 p-1 rounded-full shadow-lg transition-all duration-200 z-10"
+                    className="absolute -top-2 -right-2 bg-background hover:bg-accent text-foreground p-1 rounded-full shadow-lg transition-all duration-200 z-10"
                     aria-label="Close dialog"
                 >
                     <X className="w-4 h-4" />
@@ -54,7 +54,7 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
 
 export function DialogContent({ children, className = '' }: DialogContentProps) {
     return (
-        <div className={`bg-white rounded-lg shadow-xl max-w-md max-h-[90vh] overflow-y-auto ${className}`}>
+        <div className={`bg-background rounded-lg shadow-xl max-w-md max-h-[90vh] overflow-y-auto ${className}`}>
             {children}
         </div>
     );
@@ -62,7 +62,7 @@ export function DialogContent({ children, className = '' }: DialogContentProps) 
 
 export function DialogHeader({ children, className = '' }: DialogHeaderProps) {
     return (
-        <div className={`px-6 py-4 border-b border-gray-200 ${className}`}>
+        <div className={`px-6 py-4 border-b border-border ${className}`}>
             {children}
         </div>
     );
@@ -70,7 +70,7 @@ export function DialogHeader({ children, className = '' }: DialogHeaderProps) {
 
 export function DialogTitle({ children, className = '' }: DialogTitleProps) {
     return (
-        <h2 className={`text-lg font-semibold text-gray-900 ${className}`}>
+        <h2 className={`text-lg font-semibold text-foreground ${className}`}>
             {children}
         </h2>
     );
@@ -78,7 +78,7 @@ export function DialogTitle({ children, className = '' }: DialogTitleProps) {
 
 export function DialogDescription({ children, className = '' }: DialogDescriptionProps) {
     return (
-        <p className={`text-sm text-gray-600 mt-1 ${className}`}>
+        <p className={`text-sm text-muted-foreground mt-1 ${className}`}>
             {children}
         </p>
     );
@@ -86,7 +86,7 @@ export function DialogDescription({ children, className = '' }: DialogDescriptio
 
 export function DialogFooter({ children, className = '' }: DialogFooterProps) {
     return (
-        <div className={`px-6 py-4 border-t border-gray-200 flex justify-end ${className}`}>
+        <div className={`px-6 py-4 border-t border-border flex justify-end ${className}`}>
             {children}
         </div>
     );

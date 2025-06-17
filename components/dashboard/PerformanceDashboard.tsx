@@ -62,7 +62,7 @@ export function PerformanceDashboard() {
             case 'good': return 'bg-green-100 text-green-800 border-green-200'
             case 'needs-improvement': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
             case 'poor': return 'bg-red-100 text-red-800 border-red-200'
-            default: return 'bg-gray-100 text-gray-800 border-gray-200'
+            default: return 'bg-muted text-muted-foreground border-border'
         }
     }
 
@@ -106,13 +106,13 @@ export function PerformanceDashboard() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Performance Dashboard</h1>
-                    <p className="text-gray-600 mt-1">
+                    <h1 className="text-3xl font-bold text-foreground">Performance Dashboard</h1>
+                    <p className="text-muted-foreground mt-1">
                         Real-time performance metrics and Core Web Vitals
                     </p>
                 </div>
                 <div className="flex items-center gap-4">
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-muted-foreground">
                         Last updated: {lastUpdate.toLocaleTimeString()}
                     </div>
                     <Button
@@ -145,7 +145,7 @@ export function PerformanceDashboard() {
                         <Badge className={getRatingColor(health.status)}>
                             {health.status.toUpperCase()}
                         </Badge>
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-muted-foreground">
                             {coreWebVitals.filter(m => m.rating === 'good').length} of {coreWebVitals.length} metrics performing well
                         </span>
                     </div>
@@ -154,7 +154,7 @@ export function PerformanceDashboard() {
 
             {/* Core Web Vitals */}
             <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Core Web Vitals</h2>
+                <h2 className="text-xl font-semibold text-foreground mb-4">Core Web Vitals</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     {coreWebVitals.map((metric) => (
                         <Card key={metric.name}>
@@ -172,7 +172,7 @@ export function PerformanceDashboard() {
                                     <Badge className={getRatingColor(metric.rating)}>
                                         {metric.rating}
                                     </Badge>
-                                    <div className="text-xs text-gray-500">
+                                    <div className="text-xs text-muted-foreground">
                                         {metric.count} samples
                                     </div>
                                 </div>
@@ -185,7 +185,7 @@ export function PerformanceDashboard() {
             {/* API Performance */}
             {apiMetrics.length > 0 && (
                 <div>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-4">API Performance</h2>
+                    <h2 className="text-xl font-semibold text-foreground mb-4">API Performance</h2>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         {apiMetrics.slice(0, 6).map((metric) => (
                             <Card key={metric.name}>
@@ -201,7 +201,7 @@ export function PerformanceDashboard() {
                                             <div className="text-lg font-semibold">
                                                 {Math.round(metric.average)}ms
                                             </div>
-                                            <div className="text-xs text-gray-500">
+                                            <div className="text-xs text-muted-foreground">
                                                 avg from {metric.count} calls
                                             </div>
                                         </div>
@@ -223,7 +223,7 @@ export function PerformanceDashboard() {
 
             {/* Recent Metrics */}
             <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
+                <h2 className="text-xl font-semibold text-foreground mb-4">Recent Activity</h2>
                 <Card>
                     <CardHeader>
                         <CardTitle>Latest Performance Events</CardTitle>
@@ -236,14 +236,14 @@ export function PerformanceDashboard() {
                             {metrics.slice(0, 10).map((metric) => (
                                 <div
                                     key={metric.id}
-                                    className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
+                                    className="flex items-center justify-between py-2 border-b border-border last:border-0"
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className="flex flex-col">
                                             <span className="font-medium text-sm">
                                                 {metric.metric_name}
                                             </span>
-                                            <span className="text-xs text-gray-500">
+                                            <span className="text-xs text-muted-foreground">
                                                 {metric.metric_type}
                                             </span>
                                         </div>
@@ -257,14 +257,14 @@ export function PerformanceDashboard() {
                                                 {metric.rating}
                                             </Badge>
                                         )}
-                                        <span className="text-xs text-gray-500">
+                                        <span className="text-xs text-muted-foreground">
                                             {new Date(metric.created_at).toLocaleTimeString()}
                                         </span>
                                     </div>
                                 </div>
                             ))}
                             {metrics.length === 0 && !loading && (
-                                <div className="text-center py-8 text-gray-500">
+                                <div className="text-center py-8 text-muted-foreground">
                                     No performance metrics available yet
                                 </div>
                             )}

@@ -103,10 +103,19 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
             const supabase = createClient();
 
             try {
-                const { data: { user: currentUser } } = await supabase.auth.getUser();
+                const { data: { user: currentUser }, error } = await supabase.auth.getUser();
+
+                // Only log actual errors, not missing sessions
+                if (error && error.message !== 'Auth session missing!') {
+                    console.error('Auth error:', error);
+                }
+
                 setUser(currentUser);
             } catch (error) {
-                console.error('Error checking authentication:', error);
+                // Only log unexpected errors, not auth session missing errors
+                if (error instanceof Error && !error.message.includes('Auth session missing')) {
+                    console.error('Error checking authentication:', error);
+                }
             } finally {
                 setLoading(false);
             }
@@ -240,7 +249,7 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
 
             <CardContent className="space-y-6">
                 {/* Event Summary */}
-                <div className="bg-gray-50 p-4 rounded-lg space-y-2" data-test-id="event-summary">
+                <div className="bg-muted p-4 rounded-lg space-y-2" data-test-id="event-summary">
                     <h3 className="font-medium text-lg" data-test-id="event-title">{eventTitle}</h3>
                     <div className="space-y-1 text-sm text-gray-600">
                         <div className="flex items-center gap-2" data-test-id="event-date">

@@ -222,7 +222,7 @@ function TimelineList({ events, className, onEventClick }: {
                 <div key={event.id} className="relative">
                     {/* Timeline connector line */}
                     {index < sortedEvents.length - 1 && (
-                        <div className="absolute left-8 top-20 w-0.5 h-8 bg-gray-200" />
+                        <div className="absolute left-8 top-20 w-0.5 h-8 bg-border" />
                     )}
 
                     <EventCard
@@ -260,14 +260,14 @@ function LoadingState({ style, count, gridColumns, className }: {
             <div className={`grid ${getGridClasses()} gap-6 ${className}`}>
                 {skeletonItems.map((i) => (
                     <Card key={i} className="animate-pulse">
-                        <div className="h-48 bg-gray-200 rounded-t-lg" />
+                        <div className="h-48 bg-muted rounded-t-lg" />
                         <CardContent className="p-4">
-                            <div className="h-4 bg-gray-200 rounded mb-2" />
-                            <div className="h-3 bg-gray-200 rounded mb-4 w-3/4" />
+                            <div className="h-4 bg-muted rounded mb-2" />
+                            <div className="h-3 bg-muted rounded mb-4 w-3/4" />
                             <div className="space-y-2">
-                                <div className="h-3 bg-gray-200 rounded w-full" />
-                                <div className="h-3 bg-gray-200 rounded w-2/3" />
-                                <div className="h-3 bg-gray-200 rounded w-1/2" />
+                                <div className="h-3 bg-muted rounded w-full" />
+                                <div className="h-3 bg-muted rounded w-2/3" />
+                                <div className="h-3 bg-muted rounded w-1/2" />
                             </div>
                         </CardContent>
                     </Card>
@@ -283,11 +283,11 @@ function LoadingState({ style, count, gridColumns, className }: {
                 <Card key={i} className="animate-pulse">
                     <CardContent className="p-4">
                         <div className="flex gap-4">
-                            <div className="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0" />
+                            <div className="w-20 h-20 bg-muted rounded-lg flex-shrink-0" />
                             <div className="flex-1">
-                                <div className="h-4 bg-gray-200 rounded mb-2" />
-                                <div className="h-3 bg-gray-200 rounded mb-2 w-3/4" />
-                                <div className="h-3 bg-gray-200 rounded w-1/2" />
+                                <div className="h-4 bg-muted rounded mb-2" />
+                                <div className="h-3 bg-muted rounded mb-2 w-3/4" />
+                                <div className="h-3 bg-muted rounded w-1/2" />
                             </div>
                         </div>
                     </CardContent>
@@ -305,13 +305,13 @@ function EmptyState({ message, className }: {
     return (
         <Card className={`${className}`}>
             <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                    <svg className="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                 </div>
-                <p className="text-gray-500 text-lg mb-2">{message}</p>
-                <p className="text-gray-400 text-sm">Try adjusting your filters or search terms</p>
+                <p className="text-muted-foreground text-lg mb-2">{message}</p>
+                <p className="text-muted-foreground text-sm">Try adjusting your filters or search terms</p>
             </CardContent>
         </Card>
     );
@@ -340,17 +340,17 @@ export function EventListWithHeader({
                 <div className="flex items-center justify-between">
                     <div>
                         {title && (
-                            <h2 className="text-2xl font-bold text-gray-900">
+                            <h2 className="text-2xl font-bold text-foreground">
                                 {title}
                                 {showCount && events.length > 0 && (
-                                    <span className="ml-2 text-base font-normal text-gray-500">
+                                    <span className="ml-2 text-base font-normal text-muted-foreground">
                                         ({events.length} event{events.length !== 1 ? 's' : ''})
                                     </span>
                                 )}
                             </h2>
                         )}
                         {subtitle && (
-                            <p className="text-gray-600 mt-1">{subtitle}</p>
+                            <p className="text-muted-foreground mt-1">{subtitle}</p>
                         )}
                     </div>
                     {headerActions && (
@@ -391,7 +391,7 @@ export function GroupedEventList({
                 return (
                     <div key={groupKey} className="space-y-4">
                         {showGroupHeaders && (
-                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+                            <h3 className="text-lg font-semibold text-foreground border-b border-border pb-2">
                                 {groupKey} ({groupEvents.length})
                             </h3>
                         )}

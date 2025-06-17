@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { Navigation } from '@/components/ui/Navigation'
 import StaffEventCreateClient from './StaffEventCreateClient'
 
 export default async function StaffEventCreatePage() {
@@ -24,18 +23,14 @@ export default async function StaffEventCreatePage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <Navigation />
-            {/* Main Content */}
-            <main className="py-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="mb-6">
-                        <h1 className="text-3xl font-bold text-gray-900">Create New Event</h1>
-                        <p className="mt-2 text-gray-600">Create and manage your event details</p>
-                    </div>
-                    <StaffEventCreateClient />
+        <div className="min-h-screen bg-background">
+            <div className="max-w-4xl mx-auto py-8 px-4">
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold text-foreground">Create New Event</h1>
+                    <p className="mt-2 text-muted-foreground">Create and manage your event details</p>
                 </div>
-            </main>
+                <StaffEventCreateClient />
+            </div>
         </div>
     )
 } 

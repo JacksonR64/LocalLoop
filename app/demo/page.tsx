@@ -98,16 +98,16 @@ export default function DemoPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-background">
             {/* Header */}
-            <header className="bg-white shadow-sm border-b">
+            <header className="bg-card shadow-sm border-b">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 rounded-lg flex items-center justify-center">
                                 <Calendar className="w-5 h-5 text-white" />
                             </div>
-                            <h1 className="text-xl font-bold text-gray-900">LocalLoop - Card Demo</h1>
+                            <h1 className="text-xl font-bold text-foreground">LocalLoop - Card Demo</h1>
                         </div>
                         <Link href="/" className="text-blue-600 hover:text-blue-800">← Back to Home</Link>
                     </div>
@@ -116,19 +116,19 @@ export default function DemoPage() {
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="mb-8">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-4">Event Card Component Showcase</h2>
-                    <p className="text-gray-600">
+                    <h2 className="text-3xl font-bold text-foreground mb-4">Event Card Component Showcase</h2>
+                    <p className="text-muted-foreground">
                         Demonstrating the different styles and variations of the EventCard component as implemented for Task 5.2.
                     </p>
                 </div>
 
                 {/* Default Style */}
                 <section className="mb-16">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Default Style</h3>
-                    <p className="text-gray-600 mb-6">Standard card layout with different sizes for general use.</p>
+                    <h3 className="text-2xl font-bold text-foreground mb-6">Default Style</h3>
+                    <p className="text-muted-foreground mb-6">Standard card layout with different sizes for general use.</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div>
-                            <h4 className="text-sm font-medium text-gray-700 mb-3">Small (sm)</h4>
+                            <h4 className="text-sm font-medium text-muted-foreground mb-3">Small (sm)</h4>
                             <EventCard
                                 event={demoEvents[0]}
                                 style="default"
@@ -137,7 +137,7 @@ export default function DemoPage() {
                             />
                         </div>
                         <div>
-                            <h4 className="text-sm font-medium text-gray-700 mb-3">Medium (md)</h4>
+                            <h4 className="text-sm font-medium text-muted-foreground mb-3">Medium (md)</h4>
                             <EventCard
                                 event={demoEvents[1]}
                                 style="default"
@@ -146,7 +146,7 @@ export default function DemoPage() {
                             />
                         </div>
                         <div>
-                            <h4 className="text-sm font-medium text-gray-700 mb-3">Large (lg) - Featured</h4>
+                            <h4 className="text-sm font-medium text-muted-foreground mb-3">Large (lg) - Featured</h4>
                             <EventCard
                                 event={demoEvents[2]}
                                 style="default"
@@ -160,8 +160,8 @@ export default function DemoPage() {
 
                 {/* Preview List Style */}
                 <section className="mb-16">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Preview List Style</h3>
-                    <p className="text-gray-600 mb-6">Compact horizontal layout for list views with essential information.</p>
+                    <h3 className="text-2xl font-bold text-foreground mb-6">Preview List Style</h3>
+                    <p className="text-muted-foreground mb-6">Compact horizontal layout for list views with essential information.</p>
                     <div className="space-y-4 max-w-4xl">
                         {demoEvents.slice(0, 3).map((event) => (
                             <EventCard
@@ -176,8 +176,8 @@ export default function DemoPage() {
 
                 {/* Full List Style */}
                 <section className="mb-16">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Full List Style</h3>
-                    <p className="text-gray-600 mb-6">Detailed view with comprehensive information and action buttons.</p>
+                    <h3 className="text-2xl font-bold text-foreground mb-6">Full List Style</h3>
+                    <p className="text-muted-foreground mb-6">Detailed view with comprehensive information and action buttons.</p>
                     <div className="space-y-8">
                         {demoEvents.slice(0, 2).map((event) => (
                             <EventCard
@@ -192,8 +192,8 @@ export default function DemoPage() {
 
                 {/* Compact Style */}
                 <section className="mb-16">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Compact Style</h3>
-                    <p className="text-gray-600 mb-6">Minimal information for dense layouts and sidebars.</p>
+                    <h3 className="text-2xl font-bold text-foreground mb-6">Compact Style</h3>
+                    <p className="text-muted-foreground mb-6">Minimal information for dense layouts and sidebars.</p>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-4xl">
                         {demoEvents.map((event) => (
                             <EventCard
@@ -208,8 +208,8 @@ export default function DemoPage() {
 
                 {/* Timeline Style */}
                 <section className="mb-16">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Timeline Style</h3>
-                    <p className="text-gray-600 mb-6">Vertical timeline layout with date circles for chronological displays.</p>
+                    <h3 className="text-2xl font-bold text-foreground mb-6">Timeline Style</h3>
+                    <p className="text-muted-foreground mb-6">Vertical timeline layout with date circles for chronological displays.</p>
                     <div className="space-y-4 max-w-3xl">
                         {demoEvents.map((event) => (
                             <EventCard
@@ -224,12 +224,12 @@ export default function DemoPage() {
 
                 {/* Features Demonstration */}
                 <section className="mb-16">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Special Features</h3>
-                    <p className="text-gray-600 mb-6">Demonstrating special features like image support, pricing, and status indicators.</p>
+                    <h3 className="text-2xl font-bold text-foreground mb-6">Special Features</h3>
+                    <p className="text-muted-foreground mb-6">Demonstrating special features like image support, pricing, and status indicators.</p>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <div>
-                            <h4 className="text-lg font-medium text-gray-800 mb-4">With Images & Media</h4>
+                            <h4 className="text-lg font-medium text-foreground mb-4">With Images & Media</h4>
                             <EventCard
                                 event={demoEvents[0]}
                                 style="default"
@@ -240,7 +240,7 @@ export default function DemoPage() {
                         </div>
 
                         <div>
-                            <h4 className="text-lg font-medium text-gray-800 mb-4">Without Images</h4>
+                            <h4 className="text-lg font-medium text-foreground mb-4">Without Images</h4>
                             <EventCard
                                 event={demoEvents[1]}
                                 style="default"
@@ -253,12 +253,12 @@ export default function DemoPage() {
                 </section>
 
                 {/* Technical Information */}
-                <section className="bg-blue-50 rounded-lg p-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-4">Technical Implementation</h3>
+                <section className="bg-blue-50 dark:bg-blue-950 rounded-lg p-6">
+                    <h3 className="text-xl font-bold text-foreground mb-4">Technical Implementation</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
                         <div>
-                            <h4 className="font-medium text-gray-800 mb-2">Card Styles Available:</h4>
-                            <ul className="list-disc list-inside text-gray-600 space-y-1">
+                            <h4 className="font-medium text-foreground mb-2">Card Styles Available:</h4>
+                            <ul className="list-disc list-inside text-muted-foreground space-y-1">
                                 <li><code>default</code> - Standard card layout</li>
                                 <li><code>preview</code> - Horizontal compact layout</li>
                                 <li><code>full</code> - Detailed view with actions</li>
@@ -267,8 +267,8 @@ export default function DemoPage() {
                             </ul>
                         </div>
                         <div>
-                            <h4 className="font-medium text-gray-800 mb-2">Features:</h4>
-                            <ul className="list-disc list-inside text-gray-600 space-y-1">
+                            <h4 className="font-medium text-foreground mb-2">Features:</h4>
+                            <ul className="list-disc list-inside text-muted-foreground space-y-1">
                                 <li>Multiple size variants (sm, md, lg)</li>
                                 <li>Image support with fallback handling</li>
                                 <li>Pricing display for paid events</li>

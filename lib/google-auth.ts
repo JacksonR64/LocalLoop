@@ -173,8 +173,6 @@ export class GoogleCalendarAuth {
      */
     async getUserTokens(userId: string): Promise<GoogleCalendarTokens | null> {
         try {
-            console.log('[DEBUG] getUserTokens - Starting token retrieval for user:', userId)
-
             const supabaseServer = await createServerSupabaseClient()
 
             const { data, error } = await supabaseServer
@@ -183,20 +181,7 @@ export class GoogleCalendarAuth {
                 .eq('id', userId)
                 .single()
 
-            console.log('[DEBUG] getUserTokens - Database query result:', {
-                hasData: !!data,
-                hasError: !!error,
-                hasToken: !!data?.google_calendar_token,
-                isConnected: data?.google_calendar_connected,
-                expiresAt: data?.google_calendar_expires_at,
-                error: error?.message
-            })
-
             if (error || !data?.google_calendar_token || !data.google_calendar_connected) {
-                console.log('[DEBUG] getUserTokens - Token retrieval failed:', {
-                    reason: error ? 'database_error' : !data?.google_calendar_token ? 'no_token' : 'not_connected',
-                    error: error?.message
-                })
                 return null
             }
 
@@ -337,8 +322,8 @@ export class GoogleCalendarAuth {
             return service
         } catch (error) {
             console.error('Error getting user calendar service:', error)
-            // If there's an error, disconnect the user's calendar
-            await this.disconnectUserCalendar(userId)
+            // Don't auto-disconnect on errors - let user manually disconnect if needed
+            // Common causes: expired refresh tokens, revoked access, OAuth config changes
             return null
         }
     }
@@ -358,7 +343,6 @@ export class GoogleCalendarAuth {
                     google_calendar_connected: false,
                     google_calendar_connected_at: null,
                     google_calendar_expires_at: null,
-                    google_calendar_sync_enabled: false,
                     updated_at: new Date().toISOString(),
                 })
                 .eq('id', userId)
@@ -461,22 +445,12 @@ export class GoogleCalendarAuth {
      * @param userId - Supabase user ID
      * @param enabled - Whether to enable sync
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async setSyncEnabled(userId: string, enabled: boolean): Promise<void> {
         try {
-            const supabaseServer = await createServerSupabaseClient()
-
-            const { error } = await supabaseServer
-                .from('users')
-                .update({
-                    google_calendar_sync_enabled: enabled,
-                    updated_at: new Date().toISOString(),
-                })
-                .eq('id', userId)
-
-            if (error) {
-                console.error('Error updating Google Calendar sync setting:', error)
-                throw new Error('Failed to update sync setting')
-            }
+            // Note: google_calendar_sync_enabled column doesn't exist yet
+            // This method is a placeholder for future implementation
+            console.warn('setSyncEnabled: google_calendar_sync_enabled column not implemented yet')
         } catch (error) {
             console.error('Error in setSyncEnabled:', error)
             throw error
@@ -506,7 +480,7 @@ export class GoogleCalendarAuth {
             if (!calendarService) {
                 return {
                     success: false,
-                    error: 'Google Calendar not connected. Please connect your calendar first.',
+                    error: 'Google Calendar access expired or invalid. Please reconnect your calendar.',
                 }
             }
 

@@ -53,21 +53,21 @@ export function ProfileDropdown() {
       {/* Profile Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg transition-colors"
+        className="flex items-center gap-2 bg-muted hover:bg-accent px-3 py-2 rounded-lg transition-colors"
       >
-        <User className="w-4 h-4 text-gray-600" />
-        <span className="text-sm font-medium text-gray-700">{getUserDisplayName()}</span>
-        <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <User className="w-4 h-4 text-muted-foreground" />
+        <span className="text-sm font-medium text-foreground">{getUserDisplayName()}</span>
+        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-          <div className="px-4 py-2 border-b border-gray-100">
-            <p className="text-sm font-medium text-gray-900">{getUserDisplayName()}</p>
-            <p className="text-xs text-gray-500">{user.email}</p>
+        <div className="absolute right-0 mt-2 w-56 bg-card rounded-lg shadow-lg border border-border py-2 z-50">
+          <div className="px-4 py-2 border-b border-border">
+            <p className="text-sm font-medium text-foreground truncate">{getUserDisplayName()}</p>
+            <p className="text-xs text-muted-foreground truncate" title={user.email}>{user.email}</p>
             {userProfile?.role && (
-              <p className="text-xs text-blue-600 capitalize font-medium mt-1">
+              <p className="text-xs text-primary capitalize font-medium mt-1">
                 {userProfile.role}
               </p>
             )}
@@ -77,7 +77,7 @@ export function ProfileDropdown() {
           <Link
             href="/my-events"
             onClick={() => setIsOpen(false)}
-            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors"
           >
             <Calendar className="w-4 h-4" />
             My Events
@@ -88,18 +88,18 @@ export function ProfileDropdown() {
             <Link
               href="/staff"
               onClick={() => setIsOpen(false)}
-              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors"
             >
               {isAdmin ? <Settings className="w-4 h-4" /> : <BarChart3 className="w-4 h-4" />}
               {isAdmin ? 'Admin Dashboard' : 'Staff Dashboard'}
             </Link>
           )}
 
-          <div className="border-t border-gray-100 my-1" />
+          <div className="border-t border-border my-1" />
 
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors"
           >
             <LogOut className="w-4 h-4" />
             Sign Out

@@ -7,6 +7,7 @@ import { Calendar, Menu, X } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { useAuth as useAuthHook } from '@/lib/hooks/useAuth'
 import { ProfileDropdown } from '@/components/auth/ProfileDropdown'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 interface NavigationProps {
     className?: string
@@ -33,47 +34,61 @@ export function Navigation({
     }
 
     return (
-        <header className={`bg-white shadow-sm border-b sticky top-0 z-50 ${className}`}>
+        <header className={`bg-card shadow-sm border-b border-border sticky top-0 z-50 ${className}`} data-test-id="homepage-header">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Left side - Logo (always shown, always clickable home button) */}
                     <Link href="/" className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                            <Calendar className="w-5 h-5 text-white" />
+                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                            <Calendar className="w-5 h-5 text-primary-foreground" />
                         </div>
-                        <h1 className="text-xl font-bold text-gray-900">LocalLoop</h1>
+                        <span className="text-xl font-bold text-card-foreground" data-test-id="homepage-title">LocalLoop</span>
                     </Link>
 
                     {/* Right side - Full Navigation (always shown) */}
                     <>
                         {/* Desktop Navigation */}
-                        <nav className="hidden md:flex items-center gap-6">
+                        <nav className="hidden md:flex items-center gap-6" data-test-id="desktop-navigation">
                             <button
                                 onClick={handleBrowseEvents}
-                                className="text-gray-600 hover:text-gray-900 transition-colors"
+                                className="text-muted-foreground hover:text-foreground transition-colors"
+                                data-test-id="browse-events-button"
                             >
                                 Browse Events
                             </button>
 
                             {(isStaff || isAdmin) && (
-                                <Link href="/create-event" className="text-gray-600 hover:text-gray-900 transition-colors">
-                                    Create Event
+                                <Link href="/staff" className="text-muted-foreground hover:text-foreground transition-colors">
+                                    Staff
                                 </Link>
                             )}
 
-                            <Link href="/my-events" className="text-gray-600 hover:text-gray-900 transition-colors">
+                            <Link
+                                href="/my-events"
+                                className="text-muted-foreground hover:text-foreground transition-colors"
+                            >
                                 My Events
                             </Link>
 
+                            <Link
+                                href="/create-event"
+                                className="text-muted-foreground hover:text-foreground transition-colors"
+                                data-test-id="create-event-link"
+                            >
+                                Create Event
+                            </Link>
+
+                            <ThemeToggle />
+
                             {/* Auth state conditional rendering */}
                             {authLoading ? (
-                                <div className="w-20 h-10 bg-gray-200 animate-pulse rounded-lg" />
+                                <div className="w-20 h-10 bg-muted animate-pulse rounded-lg" />
                             ) : user ? (
                                 <ProfileDropdown />
                             ) : (
                                 <Link
                                     href="/auth/login"
-                                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                                    className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
                                 >
                                     Sign In
                                 </Link>
@@ -82,14 +97,15 @@ export function Navigation({
 
                         {/* Mobile Menu Button */}
                         <button
-                            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                            className="md:hidden p-2 rounded-lg hover:bg-accent transition-colors"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             aria-label="Toggle mobile menu"
+                            data-test-id="mobile-menu-button"
                         >
                             {isMobileMenuOpen ? (
-                                <X className="w-6 h-6 text-gray-600" />
+                                <X className="w-6 h-6 text-muted-foreground" />
                             ) : (
-                                <Menu className="w-6 h-6 text-gray-600" />
+                                <Menu className="w-6 h-6 text-muted-foreground" />
                             )}
                         </button>
                     </>
@@ -97,45 +113,55 @@ export function Navigation({
 
                 {/* Mobile Navigation */}
                 {isMobileMenuOpen && (
-                    <div className="md:hidden border-t border-gray-200 py-4">
+                    <div className="md:hidden border-t border-border py-4">
                         <nav className="flex flex-col space-y-4">
                             <button
                                 onClick={() => {
                                     handleBrowseEvents()
                                     setIsMobileMenuOpen(false)
                                 }}
-                                className="text-gray-600 hover:text-gray-900 transition-colors py-2 text-left"
+                                className="text-muted-foreground hover:text-foreground transition-colors py-2 text-left"
                             >
                                 Browse Events
                             </button>
 
                             {(isStaff || isAdmin) && (
                                 <Link
-                                    href="/create-event"
-                                    className="text-gray-600 hover:text-gray-900 transition-colors py-2"
+                                    href="/staff"
+                                    className="text-muted-foreground hover:text-foreground transition-colors py-2"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
-                                    Create Event
+                                    Staff
                                 </Link>
                             )}
 
                             <Link
                                 href="/my-events"
-                                className="text-gray-600 hover:text-gray-900 transition-colors py-2"
+                                className="text-muted-foreground hover:text-foreground transition-colors py-2"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 My Events
                             </Link>
 
+                            <Link
+                                href="/create-event"
+                                className="text-muted-foreground hover:text-foreground transition-colors py-2"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                Create Event
+                            </Link>
+
+                            <ThemeToggle />
+
                             {/* Auth state conditional rendering for mobile */}
                             {authLoading ? (
-                                <div className="w-full h-12 bg-gray-200 animate-pulse rounded-lg" />
+                                <div className="w-full h-12 bg-muted animate-pulse rounded-lg" />
                             ) : user ? (
                                 <ProfileDropdown />
                             ) : (
                                 <Link
                                     href="/auth/login"
-                                    className="bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors text-left"
+                                    className="bg-primary text-primary-foreground px-4 py-3 rounded-lg hover:bg-primary/90 transition-colors text-left"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     Sign In

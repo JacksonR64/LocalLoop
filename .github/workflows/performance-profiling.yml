@@ -1,0 +1,130 @@
+name: 🧠 Deep Performance Profiling
+
+on:
+  schedule:
+    # Run nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for running profiling'
+        required: false
+        default: 'Manual performance analysis'
+      profile_duration:
+        description: 'Profiling duration in seconds'
+        required: false
+        default: '30'
+        type: choice
+        options:
+          - '30'
+          - '60'
+          - '120'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  resource-profiling:
+    name: 🧠 CPU & Memory Profiling
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🧠 Install profiling tools
+        run: |
+          npm install -g clinic@latest
+          npm install -g autocannon@latest
+          npm install -g clinic-flame@latest
+
+      - name: 🏗️ Build application
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+      - name: 🧠 Deep CPU Profiling
+        run: |
+          echo "🔥 Starting CPU flame graph profiling..."
+          DURATION=${{ github.event.inputs.profile_duration || '30' }}
+          
+          # CPU profiling with flame graphs
+          timeout $((DURATION + 30))s clinic flame --on-port "autocannon -c10 -d${DURATION} http://localhost:3000" -- npm start || true
+          
+          # Doctor profiling for memory/event loop
+          echo "🏥 Starting clinic doctor profiling..."
+          timeout $((DURATION + 30))s clinic doctor --on-port "autocannon -c5 -d${DURATION} http://localhost:3000" -- npm start || true
+
+      - name: 📊 Generate profiling summary
+        run: |
+          echo "## 🧠 Profiling Summary" > profiling-summary.md
+          echo "" >> profiling-summary.md
+          echo "**Duration:** ${{ github.event.inputs.profile_duration || '30' }} seconds" >> profiling-summary.md
+          echo "**Reason:** ${{ github.event.inputs.reason || 'Scheduled analysis' }}" >> profiling-summary.md
+          echo "**Branch:** ${{ github.ref_name }}" >> profiling-summary.md
+          echo "**Commit:** ${{ github.sha }}" >> profiling-summary.md
+          echo "" >> profiling-summary.md
+          
+          # Check if reports were generated
+          if [ -f ".clinic/doctor.html" ]; then
+            echo "✅ Doctor report generated" >> profiling-summary.md
+          fi
+          
+          if [ -f ".clinic/flame.html" ]; then
+            echo "✅ Flame graph generated" >> profiling-summary.md
+          fi
+          
+          cat profiling-summary.md
+
+      - name: 📊 Upload comprehensive profiling reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deep-profiling-reports-${{ github.run_number }}
+          path: |
+            .clinic/
+            profiling-summary.md
+          retention-days: 30
+
+      - name: 💬 Post profiling results (if manual)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const summary = `## 🧠 Deep Performance Profiling Complete
+            
+            **Trigger:** Manual run
+            **Reason:** ${{ github.event.inputs.reason }}
+            **Duration:** ${{ github.event.inputs.profile_duration || '30' }}s
+            **Branch:** ${{ github.ref_name }}
+            
+            📊 **Artifacts Generated:**
+            - CPU Flame Graphs
+            - Memory Usage Analysis  
+            - Event Loop Monitoring
+            - Performance Recommendations
+            
+            🔗 **View Results:** [Download Artifacts](${context.payload.repository.html_url}/actions/runs/${context.runId})
+            
+            _Deep profiling helps identify performance bottlenecks and optimization opportunities._`;
+            
+            console.log(summary); 

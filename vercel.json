@@ -6,6 +6,15 @@
     "regions": [
         "iad1"
     ],
+    "git": {
+        "deploymentEnabled": {
+            "main": false
+        }
+    },
+    "github": {
+        "silent": false,
+        "autoAlias": false
+    },
     "functions": {
         "app/api/**/*.ts": {
             "maxDuration": 30

@@ -8,25 +8,25 @@ describe('Button Component', () => {
 
     const button = screen.getByRole('button', { name: /click me/i })
     expect(button).toBeInTheDocument()
-    expect(button).toHaveClass('bg-blue-600')
-    expect(button).toHaveClass('text-white')
+    expect(button).toHaveClass('bg-primary')
+    expect(button).toHaveClass('text-primary-foreground')
   })
 
   it('should render different variants correctly', () => {
     const { rerender } = render(<Button variant="secondary">Secondary</Button>)
-    expect(screen.getByRole('button')).toHaveClass('bg-gray-100')
+    expect(screen.getByRole('button')).toHaveClass('bg-secondary')
 
     rerender(<Button variant="destructive">Destructive</Button>)
-    expect(screen.getByRole('button')).toHaveClass('bg-red-600')
+    expect(screen.getByRole('button')).toHaveClass('bg-destructive')
 
     rerender(<Button variant="outline">Outline</Button>)
     expect(screen.getByRole('button')).toHaveClass('border')
 
     rerender(<Button variant="ghost">Ghost</Button>)
-    expect(screen.getByRole('button')).toHaveClass('text-gray-900')
+    expect(screen.getByRole('button')).toHaveClass('text-foreground')
 
     rerender(<Button variant="link">Link</Button>)
-    expect(screen.getByRole('button')).toHaveClass('text-blue-600')
+    expect(screen.getByRole('button')).toHaveClass('text-primary')
   })
 
   it('should render different sizes correctly', () => {
@@ -79,7 +79,7 @@ describe('Button Component', () => {
     // When asChild is true, the Button component renders a span wrapper
     const span = screen.getByText('Link Button').closest('span')
     expect(span).toBeInTheDocument()
-    expect(span!).toHaveClass('bg-blue-600') // Should still have button styles
+    expect(span!).toHaveClass('bg-primary') // Should still have button styles
   })
 
   it('should forward refs correctly', () => {
@@ -95,7 +95,7 @@ describe('Button Component', () => {
 
     const button = screen.getByRole('button')
     expect(button).toHaveClass('custom-class')
-    expect(button).toHaveClass('bg-blue-600') // Should still have default classes
+    expect(button).toHaveClass('bg-primary') // Should still have default classes
   })
 
   it('should handle keyboard navigation', async () => {
@@ -200,15 +200,16 @@ describe('Button Component', () => {
     const handleClick = jest.fn()
     const user = userEvent.setup()
 
-    render(<Button onClick={handleClick}>Rapid Click</Button>)
+    render(<Button onClick={handleClick}>Rapid Click Button</Button>)
 
     const button = screen.getByRole('button')
 
-    // Simulate rapid clicking
+    // Simulate rapid clicks
     await user.click(button)
     await user.click(button)
     await user.click(button)
 
+    // Should handle all clicks
     expect(handleClick).toHaveBeenCalledTimes(3)
   })
 }) 

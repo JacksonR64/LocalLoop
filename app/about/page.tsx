@@ -1,108 +1,119 @@
-import { Navigation } from '@/components/ui/Navigation';
-import { Footer } from '@/components/ui/Footer';
 import Link from 'next/link';
 import { Heart, Users, MapPin } from 'lucide-react';
+import { Footer } from '@/components/ui/Footer';
 
 export default function AboutPage() {
     return (
-        <div className="min-h-screen bg-gray-50">
-            <Navigation />
-
-            {/* Main Content */}
-            <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="min-h-screen bg-background">
+            <div className="max-w-4xl mx-auto px-4 py-8">
+                {/* Centered Header */}
                 <div className="text-center mb-12">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-4">About LocalLoop</h1>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                    <h1 className="text-4xl font-bold text-foreground mb-4">About LocalLoop</h1>
+                    <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                         Connecting communities through meaningful local events and experiences.
                     </p>
                 </div>
 
                 <div className="space-y-12">
                     {/* Mission */}
-                    <section className="bg-white rounded-lg shadow-sm border p-8">
+                    <section className="bg-card rounded-lg shadow-sm border p-8">
                         <div className="flex items-center gap-3 mb-6">
-                            <Heart className="w-6 h-6 text-blue-600" />
-                            <h2 className="text-2xl font-semibold text-gray-900">Our Mission</h2>
+                            <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                                <Heart className="w-6 h-6 text-white" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-card-foreground">Our Mission</h2>
                         </div>
-                        <p className="text-gray-600 leading-relaxed">
-                            LocalLoop believes that strong communities are built through shared experiences.
-                            We make it easy for people to discover, attend, and organize local events that
-                            bring neighbors together, foster connections, and create lasting memories.
+                        <p className="text-muted-foreground leading-relaxed">
+                            LocalLoop exists to strengthen communities by making it easier for people to discover,
+                            attend, and organize local events. We believe that meaningful connections happen when
+                            neighbors come together, and we&apos;re here to facilitate those moments.
                         </p>
                     </section>
 
                     {/* Features */}
-                    <section className="bg-white rounded-lg shadow-sm border p-8">
+                    <section className="bg-card rounded-lg shadow-sm border p-8">
                         <div className="flex items-center gap-3 mb-6">
-                            <Users className="w-6 h-6 text-blue-600" />
-                            <h2 className="text-2xl font-semibold text-gray-900">What We Offer</h2>
+                            <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
+                                <Users className="w-6 h-6 text-white" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-card-foreground">What We Offer</h2>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid md:grid-cols-2 gap-6">
                             <div>
-                                <h3 className="font-semibold text-gray-900 mb-2">Event Discovery</h3>
-                                <p className="text-gray-600 text-sm">
-                                    Find local events that match your interests with our smart filtering and search tools.
-                                </p>
+                                <h3 className="text-lg font-semibold text-card-foreground mb-2">For Event Organizers</h3>
+                                <ul className="text-muted-foreground space-y-1">
+                                    <li>• Easy event creation and management</li>
+                                    <li>• Integrated ticketing and RSVP system</li>
+                                    <li>• Real-time analytics and insights</li>
+                                    <li>• Seamless payment processing</li>
+                                </ul>
                             </div>
                             <div>
-                                <h3 className="font-semibold text-gray-900 mb-2">Easy Organization</h3>
-                                <p className="text-gray-600 text-sm">
-                                    Create and manage events with our intuitive tools, from simple gatherings to ticketed experiences.
-                                </p>
-                            </div>
-                            <div>
-                                <h3 className="font-semibold text-gray-900 mb-2">Calendar Integration</h3>
-                                <p className="text-gray-600 text-sm">
-                                    Seamlessly sync events with Google Calendar and never miss what matters to you.
-                                </p>
-                            </div>
-                            <div>
-                                <h3 className="font-semibold text-gray-900 mb-2">Community Building</h3>
-                                <p className="text-gray-600 text-sm">
-                                    Connect with like-minded neighbors and build lasting relationships through shared activities.
-                                </p>
+                                <h3 className="text-lg font-semibold text-card-foreground mb-2">For Attendees</h3>
+                                <ul className="text-muted-foreground space-y-1">
+                                    <li>• Discover events in your area</li>
+                                    <li>• Easy registration and ticketing</li>
+                                    <li>• Calendar integration</li>
+                                    <li>• Community connections</li>
+                                </ul>
                             </div>
                         </div>
                     </section>
 
                     {/* Values */}
-                    <section className="bg-white rounded-lg shadow-sm border p-8">
+                    <section className="bg-card rounded-lg shadow-sm border p-8">
                         <div className="flex items-center gap-3 mb-6">
-                            <MapPin className="w-6 h-6 text-blue-600" />
-                            <h2 className="text-2xl font-semibold text-gray-900">Our Values</h2>
+                            <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
+                                <MapPin className="w-6 h-6 text-white" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-card-foreground">Our Values</h2>
                         </div>
-                        <div className="space-y-4">
-                            <div>
-                                <h3 className="font-semibold text-gray-900 mb-1">Community First</h3>
-                                <p className="text-gray-600 text-sm">
+                        <div className="grid md:grid-cols-3 gap-6">
+                            <div className="text-center">
+                                <h3 className="text-lg font-semibold text-card-foreground mb-2">Community First</h3>
+                                <p className="text-muted-foreground text-sm">
                                     Every feature we build is designed to strengthen local communities and foster genuine connections.
                                 </p>
                             </div>
-                            <div>
-                                <h3 className="font-semibold text-gray-900 mb-1">Accessibility & Inclusion</h3>
-                                <p className="text-gray-600 text-sm">
-                                    We believe everyone should have access to community events, regardless of background or ability.
+                            <div className="text-center">
+                                <h3 className="text-lg font-semibold text-card-foreground mb-2">Simplicity</h3>
+                                <p className="text-muted-foreground text-sm">
+                                    We believe great tools should be intuitive and accessible to everyone, regardless of technical expertise.
                                 </p>
                             </div>
-                            <div>
-                                <h3 className="font-semibold text-gray-900 mb-1">Privacy & Safety</h3>
-                                <p className="text-gray-600 text-sm">
-                                    Your data and safety are our top priorities. We&apos;re committed to transparent, ethical practices.
+                            <div className="text-center">
+                                <h3 className="text-lg font-semibold text-card-foreground mb-2">Reliability</h3>
+                                <p className="text-muted-foreground text-sm">
+                                    When your event matters, our platform delivers. We&apos;re committed to providing dependable service.
                                 </p>
                             </div>
                         </div>
                     </section>
-                </div>
 
-                <div className="text-center mt-12">
-                    <Link
-                        href="/"
-                        className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                    >
-                        Start Exploring Events
-                    </Link>
+                    {/* Call to Action */}
+                    <section className="text-center py-8">
+                        <h2 className="text-2xl font-bold text-foreground mb-4">Ready to Get Started?</h2>
+                        <p className="text-muted-foreground mb-6">
+                            Join thousands of community organizers who trust LocalLoop for their events.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                            <Link
+                                href="/staff"
+                                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                                Create Your First Event
+                            </Link>
+                            <Link
+                                href="/"
+                                className="border border-border text-foreground px-6 py-3 rounded-lg hover:bg-muted transition-colors"
+                            >
+                                Browse Events
+                            </Link>
+                        </div>
+                    </section>
                 </div>
-            </main>
+            </div>
+
             <Footer />
         </div>
     );

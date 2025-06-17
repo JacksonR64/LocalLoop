@@ -44,31 +44,20 @@ function useOAuthCallback() {
  * Hook to fetch Google Calendar connection status
  */
 function useGoogleCalendarStatus() {
-    console.log('[DEBUG] useGoogleCalendarStatus - Hook initialized')
     const [isConnected, setIsConnected] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
 
     const checkStatus = async () => {
         try {
-            console.log('[DEBUG] GoogleCalendarStatus - Starting status check...')
-
             // Extract user ID from OAuth callback URL parameters
             const urlParams = new URLSearchParams(window.location.search)
             const userIdFromUrl = urlParams.get('userId')
             const oauthSuccess = urlParams.get('success') === 'true'
 
-            console.log('[DEBUG] GoogleCalendarStatus - URL parameters:', {
-                userId: userIdFromUrl,
-                success: oauthSuccess,
-                action: urlParams.get('action'),
-                returnUrl: urlParams.get('returnUrl')
-            })
-
             // Build API URL with user ID if available
             let apiUrl = '/api/auth/google/status'
             if (userIdFromUrl) {
                 apiUrl += `?userId=${userIdFromUrl}`
-                console.log('[DEBUG] GoogleCalendarStatus - Using API URL with userId:', apiUrl)
             }
 
             const response = await fetch(apiUrl, {
@@ -79,43 +68,23 @@ function useGoogleCalendarStatus() {
                 },
             })
 
-            console.log('[DEBUG] GoogleCalendarStatus - Response received:', {
-                status: response.status,
-                statusText: response.statusText,
-                ok: response.ok,
-                url: apiUrl
-            })
-
             if (response.ok) {
                 const data = await response.json()
-                console.log('[DEBUG] GoogleCalendarStatus - Response data:', data)
-                console.log('[DEBUG] GoogleCalendarStatus - Setting isConnected to:', data.connected || false)
                 setIsConnected(data.connected || false)
             } else if (response.status === 401) {
                 // Authentication required - this is expected if user isn't logged into Supabase
-                console.log('[DEBUG] GoogleCalendarStatus - User not authenticated to Supabase')
-
                 if (oauthSuccess) {
-                    console.log('[DEBUG] GoogleCalendarStatus - OAuth success detected, assuming connected')
                     setIsConnected(true)
                 } else {
-                    console.log('[DEBUG] GoogleCalendarStatus - No OAuth success, setting not connected')
                     setIsConnected(false)
                 }
             } else {
-                const errorText = await response.text()
-                console.warn('[DEBUG] GoogleCalendarStatus - Failed response:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    body: errorText
-                })
                 setIsConnected(false)
             }
         } catch (error) {
-            console.error('[DEBUG] GoogleCalendarStatus - Fetch error:', error)
+            console.error('Error checking Google Calendar status:', error)
             setIsConnected(false)
         } finally {
-            console.log('[DEBUG] GoogleCalendarStatus - Status check complete, setting isLoading to false')
             setIsLoading(false)
         }
     }
@@ -152,7 +121,7 @@ export default function GoogleCalendarConnect({
     action = 'connect',
     returnUrl,
     className = '',
-    onStatusChange, // eslint-disable-line @typescript-eslint/no-unused-vars
+    onStatusChange,  
     eventData
 }: GoogleCalendarConnectProps) {
     // const router = useRouter() // Will be used in disconnect functionality later
@@ -189,18 +158,27 @@ export default function GoogleCalendarConnect({
         try {
             setIsLoading(true)
 
-            // TODO: Implement disconnect API endpoint
-            // const response = await fetch('/api/auth/google/disconnect', { method: 'POST' })
-            // if (response.ok) {
-            //   setLocalConnected(false)
-            //   onStatusChange?.(false)
-            // }
+            const response = await fetch('/api/auth/google/disconnect', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
 
-            console.log('Disconnect functionality will be implemented in Task 4.6')
-            // onStatusChange will be used when disconnect is implemented
+            if (response.ok) {
+                setLocalConnected(false)
+                onStatusChange?.(false)
+                alert('Google Calendar disconnected successfully!')
+            } else {
+                const error = await response.json()
+                console.error('Failed to disconnect Google Calendar:', error)
+                alert(`Failed to disconnect: ${error.error || 'Unknown error'}`)
+            }
 
         } catch (error) {
             console.error('Error disconnecting Google Calendar:', error)
+            alert('An error occurred while disconnecting. Please try again.')
         } finally {
             setIsLoading(false)
         }
@@ -280,17 +258,12 @@ export default function GoogleCalendarConnect({
                             {action === 'create_event' && (
                                 <button
                                     onClick={async () => {
-                                        console.log('[DEBUG] Add to Calendar button clicked', { hasEventData: !!eventData })
-
                                         if (!eventData) {
-                                            console.error('[ERROR] No event data available for calendar creation')
                                             alert('Event data is not available. Please refresh the page and try again.')
                                             return
                                         }
 
                                         try {
-                                            console.log('[DEBUG] Creating calendar event...')
-
                                             const response = await fetch('/api/calendar/create-event', {
                                                 method: 'POST',
                                                 headers: {
@@ -310,21 +283,21 @@ export default function GoogleCalendarConnect({
                                             })
 
                                             if (response.ok) {
-                                                const result = await response.json()
-                                                console.log('[SUCCESS] Calendar event created:', result)
                                                 alert('Event successfully added to your Google Calendar!')
                                             } else {
                                                 const error = await response.json()
-                                                console.error('[ERROR] Failed to create calendar event:', error)
+                                                console.error('Failed to create calendar event:', error)
 
                                                 if (response.status === 401) {
                                                     alert('Please log in and connect your Google Calendar to add events.')
+                                                } else if (error.error && error.error.includes('reconnect')) {
+                                                    alert('Google Calendar access has expired. Please disconnect and reconnect your calendar.')
                                                 } else {
                                                     alert(`Failed to add event to calendar: ${error.error || 'Unknown error'}`)
                                                 }
                                             }
                                         } catch (error) {
-                                            console.error('[ERROR] Exception while creating calendar event:', error)
+                                            console.error('Error creating calendar event:', error)
                                             alert('An error occurred while adding the event to your calendar. Please try again.')
                                         }
                                     }}
@@ -403,18 +376,14 @@ export function GoogleCalendarConnectWithStatus({
     onStatusChange,
     eventData
 }: Omit<GoogleCalendarConnectProps, 'isConnected'>) {
-    console.log('[DEBUG] GoogleCalendarConnectWithStatus - Component rendered with:', { action, returnUrl, hasEventData: !!eventData })
-
     const { isConnected, isLoading, refresh } = useGoogleCalendarStatus()
     const callbackMessage = useOAuthCallback()
 
     // Refresh status when OAuth success is detected
     useEffect(() => {
         if (callbackMessage?.type === 'success') {
-            console.log('[DEBUG] GoogleCalendarStatus - OAuth success detected, scheduling refresh in 1 second...')
             // Wait a moment for backend processing to complete, then refresh
             setTimeout(() => {
-                console.log('[DEBUG] GoogleCalendarStatus - Executing auto-refresh after OAuth success...')
                 refresh()
             }, 1000)
         }

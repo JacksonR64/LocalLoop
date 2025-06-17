@@ -160,7 +160,7 @@ export default function TicketSelection({
     if (ticketTypes.length === 0) {
         return (
             <Card>
-                <CardContent className="py-8 text-center text-gray-500">
+                <CardContent className="py-8 text-center text-muted-foreground">
                     <Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />
                     <p>No tickets available for this event.</p>
                 </CardContent>
@@ -203,19 +203,19 @@ export default function TicketSelection({
                         return (
                             <div
                                 key={ticket.id}
-                                className={`p-4 border rounded-lg ${!isAvailable || !saleActive ? 'bg-gray-50' : 'bg-white'}`}
+                                className={`p-4 border border-border rounded-lg ${!isAvailable || !saleActive ? 'bg-muted' : 'bg-card'}`}
                                 data-test-id={`ticket-type-${ticket.id}`}
                             >
                                 <div className="flex justify-between items-start mb-2">
                                     <div className="flex-1">
-                                        <h3 className="font-semibold text-lg" data-test-id="ticket-type-name">{ticket.name}</h3>
-                                        <p className="text-gray-600 text-sm mb-2" data-test-id="ticket-type-description">{ticket.description}</p>
-                                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                                        <h3 className="font-semibold text-lg text-foreground" data-test-id="ticket-type-name">{ticket.name}</h3>
+                                        <p className="text-muted-foreground text-sm mb-2" data-test-id="ticket-type-description">{ticket.description}</p>
+                                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                             <span className="flex items-center gap-1" data-test-id="ticket-availability">
                                                 <Users className="h-4 w-4" />
                                                 {`${available} / ${capacity} available`}
                                             </span>
-                                            <span className="font-semibold text-lg text-gray-900" data-test-id="ticket-price">
+                                            <span className="font-semibold text-lg text-foreground" data-test-id="ticket-price">
                                                 {formatPrice(ticket.price)}
                                             </span>
                                         </div>
@@ -233,48 +233,50 @@ export default function TicketSelection({
                                         <span className="text-sm">Sold out</span>
                                     </div>
                                 ) : (
-                                    <div className="flex items-center justify-between" data-test-id="quantity-controls">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm font-medium">Quantity:</span>
+                                    <div className="space-y-3" data-test-id="quantity-controls">
+                                        <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => updateQuantity(ticket.id, quantity - 1)}
-                                                    disabled={quantity <= 0}
-                                                    className="h-8 w-8 p-0"
-                                                    data-test-id="decrease-quantity-button"
-                                                >
-                                                    <Minus className="h-4 w-4" />
-                                                </Button>
-                                                <Input
-                                                    type="number"
-                                                    min="0"
-                                                    max={available}
-                                                    value={quantity}
-                                                    onChange={(e) => updateQuantity(ticket.id, parseInt(e.target.value) || 0)}
-                                                    className="w-16 text-center"
-                                                    data-test-id="quantity-input"
-                                                />
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => updateQuantity(ticket.id, quantity + 1)}
-                                                    disabled={quantity >= available}
-                                                    className="h-8 w-8 p-0"
-                                                    data-test-id="increase-quantity-button"
-                                                >
-                                                    <Plus className="h-4 w-4" />
-                                                </Button>
+                                                <span className="text-sm font-medium">Quantity:</span>
+                                                <div className="flex items-center gap-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => updateQuantity(ticket.id, quantity - 1)}
+                                                        disabled={quantity <= 0}
+                                                        className="h-8 w-8 p-0"
+                                                        data-test-id="decrease-quantity-button"
+                                                    >
+                                                        <Minus className="h-4 w-4" />
+                                                    </Button>
+                                                    <Input
+                                                        type="number"
+                                                        min="0"
+                                                        max={available}
+                                                        value={quantity}
+                                                        onChange={(e) => updateQuantity(ticket.id, parseInt(e.target.value) || 0)}
+                                                        className="w-16 text-center"
+                                                        data-test-id="quantity-input"
+                                                    />
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => updateQuantity(ticket.id, quantity + 1)}
+                                                        disabled={quantity >= available}
+                                                        className="h-8 w-8 p-0"
+                                                        data-test-id="increase-quantity-button"
+                                                    >
+                                                        <Plus className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
                                             </div>
                                         </div>
 
                                         {quantity > 0 && (
-                                            <div className="text-right" data-test-id="ticket-subtotal">
-                                                <div className="text-sm text-gray-600">Subtotal:</div>
-                                                <div className="font-semibold" data-test-id="subtotal-amount">
+                                            <div className="flex justify-between items-center pt-2 border-t border-border" data-test-id="ticket-subtotal">
+                                                <span className="text-sm text-muted-foreground">Subtotal:</span>
+                                                <span className="font-semibold text-foreground" data-test-id="subtotal-amount">
                                                     {formatPrice(ticket.price * quantity)}
-                                                </div>
+                                                </span>
                                             </div>
                                         )}
                                     </div>
@@ -293,7 +295,7 @@ export default function TicketSelection({
                                 <div className="font-semibold" data-test-id="total-quantity">
                                     Total: {totalQuantity} ticket{totalQuantity !== 1 ? 's' : ''}
                                 </div>
-                                <div className="text-sm text-gray-600" data-test-id="ticket-breakdown">
+                                <div className="text-sm text-muted-foreground" data-test-id="ticket-breakdown">
                                     {(selectedTickets || []).map(ticket =>
                                         `${ticket.quantity}x ${ticket.ticket_type.name}`
                                     ).join(', ')}

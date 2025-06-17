@@ -71,8 +71,6 @@ export async function GET(request: NextRequest) {
         const userId = oAuthState.userId
         console.log('[DEBUG] User ID from OAuth state:', userId)
 
-        // Create Supabase client for database operations
-        const supabase = await createServerSupabaseClient()
         console.log('[DEBUG] Supabase client created successfully')
 
         // Validate user ID format (basic security check)
@@ -152,27 +150,9 @@ export async function GET(request: NextRequest) {
         // Log successful OAuth completion
         console.log(`[SUCCESS] OAuth completed successfully for user ${user.id}, action: ${oAuthState.action}`)
 
-        // CRITICAL FIX: Create Supabase browser session after Google Calendar OAuth
-        // This allows the frontend to make authenticated API requests
-        try {
-            console.log('[DEBUG] Creating Supabase session for user:', user.id)
-
-            // Use admin auth to create a session for this user
-            const { error: sessionError } = await supabase.auth.setSession({
-                access_token: tokens.access_token,
-                refresh_token: tokens.refresh_token || ''
-            })
-
-            if (sessionError) {
-                console.error('[ERROR] Failed to generate session link:', sessionError)
-            } else {
-                console.log('[DEBUG] Session link generated successfully')
-                // The session will be established when the user is redirected
-            }
-        } catch (sessionError) {
-            console.error('[ERROR] Failed to create browser session:', sessionError)
-            // Continue anyway since the Google Calendar OAuth succeeded
-        }
+        // Note: Google Calendar tokens are separate from Supabase auth tokens
+        // The user should already have a valid Supabase session from the initial auth flow
+        // Google Calendar tokens are stored separately for API access
 
         // Redirect to success page with appropriate context
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL || request.url
