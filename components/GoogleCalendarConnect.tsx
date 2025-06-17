@@ -290,6 +290,8 @@ export default function GoogleCalendarConnect({
 
                                                 if (response.status === 401) {
                                                     alert('Please log in and connect your Google Calendar to add events.')
+                                                } else if (error.error && error.error.includes('reconnect')) {
+                                                    alert('Google Calendar access has expired. Please disconnect and reconnect your calendar.')
                                                 } else {
                                                     alert(`Failed to add event to calendar: ${error.error || 'Unknown error'}`)
                                                 }
