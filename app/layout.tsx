@@ -11,12 +11,15 @@ const geistSans = Geist({
   subsets: ["latin"],
   display: "swap",
   preload: true,
+  fallback: ['system-ui', 'arial'],
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
   display: "swap",
+  preload: false, // Only preload primary font
+  fallback: ['Menlo', 'Monaco', 'Courier New', 'monospace'],
 });
 
 export const metadata: Metadata = {

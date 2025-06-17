@@ -107,7 +107,7 @@ const nextConfig: NextConfig = {
       : 'http://localhost:3000',
   },
 
-  // Webpack optimizations  
+  // Webpack optimizations for performance
   webpack: (config, { dev, isServer }) => {
     // Handle client-side only libraries
     if (isServer) {
@@ -136,12 +136,38 @@ const nextConfig: NextConfig = {
       }
     }
 
-    // Simplified production optimizations
+    // Enhanced production optimizations for performance
     if (!dev && !isServer) {
       config.optimization = {
         ...config.optimization,
         sideEffects: false,
+        minimize: true,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
+              maxSize: 244000, // 244KB max chunk size
+            },
+            common: {
+              name: 'common',
+              minChunks: 2,
+              chunks: 'all',
+              maxSize: 244000,
+            },
+          },
+        },
       }
+    }
+
+    // Performance optimizations for all builds
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      // Use React production build
+      'react': require.resolve('react'),
+      'react-dom': require.resolve('react-dom'),
     }
 
     // Bundle analyzer in development (optional)
@@ -156,6 +182,25 @@ const nextConfig: NextConfig = {
     }
 
     return config;
+  },
+
+  // Experimental features for performance
+  experimental: {
+    optimizePackageImports: [
+      'lucide-react',
+      '@radix-ui/react-select',
+      '@radix-ui/react-checkbox',
+      '@radix-ui/react-label',
+      '@radix-ui/react-switch',
+      '@radix-ui/react-tabs',
+    ],
+    turbo: {
+      // Enable Turbopack for faster builds
+      resolveAlias: {
+        'react-leaflet': false,
+        'leaflet': false,
+      },
+    },
   },
 };
 
