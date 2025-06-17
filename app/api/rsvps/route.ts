@@ -19,7 +19,7 @@ interface RsvpCacheData {
             end_time: string;
             location?: string;
             image_url?: string;
-        };
+        }[];
     } | null;
     rsvps?: Array<{
         id: string;
@@ -34,7 +34,7 @@ interface RsvpCacheData {
             end_time: string;
             location?: string;
             image_url?: string;
-        };
+        }[];
     }>;
 }
 const rsvpCache = new Map<string, { data: RsvpCacheData; timestamp: number }>()

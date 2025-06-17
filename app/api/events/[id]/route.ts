@@ -36,7 +36,7 @@ interface EventCacheData {
             id: string;
             display_name?: string;
             avatar_url?: string;
-        };
+        }[];
     };
 }
 const eventCache = new Map<string, { data: EventCacheData; timestamp: number }>()

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -114,8 +115,8 @@ const nextConfig: NextConfig = {
       config.resolve = config.resolve || {}
       config.resolve.fallback = {
         ...config.resolve.fallback,
-        'leaflet': false,
-        'react-leaflet': false,
+        'leaflet': false as any,
+        'react-leaflet': false as any,
         'web-vitals': false,
         '@vercel/analytics': false,
         '@stripe/stripe-js': false,
@@ -197,8 +198,8 @@ const nextConfig: NextConfig = {
     turbo: {
       // Enable Turbopack for faster builds
       resolveAlias: {
-        'react-leaflet': false,
-        'leaflet': false,
+        'react-leaflet': false as any,
+        'leaflet': false as any,
       },
     },
   },

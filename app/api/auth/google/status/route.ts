@@ -15,11 +15,11 @@ import { createGoogleCalendarAuth } from '@/lib/google-auth'
 // Simple in-memory cache for connection status (5 minutes)
 interface StatusCacheData {
     connected: boolean;
-    healthy: boolean;
+    healthy: boolean | null; // Can be null from the API response
     connectedAt?: string;
     expiresAt?: string;
     daysUntilExpiration?: number | null;
-    syncEnabled: boolean;
+    syncEnabled: boolean | undefined;
     primaryCalendar?: unknown;
     lastChecked: string;
     requiresReconnection: boolean;
