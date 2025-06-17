@@ -163,13 +163,8 @@ const nextConfig: NextConfig = {
       }
     }
 
-    // Performance optimizations for all builds
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      // Use React production build
-      'react': require.resolve('react'),
-      'react-dom': require.resolve('react-dom'),
-    }
+    // Performance optimizations for all builds (removed problematic React aliasing)
+    // Note: React aliasing was causing module resolution issues with jsx-runtime
 
     // Bundle analyzer in development (optional)
     if (dev && process.env.ANALYZE === 'true') {
@@ -195,14 +190,10 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-switch',
       '@radix-ui/react-tabs',
     ],
-    turbo: {
-      // Enable Turbopack for faster builds
-      resolveAlias: {
-        'react-leaflet': false as any,
-        'leaflet': false as any,
-      },
-    },
   },
+
+  // Turbopack configuration removed due to resolveAlias type warnings
+  // Client-side library exclusions are handled via webpack fallback instead
 };
 
 export default nextConfig;
