@@ -24,7 +24,13 @@
       "Bash(npm run rev --debug)",
       "Bash(npm run:*)",
       "Bash(tmux attach-session:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr:*)",
+      "Bash(git fetch:*)",
+      "Bash(git rebase:*)"
     ],
     "deny": []
   }
