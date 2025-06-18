@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(tmux kill-session:*)",
+      "Bash(true)",
+      "Bash(tmux new-session:*)",
+      "Bash(tmux list-sessions:*)",
+      "Bash(brew install:*)",
+      "Bash(tmux capture-pane:*)",
+      "Bash(grep:*)",
+      "Bash(claude mcp add:*)",
+      "Bash(claude mcp:*)",
+      "Bash(tmux send-keys:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "WebFetch(domain:supabase.com)",
+      "Bash(rm:*)",
+      "Bash(npm run build:*)",
+      "Bash(mv:*)",
+      "Bash(npm run rev --debug)",
+      "Bash(npm run:*)",
+      "Bash(tmux attach-session:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": []
+  }
+}
