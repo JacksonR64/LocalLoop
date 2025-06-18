@@ -20,19 +20,22 @@ export async function GET() {
                 provider: 'google',
                 options: {
                     redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback`,
-                    skipBrowserRedirect: true // This prevents actual redirect, just tests config
+                    skipBrowserRedirect: true
                 }
             })
 
             supabaseAuthTest = {
-                success: !authError,
                 hasData: !!authData,
-                url: authData?.url ? 'Generated' : 'None',
-                provider: authData?.provider
+                hasUrl: !!authData?.url,
+                provider: authData?.provider,
+                hasError: !!authError
             }
-            supabaseAuthError = authError
-        } catch (error) {
-            supabaseAuthError = error
+
+            if (authError) {
+                supabaseAuthError = authError as any // Type assertion to handle the error properly
+            }
+        } catch (err: any) {
+            supabaseAuthError = err
         }
 
         const response = {

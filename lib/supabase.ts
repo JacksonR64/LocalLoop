@@ -40,11 +40,58 @@ if (typeof window !== 'undefined') {
 }
 
 export function createClient() {
-    const client = createBrowserClient(supabaseUrl, supabaseAnonKey)
+    const client = createBrowserClient(
+        supabaseUrl,
+        supabaseAnonKey,
+        {
+            cookies: {
+                get(name: string) {
+                    if (typeof document !== 'undefined') {
+                        const value = `; ${document.cookie}`;
+                        const parts = value.split(`; ${name}=`);
+                        if (parts.length === 2) return parts.pop()?.split(';').shift();
+                    }
+                    return undefined;
+                },
+                set(name: string, value: string, options: any) {
+                    if (typeof document !== 'undefined') {
+                        let cookieString = `${name}=${value}`;
+                        if (options?.maxAge) cookieString += `; max-age=${options.maxAge}`;
+                        if (options?.path) cookieString += `; path=${options.path}`;
+                        if (options?.domain) cookieString += `; domain=${options.domain}`;
+                        if (options?.secure) cookieString += `; secure`;
+                        if (options?.httpOnly) cookieString += `; httponly`;
+                        if (options?.sameSite) cookieString += `; samesite=${options.sameSite}`;
+                        document.cookie = cookieString;
+                    }
+                },
+                remove(name: string, options: any) {
+                    if (typeof document !== 'undefined') {
+                        let cookieString = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC`;
+                        if (options?.path) cookieString += `; path=${options.path}`;
+                        if (options?.domain) cookieString += `; domain=${options.domain}`;
+                        document.cookie = cookieString;
+                    }
+                }
+            },
+            auth: {
+                // Enable PKCE flow for OAuth
+                flowType: 'pkce',
+                // Auto refresh tokens
+                autoRefreshToken: true,
+                // Persist session in storage
+                persistSession: true,
+                // Detect session in URL
+                detectSessionInUrl: true,
+                // Enable debug mode in development
+                debug: process.env.NODE_ENV === 'development'
+            }
+        }
+    )
 
     // Additional client validation
     if (typeof window !== 'undefined') {
-        console.log('🚀 Supabase client created successfully')
+        console.log('🚀 Supabase client created successfully with PKCE configuration')
 
         // Test basic auth functionality
         client.auth.getSession()
