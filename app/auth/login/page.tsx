@@ -23,6 +23,33 @@ export default function LoginPage() {
     } = useAuth()
     const router = useRouter()
 
+    // Handle OAuth callback errors from URL parameters
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search)
+        const oauthError = urlParams.get('error')
+
+        if (oauthError) {
+            const errorMessages: Record<string, string> = {
+                'timeout': 'OAuth authentication timed out. Please try again.',
+                'no_code': 'No authorization code received from Google. Please try again.',
+                'invalid_code': 'Invalid authorization code. Please try again.',
+                'no_session': 'Failed to create session. Please try again.',
+                'auth_failed': 'Authentication failed. Please try again.',
+                'callback_failed': 'OAuth callback failed. Please try again.',
+                'exchange_failed': 'Failed to exchange authorization code. Please try again.',
+                'access_denied': 'Access was denied. Please try again if you want to sign in.',
+                'server_error': 'Server error during authentication. Please try again.'
+            }
+
+            const errorMessage = errorMessages[oauthError] || `Authentication error: ${oauthError}. Please try again.`
+            setError(errorMessage)
+
+            // Clear the error from URL without page reload
+            const newUrl = window.location.pathname
+            window.history.replaceState({}, '', newUrl)
+        }
+    }, [])
+
     // Auto-redirect when user becomes authenticated
     useEffect(() => {
         if (user && !authLoading) {

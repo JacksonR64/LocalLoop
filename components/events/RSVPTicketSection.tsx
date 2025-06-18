@@ -19,7 +19,7 @@ import {
     User,
     Loader2
 } from 'lucide-react';
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@/utils/supabase/client';
 import { cn } from '@/lib/utils';
 
 // Types

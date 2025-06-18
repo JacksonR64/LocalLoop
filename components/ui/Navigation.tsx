@@ -33,6 +33,7 @@ export function Navigation({
         }, 100)
     }
 
+
     return (
         <header className={`bg-card shadow-sm border-b border-border sticky top-0 z-50 ${className}`} data-test-id="homepage-header">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -79,6 +80,7 @@ export function Navigation({
                             </Link>
 
                             <ThemeToggle />
+
 
                             {/* Auth state conditional rendering */}
                             {authLoading ? (
@@ -152,6 +154,7 @@ export function Navigation({
                             </Link>
 
                             <ThemeToggle />
+
 
                             {/* Auth state conditional rendering for mobile */}
                             {authLoading ? (
