@@ -34,15 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         console.log('🔥 AuthProvider useEffect started')
 
-        // Fallback timeout to ensure loading state is resolved
-        const timeoutId = setTimeout(() => {
-            if (loading) {
-                console.warn('⏰ Auth initialization timeout - resolving loading state')
-                setLoading(false)
-            }
-        }, 10000) // 10 second timeout
-
-        // Get initial session
+        // Get initial session immediately
         const getInitialSession = async () => {
             console.log('🔍 Getting initial session...')
             try {
@@ -57,11 +49,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
                 if (error) {
                     console.error('❌ Error getting initial session:', error)
-                    // Still set loading to false even if there's an error
-                    setSession(null)
-                    setUser(null)
-                    setLoading(false)
-                    return
                 }
 
                 setSession(session)
@@ -70,14 +57,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 console.log('✅ Initial session loaded successfully')
             } catch (error) {
                 console.error('💥 Unexpected error getting initial session:', error)
-                // Ensure loading state is always resolved
                 setSession(null)
                 setUser(null)
                 setLoading(false)
             }
         }
 
+        // Start session loading immediately
         getInitialSession()
+
+        // Reduced timeout to ensure loading state is resolved quickly for optimistic UI
+        const timeoutId = setTimeout(() => {
+            if (loading) {
+                console.warn('⏰ Auth initialization timeout - resolving loading state')
+                setLoading(false)
+            }
+        }, 1000) // Reduced timeout for faster optimistic UI response
 
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -118,37 +113,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const signOut = async () => {
-        console.log('🚪 Signing out user...')
-        try {
-            const { error } = await supabase.auth.signOut()
-            if (error) {
-                console.error('❌ Error during sign out:', error)
-                throw error
-            }
-
-            // Clear all local state immediately
-            setSession(null)
-            setUser(null)
-            setLoading(false)
-
-            console.log('✅ Sign out successful')
-
-            // Force redirect to home page
-            if (typeof window !== 'undefined') {
-                window.location.href = '/'
-            }
-        } catch (error) {
-            console.error('💥 Sign out failed:', error)
-            // Even if sign out fails, clear local state
-            setSession(null)
-            setUser(null)
-            setLoading(false)
-
-            // Still redirect to home
-            if (typeof window !== 'undefined') {
-                window.location.href = '/'
-            }
-        }
+        const { error } = await supabase.auth.signOut()
+        if (error) throw error
     }
 
     const signInWithGoogle = async () => {
@@ -156,13 +122,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             throw new Error('Google authentication is currently disabled')
         }
 
-        console.log('🔄 Starting Google OAuth flow...')
-
         // Store current URL as return URL (but not if we're already on auth pages)
         if (typeof window !== 'undefined') {
             const currentPath = window.location.pathname
             if (!currentPath.startsWith('/auth/')) {
-                sessionStorage.setItem('authReturnUrl', currentPath)
+                sessionStorage.setItem('returnUrl', currentPath)
                 console.log('📍 Stored return URL:', currentPath)
             }
         }
@@ -171,19 +135,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             provider: 'google',
             options: {
                 redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/auth/callback`,
-                queryParams: {
-                    access_type: 'offline',
-                    prompt: 'consent',
-                }
             },
         })
-
-        if (error) {
-            console.error('❌ Google OAuth initiation failed:', error)
-            throw error
-        }
-
-        console.log('✅ Google OAuth initiated successfully')
+        if (error) throw error
     }
 
     const signInWithApple = async () => {

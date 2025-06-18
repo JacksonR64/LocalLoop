@@ -33,6 +33,43 @@ export function Navigation({
         }, 100)
     }
 
+    // Optimistic UI: Show sign-in button by default, only show profile when user is confirmed
+    const renderAuthButton = () => {
+        // Only show ProfileDropdown when we have a confirmed user (not loading)
+        if (!authLoading && user) {
+            return <ProfileDropdown />
+        }
+
+        // Default to showing Sign In button (optimistic UI)
+        return (
+            <Link
+                href="/auth/login"
+                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+            >
+                Sign In
+            </Link>
+        )
+    }
+
+    // Mobile version of auth button
+    const renderMobileAuthButton = () => {
+        // Only show ProfileDropdown when we have a confirmed user (not loading)
+        if (!authLoading && user) {
+            return <ProfileDropdown />
+        }
+
+        // Default to showing Sign In button (optimistic UI)
+        return (
+            <Link
+                href="/auth/login"
+                className="bg-primary text-primary-foreground px-4 py-3 rounded-lg hover:bg-primary/90 transition-colors text-left"
+                onClick={() => setIsMobileMenuOpen(false)}
+            >
+                Sign In
+            </Link>
+        )
+    }
+
     return (
         <header className={`bg-card shadow-sm border-b border-border sticky top-0 z-50 ${className}`} data-test-id="homepage-header">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -80,19 +117,8 @@ export function Navigation({
 
                             <ThemeToggle />
 
-                            {/* Auth state conditional rendering */}
-                            {authLoading ? (
-                                <div className="w-20 h-10 bg-muted animate-pulse rounded-lg" />
-                            ) : user ? (
-                                <ProfileDropdown />
-                            ) : (
-                                <Link
-                                    href="/auth/login"
-                                    className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
-                                >
-                                    Sign In
-                                </Link>
-                            )}
+                            {/* Optimistic UI: Always show auth button immediately */}
+                            {renderAuthButton()}
                         </nav>
 
                         {/* Mobile Menu Button */}
@@ -153,20 +179,8 @@ export function Navigation({
 
                             <ThemeToggle />
 
-                            {/* Auth state conditional rendering for mobile */}
-                            {authLoading ? (
-                                <div className="w-full h-12 bg-muted animate-pulse rounded-lg" />
-                            ) : user ? (
-                                <ProfileDropdown />
-                            ) : (
-                                <Link
-                                    href="/auth/login"
-                                    className="bg-primary text-primary-foreground px-4 py-3 rounded-lg hover:bg-primary/90 transition-colors text-left"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                    Sign In
-                                </Link>
-                            )}
+                            {/* Optimistic UI: Always show auth button immediately */}
+                            {renderMobileAuthButton()}
                         </nav>
                     </div>
                 )}
