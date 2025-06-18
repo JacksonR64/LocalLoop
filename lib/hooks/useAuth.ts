@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/utils/supabase/client'
 import type { User } from '@supabase/supabase-js'
 
 export type UserRole = 'user' | 'organizer' | 'admin'
@@ -31,6 +31,7 @@ export function useAuth(): UseAuthReturn {
     const [user, setUser] = useState<AuthUser | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const supabase = createClient()
 
     const fetchUserProfile = useCallback(async (authUser: User) => {
         try {
@@ -42,6 +43,17 @@ export function useAuth(): UseAuthReturn {
 
             if (error) {
                 console.error('Error fetching user profile:', error)
+                // Don't treat missing user as a hard error - they might not be in the users table yet
+                if (error.code === 'PGRST116') {
+                    // No rows returned - user doesn't exist in users table yet
+                    return {
+                        id: authUser.id,
+                        email: authUser.email || '',
+                        display_name: authUser.user_metadata?.display_name || authUser.user_metadata?.full_name,
+                        role: 'user' as UserRole, // Default role
+                        google_calendar_connected: false
+                    }
+                }
                 setError('Failed to load user profile')
                 return null
             }
@@ -58,7 +70,7 @@ export function useAuth(): UseAuthReturn {
             setError('Failed to load user profile')
             return null
         }
-    }, [])
+    }, [supabase])
 
     const refresh = useCallback(async () => {
         try {

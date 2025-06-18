@@ -11,7 +11,7 @@ export function ProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const { user, signOut } = useAuth()
-  const { user: userProfile, isStaff, isAdmin } = useAuthHook()
+  const { user: userProfile, isStaff, isAdmin, loading: profileLoading } = useAuthHook()
   const router = useRouter()
 
   // Get user display name
