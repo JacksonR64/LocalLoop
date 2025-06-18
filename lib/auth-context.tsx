@@ -27,85 +27,33 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
+  const [loading, setLoading] = useState(true)
+  const supabase = createClient()
 
-    const [user, setUser] = useState<User | null>(null)
-    const [session, setSession] = useState<Session | null>(null)
-    const [loading, setLoading] = useState(true)
+  useEffect(() => {
+    console.log('🔥 AuthProvider useEffect started')
 
-    useEffect(() => {
-        console.log('🔥 AuthProvider useEffect started')
+    // Reduced timeout to ensure loading state is resolved quickly for optimistic UI
+    const timeoutId = setTimeout(() => {
+      if (loading) {
+        console.warn('⏰ Auth initialization timeout - resolving loading state')
+        setLoading(false)
+      }
+    }, 1000) // Reduced timeout for faster optimistic UI response
 
-        // Fallback timeout to ensure loading state is resolved
-        const timeoutId = setTimeout(() => {
-            if (loading) {
-                console.warn('⏰ Auth initialization timeout - resolving loading state')
-                setLoading(false)
-            }
-        }, 10000) // 10 second timeout
+    // Get initial session immediately
+    const getInitialSession = async () => {
+      console.log('🔍 Getting initial session...')
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
 
-        // Get initial session
-        const getInitialSession = async () => {
-            console.log('🔍 Getting initial session...')
-            try {
-                const { data: { session }, error } = await supabase.auth.getSession()
-
-                console.log('📊 Initial session result:', {
-                    hasSession: !!session,
-                    hasError: !!error,
-                    error: error?.message,
-                    user: session?.user?.email
-                })
-
-                if (error) {
-                    console.error('❌ Error getting initial session:', error)
-                    // Still set loading to false even if there's an error
-                    setSession(null)
-                    setUser(null)
-                    setLoading(false)
-                    return
-                }
-
-                setSession(session)
-                setUser(session?.user ?? null)
-                setLoading(false)
-                console.log('✅ Initial session loaded successfully')
-            } catch (error) {
-                console.error('💥 Unexpected error getting initial session:', error)
-                // Ensure loading state is always resolved
-                setSession(null)
-                setUser(null)
-                setLoading(false)
-            }
-        }
-
-        getInitialSession()
-
-        // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            async (event, session) => {
-                console.log('🔄 Auth state change:', { event, hasSession: !!session })
-                try {
-                    setSession(session)
-                    setUser(session?.user ?? null)
-                    setLoading(false)
-                } catch (error) {
-                    console.error('❌ Error in auth state change:', error)
-                    setLoading(false)
-                }
-            }
-        )
-
-        return () => {
-            console.log('🧹 AuthProvider cleanup')
-            clearTimeout(timeoutId)
-            subscription.unsubscribe()
-        }
-    }, [])
-
-    const signIn = async (email: string, password: string) => {
-        const { error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
+        console.log('📊 Initial session result:', {
+          hasSession: !!session,
+          hasError: !!error,
+          error: error?.message,
+          user: session?.user?.email
         })
 
         if (error) {

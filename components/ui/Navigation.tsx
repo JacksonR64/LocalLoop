@@ -33,42 +33,6 @@ export function Navigation({
         }, 100)
     }
 
-    // Optimistic UI: Show sign-in button by default, only show profile when user is confirmed
-    const renderAuthButton = () => {
-        // Only show ProfileDropdown when we have a confirmed user (not loading)
-        if (!authLoading && user) {
-            return <ProfileDropdown />
-        }
-
-        // Default to showing Sign In button (optimistic UI)
-        return (
-            <Link
-                href="/auth/login"
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
-            >
-                Sign In
-            </Link>
-        )
-    }
-
-    // Mobile version of auth button
-    const renderMobileAuthButton = () => {
-        // Only show ProfileDropdown when we have a confirmed user (not loading)
-        if (!authLoading && user) {
-            return <ProfileDropdown />
-        }
-
-        // Default to showing Sign In button (optimistic UI)
-        return (
-            <Link
-                href="/auth/login"
-                className="bg-primary text-primary-foreground px-4 py-3 rounded-lg hover:bg-primary/90 transition-colors text-left"
-                onClick={() => setIsMobileMenuOpen(false)}
-            >
-                Sign In
-            </Link>
-        )
-    }
 
     return (
         <header className={`bg-card shadow-sm border-b border-border sticky top-0 z-50 ${className}`} data-test-id="homepage-header">
