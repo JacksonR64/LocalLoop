@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
 export default function SupabaseDebugPage() {
-    const [debugInfo, setDebugInfo] = useState<any>({})
     const [testResults, setTestResults] = useState<any[]>([])
 
     useEffect(() => {

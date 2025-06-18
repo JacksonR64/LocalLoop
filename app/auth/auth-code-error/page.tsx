@@ -6,7 +6,7 @@ export default function AuthCodeError() {
       <div className="w-full max-w-sm space-y-4 text-center">
         <h1 className="text-2xl font-bold">Authentication Error</h1>
         <p className="text-muted-foreground">
-          Sorry, we couldn't sign you in. This could be due to:
+          Sorry, we couldn&apos;t sign you in. This could be due to:
         </p>
         <ul className="text-sm text-muted-foreground space-y-1">
           <li>• The authorization code was invalid or expired</li>

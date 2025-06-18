@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { User, LogOut, ChevronDown, Settings, Calendar, BarChart3 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
-import { useRouter } from 'next/navigation'
 import { useAuth as useAuthHook } from '@/lib/hooks/useAuth'
 import Link from 'next/link'
 
@@ -11,8 +10,7 @@ export function ProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const { user, signOut } = useAuth()
-  const { user: userProfile, isStaff, isAdmin, loading: profileLoading } = useAuthHook()
-  const router = useRouter()
+  const { user: userProfile, isStaff, isAdmin } = useAuthHook()
 
   // Get user display name
   const getUserDisplayName = () => {

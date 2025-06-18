@@ -30,7 +30,10 @@
       "Bash(gh pr create:*)",
       "Bash(gh pr:*)",
       "Bash(git fetch:*)",
-      "Bash(git rebase:*)"
+      "Bash(git rebase:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(npm run lint)"
     ],
     "deny": []
   }
