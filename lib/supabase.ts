@@ -84,7 +84,15 @@ export function createClient() {
                 // Detect session in URL
                 detectSessionInUrl: true,
                 // Enable debug mode in development
-                debug: process.env.NODE_ENV === 'development'
+                debug: process.env.NODE_ENV === 'development',
+                // Ensure proper storage key
+                storageKey: 'sb-jbyuivzpetgbapisbnxy-auth-token'
+            },
+            // Explicitly configure storage to ensure PKCE works
+            global: {
+                headers: {
+                    'X-Client-Info': 'supabase-js-web'
+                }
             }
         }
     )
@@ -108,6 +116,9 @@ export function createClient() {
             .catch(error => {
                 console.error('❌ Session check threw error:', error)
             })
+
+        // Log the storage key being used for debugging
+        console.log('🔍 Auth storage key:', client.auth.storageKey)
     }
 
     return client

@@ -135,32 +135,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Log storage state before OAuth
         console.log('🔍 [OAuth Debug] Storage state before OAuth:', {
-            sessionStorageKeys: Object.keys(sessionStorage),
-            localStorageKeys: Object.keys(localStorage).filter(k => k.includes('supabase')),
-            currentUrl: window.location.href
+            sessionStorageKeys: typeof window !== 'undefined' ? Object.keys(sessionStorage) : [],
+            localStorageKeys: typeof window !== 'undefined' ? Object.keys(localStorage).filter(k =>
+                k.includes('supabase') || k.includes('sb-') || k.includes('auth')
+            ) : []
         })
 
         try {
+            console.log('🔄 [OAuth Debug] Calling supabase.auth.signInWithOAuth...')
+
             const { data, error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/auth/callback`,
-                },
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'select_account',
+                    },
+                }
             })
 
-            console.log('🔍 [OAuth Debug] OAuth initiation result:', {
+            console.log('📊 [OAuth Debug] OAuth response:', {
                 hasData: !!data,
+                hasUrl: !!data?.url,
+                hasProvider: !!data?.provider,
                 hasError: !!error,
-                url: data?.url,
-                provider: data?.provider
+                error: error?.message,
+                urlPreview: data?.url ? data.url.substring(0, 100) + '...' : 'none'
             })
 
-            // Log storage state after OAuth initiation
-            console.log('🔍 [OAuth Debug] Storage state after OAuth initiation:', {
+            // Check if PKCE storage was created after OAuth call
+            console.log('🔍 [OAuth Debug] Storage state after OAuth call:', {
+                hasCodeVerifier: !!(
+                    sessionStorage.getItem('supabase.auth.code_verifier') ||
+                    localStorage.getItem('supabase.auth.code_verifier') ||
+                    sessionStorage.getItem('sb-auth-code-verifier') ||
+                    localStorage.getItem('sb-auth-code-verifier')
+                ),
                 sessionStorageKeys: Object.keys(sessionStorage),
-                localStorageKeys: Object.keys(localStorage).filter(k => k.includes('supabase')),
-                hasCodeVerifier: !!(sessionStorage.getItem('supabase.auth.code_verifier') || localStorage.getItem('supabase.auth.code_verifier')),
-                hasState: !!(sessionStorage.getItem('supabase.auth.state') || localStorage.getItem('supabase.auth.state'))
+                localStorageKeys: Object.keys(localStorage).filter(k =>
+                    k.includes('supabase') || k.includes('sb-') || k.includes('auth')
+                ),
+                supabaseAuthKeys: Object.keys(localStorage).filter(k => k.startsWith('sb-'))
             })
 
             if (error) {
@@ -168,9 +184,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 throw error
             }
 
-            console.log('✅ [OAuth Debug] Redirecting to Google OAuth...')
-        } catch (error) {
-            console.error('💥 [OAuth Debug] Exception during OAuth initiation:', error)
+            if (!data?.url) {
+                console.error('❌ [OAuth Debug] No OAuth URL returned')
+                throw new Error('Failed to get OAuth URL from Supabase')
+            }
+
+            console.log('✅ [OAuth Debug] OAuth URL generated, redirecting...')
+
+            // The redirect happens automatically, but let's log it
+            setTimeout(() => {
+                console.log('🔍 [OAuth Debug] Final storage check before redirect:', {
+                    allKeys: Object.keys(localStorage).concat(Object.keys(sessionStorage)),
+                    supabaseKeys: Object.keys(localStorage).filter(k => k.includes('supabase')),
+                    authKeys: Object.keys(localStorage).filter(k => k.includes('auth'))
+                })
+            }, 100)
+
+        } catch (error: any) {
+            console.error('💥 [OAuth Debug] signInWithGoogle error:', error)
             throw error
         }
     }
