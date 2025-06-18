@@ -118,6 +118,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const signInWithGoogle = async () => {
+        console.log('🚀 [OAuth Debug] Google Sign-In initiated')
+
         if (!ENABLE_GOOGLE_AUTH) {
             throw new Error('Google authentication is currently disabled')
         }
@@ -127,17 +129,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const currentPath = window.location.pathname
             if (!currentPath.startsWith('/auth/')) {
                 sessionStorage.setItem('returnUrl', currentPath)
-                console.log('📍 Stored return URL:', currentPath)
+                console.log('📍 [OAuth Debug] Stored return URL:', currentPath)
             }
         }
 
-        const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/auth/callback`,
-            },
+        // Log storage state before OAuth
+        console.log('🔍 [OAuth Debug] Storage state before OAuth:', {
+            sessionStorageKeys: Object.keys(sessionStorage),
+            localStorageKeys: Object.keys(localStorage).filter(k => k.includes('supabase')),
+            currentUrl: window.location.href
         })
-        if (error) throw error
+
+        try {
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/auth/callback`,
+                },
+            })
+
+            console.log('🔍 [OAuth Debug] OAuth initiation result:', {
+                hasData: !!data,
+                hasError: !!error,
+                url: data?.url,
+                provider: data?.provider
+            })
+
+            // Log storage state after OAuth initiation
+            console.log('🔍 [OAuth Debug] Storage state after OAuth initiation:', {
+                sessionStorageKeys: Object.keys(sessionStorage),
+                localStorageKeys: Object.keys(localStorage).filter(k => k.includes('supabase')),
+                hasCodeVerifier: !!(sessionStorage.getItem('supabase.auth.code_verifier') || localStorage.getItem('supabase.auth.code_verifier')),
+                hasState: !!(sessionStorage.getItem('supabase.auth.state') || localStorage.getItem('supabase.auth.state'))
+            })
+
+            if (error) {
+                console.error('❌ [OAuth Debug] OAuth initiation error:', error)
+                throw error
+            }
+
+            console.log('✅ [OAuth Debug] Redirecting to Google OAuth...')
+        } catch (error) {
+            console.error('💥 [OAuth Debug] Exception during OAuth initiation:', error)
+            throw error
+        }
     }
 
     const signInWithApple = async () => {
