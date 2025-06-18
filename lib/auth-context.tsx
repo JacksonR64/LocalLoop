@@ -1,11 +1,16 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
-import { User } from '@supabase/supabase-js'
+import { User, Session } from '@supabase/supabase-js'
 import { createClient } from '@/utils/supabase/client'
+
+// Feature toggles for authentication providers
+const ENABLE_GOOGLE_AUTH = process.env.NEXT_PUBLIC_ENABLE_GOOGLE_AUTH !== 'false'
+const ENABLE_APPLE_AUTH = process.env.NEXT_PUBLIC_ENABLE_APPLE_AUTH === 'true'
 
 interface AuthContextType {
   user: User | null
+  session: Session | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string) => Promise<void>
@@ -14,6 +19,7 @@ interface AuthContextType {
   signInWithApple: () => Promise<void>
   resetPassword: (email: string) => Promise<void>
   updatePassword: (password: string) => Promise<void>
+  // Feature flags
   isGoogleAuthEnabled: boolean
   isAppleAuthEnabled: boolean
 }
@@ -22,28 +28,73 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
   useEffect(() => {
-    // Get initial user
-    const getInitialUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-      setLoading(false)
+    console.log('🔥 AuthProvider useEffect started')
+
+    // Reduced timeout to ensure loading state is resolved quickly for optimistic UI
+    const timeoutId = setTimeout(() => {
+      if (loading) {
+        console.warn('⏰ Auth initialization timeout - resolving loading state')
+        setLoading(false)
+      }
+    }, 1000) // Reduced timeout for faster optimistic UI response
+
+    // Get initial session immediately
+    const getInitialSession = async () => {
+      console.log('🔍 Getting initial session...')
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+
+        console.log('📊 Initial session result:', {
+          hasSession: !!session,
+          hasError: !!error,
+          error: error?.message,
+          user: session?.user?.email
+        })
+
+        if (error) {
+          console.error('❌ Error getting initial session:', error)
+        }
+
+        setSession(session)
+        setUser(session?.user ?? null)
+        setLoading(false)
+        console.log('✅ Initial session loaded successfully')
+      } catch (error) {
+        console.error('💥 Unexpected error getting initial session:', error)
+        setSession(null)
+        setUser(null)
+        setLoading(false)
+      }
     }
 
-    getInitialUser()
+    // Start session loading immediately
+    getInitialSession()
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setUser(session?.user ?? null)
-        setLoading(false)
+        console.log('🔄 Auth state change:', { event, hasSession: !!session })
+        try {
+          setSession(session)
+          setUser(session?.user ?? null)
+          setLoading(false)
+        } catch (error) {
+          console.error('❌ Error in auth state change:', error)
+          setLoading(false)
+        }
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      console.log('🧹 AuthProvider cleanup')
+      clearTimeout(timeoutId)
+      subscription.unsubscribe()
+    }
   }, [supabase.auth])
 
   const signIn = async (email: string, password: string) => {
@@ -68,6 +119,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signInWithGoogle = async () => {
+    if (!ENABLE_GOOGLE_AUTH) {
+      throw new Error('Google authentication is currently disabled')
+    }
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -97,6 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     user,
+    session,
     loading,
     signIn,
     signUp,
@@ -105,8 +161,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signInWithApple,
     resetPassword,
     updatePassword,
-    isGoogleAuthEnabled: true,
-    isAppleAuthEnabled: false,
+    isGoogleAuthEnabled: ENABLE_GOOGLE_AUTH,
+    isAppleAuthEnabled: ENABLE_APPLE_AUTH,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
