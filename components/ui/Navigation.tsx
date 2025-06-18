@@ -117,8 +117,20 @@ export function Navigation({
 
                             <ThemeToggle />
 
-                            {/* Optimistic UI: Always show auth button immediately */}
-                            {renderAuthButton()}
+
+                            {/* Auth state conditional rendering */}
+                            {authLoading ? (
+                                <div className="w-20 h-10 bg-muted animate-pulse rounded-lg" />
+                            ) : user ? (
+                                <ProfileDropdown />
+                            ) : (
+                                <Link
+                                    href="/auth/login"
+                                    className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+                                >
+                                    Sign In
+                                </Link>
+                            )}
                         </nav>
 
                         {/* Mobile Menu Button */}
@@ -179,8 +191,21 @@ export function Navigation({
 
                             <ThemeToggle />
 
-                            {/* Optimistic UI: Always show auth button immediately */}
-                            {renderMobileAuthButton()}
+
+                            {/* Auth state conditional rendering for mobile */}
+                            {authLoading ? (
+                                <div className="w-full h-12 bg-muted animate-pulse rounded-lg" />
+                            ) : user ? (
+                                <ProfileDropdown />
+                            ) : (
+                                <Link
+                                    href="/auth/login"
+                                    className="bg-primary text-primary-foreground px-4 py-3 rounded-lg hover:bg-primary/90 transition-colors text-left"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    Sign In
+                                </Link>
+                            )}
                         </nav>
                     </div>
                 )}
