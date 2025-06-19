@@ -21,7 +21,7 @@ import {
     Ticket,
     CheckCircle2
 } from 'lucide-react'
-import { calculateRefundAmount } from '@/lib/utils/ticket-utils'
+import { calculateRefundAmount, convertToDollars, formatPrice } from '@/lib/utils/ticket-utils'
 
 interface OrderTicket {
     id: string
@@ -189,13 +189,13 @@ export default function RefundDialog({
                                                 {ticket.ticket_type.name}
                                             </div>
                                             <div className="text-sm text-muted-foreground">
-                                                Quantity: {ticket.quantity} • ${ticket.ticket_type.price.toFixed(2)} each
+                                                Quantity: {ticket.quantity} • {formatPrice(ticket.ticket_type.price)} each
                                             </div>
                                         </div>
                                     </div>
                                     <div className="text-right">
                                         <div className="font-medium text-foreground">
-                                            ${(ticket.ticket_type.price * ticket.quantity).toFixed(2)}
+                                            {formatPrice(ticket.ticket_type.price * ticket.quantity)}
                                         </div>
                                     </div>
                                 </div>
@@ -209,17 +209,17 @@ export default function RefundDialog({
                         <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                                 <span className="text-gray-600">Original Amount:</span>
-                                <span className="font-medium">${order.total_amount.toFixed(2)}</span>
+                                <span className="font-medium">{formatPrice(order.total_amount)}</span>
                             </div>
                             {!isEventCancelled && (
                                 <div className="flex justify-between">
                                     <span className="text-gray-600">Processing Fee:</span>
-                                    <span className="font-medium text-red-600">-${refundCalculation.stripeFee.toFixed(2)}</span>
+                                    <span className="font-medium text-red-600">-{formatPrice(refundCalculation.stripeFee)}</span>
                                 </div>
                             )}
                             <div className="border-t pt-2 flex justify-between font-semibold">
                                 <span>Refund Amount:</span>
-                                <span className="text-green-600">${refundCalculation.netRefund.toFixed(2)}</span>
+                                <span className="text-green-600">{formatPrice(refundCalculation.netRefund)}</span>
                             </div>
                         </div>
                     </div>
@@ -270,7 +270,7 @@ export default function RefundDialog({
                                 <div className="text-sm">
                                     <div className="font-medium text-red-800 mb-1">Confirm Refund</div>
                                     <div className="text-red-700">
-                                        This action cannot be undone. Your refund of ${refundCalculation.netRefund.toFixed(2)} will be processed immediately.
+                                        This action cannot be undone. Your refund of {formatPrice(refundCalculation.netRefund)} will be processed immediately.
                                     </div>
                                 </div>
                             </div>
