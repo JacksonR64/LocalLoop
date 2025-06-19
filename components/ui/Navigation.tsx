@@ -106,15 +106,15 @@ export function Navigation({
                             <ThemeToggle />
 
 
-                            {/* Auth state conditional rendering */}
-                            {authLoading ? (
-                                <div className="w-20 h-10 bg-muted animate-pulse rounded-lg" />
-                            ) : user ? (
+                            {/* Auth state conditional rendering - Optimistic UI */}
+                            {user ? (
                                 <ProfileDropdown />
                             ) : (
                                 <Link
                                     href="/auth/login"
-                                    className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+                                    className={`bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-all duration-200 ${
+                                        authLoading ? 'opacity-75 pointer-events-none' : 'opacity-100'
+                                    }`}
                                 >
                                     Sign In
                                 </Link>
@@ -200,15 +200,15 @@ export function Navigation({
                             <ThemeToggle />
 
 
-                            {/* Auth state conditional rendering for mobile */}
-                            {authLoading ? (
-                                <div className="w-full h-12 bg-muted animate-pulse rounded-lg" />
-                            ) : user ? (
+                            {/* Auth state conditional rendering for mobile - Optimistic UI */}
+                            {user ? (
                                 <ProfileDropdown />
                             ) : (
                                 <Link
                                     href="/auth/login"
-                                    className="bg-primary text-primary-foreground px-4 py-3 rounded-lg hover:bg-primary/90 transition-colors text-left"
+                                    className={`bg-primary text-primary-foreground px-4 py-3 rounded-lg hover:bg-primary/90 transition-all duration-200 text-left ${
+                                        authLoading ? 'opacity-75 pointer-events-none' : 'opacity-100'
+                                    }`}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     Sign In
