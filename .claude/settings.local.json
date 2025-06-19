@@ -35,7 +35,9 @@
       "Bash(gh run view:*)",
       "Bash(npm run lint)",
       "Bash(git pull:*)",
-      "Bash(npm run type-check:*)"
+      "Bash(npm run type-check:*)",
+      "Bash(git checkout:*)",
+      "Bash(git reset:*)"
     ],
     "deny": []
   }
