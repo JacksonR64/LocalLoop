@@ -1,5 +1,6 @@
 import { Footer } from '@/components/ui/Footer';
 import { Mail, Phone, MessageCircle } from 'lucide-react';
+import { EMAIL_ADDRESSES } from '@/lib/config/email-addresses';
 
 export default function ContactPage() {
     return (
@@ -26,7 +27,7 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-foreground">Email</h3>
-                                        <p className="text-muted-foreground">hello@localloop.events</p>
+                                        <p className="text-muted-foreground">{EMAIL_ADDRESSES.CONTACT}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">

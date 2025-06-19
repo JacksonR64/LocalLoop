@@ -216,7 +216,7 @@ export const EventCancellationEmail = ({
 
                         {isTicketHolder && (
                             <Text style={footerText}>
-                                For refund inquiries, please contact: <Link href="mailto:support@localloop.app" style={link}>support@localloop.app</Link>
+                                For refund inquiries, please contact: <Link href="mailto:support@localloopevents.xyz" style={link}>support@localloopevents.xyz</Link>
                             </Text>
                         )}
 

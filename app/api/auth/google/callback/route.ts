@@ -5,6 +5,7 @@ import {
     parseOAuthState,
 } from '@/lib/google-auth'
 import { createGoogleCalendarService, GoogleCalendarTokens } from '@/lib/google-calendar'
+import { EMAIL_ADDRESSES } from '@/lib/config/email-addresses'
 
 /**
  * API Route: /api/auth/google/callback
@@ -223,7 +224,7 @@ async function ensureUserRecord(userId: string) {
             .eq('id', userId)
             .single()
 
-        const userEmail = authUser?.email || `user-${userId}@localloop.app`
+        const userEmail = authUser?.email || EMAIL_ADDRESSES.generateUserEmail(userId)
         const userName = authUser?.raw_user_meta_data?.full_name || authUser?.raw_user_meta_data?.name || 'User'
 
         console.log(`[DEBUG] Retrieved user data: email=${userEmail}, name=${userName}`)

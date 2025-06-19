@@ -78,10 +78,10 @@ Set the base URL for different environments:
 BASE_URL=http://localhost:3000 npm run load-test
 
 # Staging environment
-BASE_URL=https://staging.localloop.app npm run load-test
+BASE_URL=https://staging.localloopevents.xyz npm run load-test
 
 # Production (use with extreme caution!)
-BASE_URL=https://localloop.app npm run load-test
+BASE_URL=https://localloopevents.xyz npm run load-test
 ```
 
 ## 📈 Understanding Results

@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import { TicketConfirmationEmail } from './templates/TicketConfirmationEmail';
+import { EMAIL_ADDRESSES } from '../config/email-addresses';
 
 // Lazy-initialize Resend to prevent build-time failures
 let resendInstance: Resend | null = null;
@@ -14,16 +15,23 @@ function getResendInstance(): Resend {
     return resendInstance;
 }
 
-// ✨ DEVELOPMENT MODE: Override email for testing with Resend free tier
-const isDevelopment = process.env.NODE_ENV === 'development';
+// ✨ EMAIL OVERRIDE CONFIGURATION
+// Use dedicated environment variable for email override control
+const shouldOverrideEmails = process.env.OVERRIDE_EMAILS_TO_DEV === 'true';
+const isLocalDevelopment = process.env.NODE_ENV === 'development' && process.env.VERCEL_ENV !== 'production';
 const devOverrideEmail = 'jackson_rhoden@outlook.com'; // Your verified email
 
 // Helper function to get the actual recipient email
 function getRecipientEmail(originalEmail: string): string {
-    if (isDevelopment && originalEmail !== devOverrideEmail) {
+    // Only override if explicitly enabled AND we're in local development
+    const shouldRedirect = shouldOverrideEmails && isLocalDevelopment;
+    
+    if (shouldRedirect && originalEmail !== devOverrideEmail) {
         console.log(`🔧 DEV MODE: Redirecting email from ${originalEmail} to ${devOverrideEmail}`);
         return devOverrideEmail;
     }
+    
+    // Always use original email in production or when override is disabled
     return originalEmail;
 }
 
@@ -61,7 +69,7 @@ export async function sendTicketConfirmationEmail({
     try {
         const resend = getResendInstance();
         const { data, error } = await resend.emails.send({
-            from: 'LocalLoop Events <onboarding@resend.dev>',
+            from: process.env.RESEND_FROM_EMAIL || `LocalLoop <${EMAIL_ADDRESSES.SYSTEM_FROM}>`,
             to: [getRecipientEmail(to)],
             subject: `Ticket Confirmation - ${eventTitle}`,
             react: TicketConfirmationEmail({
