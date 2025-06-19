@@ -4,7 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { Calendar, MapPin, Users, Clock, Tag, ExternalLink, ImageIcon } from 'lucide-react';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui';
-import { formatDateTime, formatPrice, truncateText } from '@/lib/utils';
+import { formatDateTime, formatPrice, truncateText, getEventCardDescription, formatLocationForCard } from '@/lib/utils';
 
 // Event interface (simplified from database types)
 export interface EventData {
@@ -188,7 +188,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
 
             <CardHeader>
                 <div className="flex items-start justify-between">
-                    <CardTitle as={featured ? 'h2' : 'h3'} className={featured ? 'text-lg' : 'text-base'}>
+                    <CardTitle as={featured ? 'h2' : 'h3'} className={`${featured ? 'text-lg' : 'text-base'} line-clamp-2 min-h-[3rem] leading-relaxed pr-2`}>
                         {event.title}
                     </CardTitle>
                     <div className="flex gap-2">
@@ -204,8 +204,8 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                         )}
                     </div>
                 </div>
-                <CardDescription>
-                    {event.short_description || truncateText(event.description || '', 100)}
+                <CardDescription className="min-h-[3rem] line-clamp-2 text-sm leading-relaxed">
+                    {getEventCardDescription(event.description, event.short_description)}
                 </CardDescription>
             </CardHeader>
 
@@ -218,7 +218,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
 
                     <div className="flex items-center gap-2 text-muted-foreground">
                         <MapPin className="w-4 h-4 flex-shrink-0" />
-                        <span>{event.location || 'Location TBD'}</span>
+                        <span className="line-clamp-2">{formatLocationForCard(event.location)}</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-muted-foreground">
@@ -274,7 +274,7 @@ function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowe
 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-semibold text-base text-foreground truncate pr-2">
+                        <h3 className="font-semibold text-base text-foreground line-clamp-2 min-h-[3rem] leading-relaxed pr-2">
                             {event.title}
                         </h3>
                         <div className="flex gap-1 flex-shrink-0">
@@ -291,8 +291,8 @@ function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowe
                         </div>
                     </div>
 
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                        {event.short_description || truncateText(event.description || '', 120)}
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2 min-h-[2.5rem] leading-relaxed">
+                        {getEventCardDescription(event.description, event.short_description)}
                     </p>
 
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -302,7 +302,7 @@ function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowe
                         </span>
                         <span className="flex items-center gap-1">
                             <MapPin className="w-3 h-3" />
-                            {truncateText(event.location || 'Location TBD', 25)}
+                            {truncateText(formatLocationForCard(event.location), 25)}
                         </span>
                         <span className="flex items-center gap-1">
                             <Users className="w-3 h-3" />
@@ -362,8 +362,8 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
                         )}
                     </div>
                 </div>
-                <CardDescription className="text-base">
-                    {event.short_description || truncateText(event.description || '', 120)}
+                <CardDescription className="text-base line-clamp-2 min-h-[3rem] leading-relaxed">
+                    {getEventCardDescription(event.description, event.short_description)}
                 </CardDescription>
             </CardHeader>
 
@@ -383,7 +383,7 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
                         <div className="flex items-center gap-3 text-foreground">
                             <MapPin className="w-5 h-5 flex-shrink-0 text-blue-600" />
                             <div>
-                                <div className="font-medium">{event.location || 'Location TBD'}</div>
+                                <div className="font-medium">{formatLocationForCard(event.location)}</div>
                                 <div className="text-muted-foreground">View on map</div>
                             </div>
                         </div>
@@ -449,7 +449,7 @@ function CompactCard({ event, className, onClick, hasPrice, lowestPrice }: CardC
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
                         <span>{new Date(event.start_time).toLocaleDateString()}</span>
                         <span>•</span>
-                        <span>{truncateText(event.location || 'Location TBD', 20)}</span>
+                        <span>{truncateText(formatLocationForCard(event.location), 20)}</span>
                         <span>•</span>
                         <span>{event.rsvp_count} attending</span>
                     </div>
@@ -489,7 +489,7 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice }: Card
                 {/* Event Details */}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-semibold text-base text-foreground group-hover:text-blue-600 transition-colors">
+                        <h3 className="font-semibold text-base text-foreground group-hover:text-blue-600 transition-colors line-clamp-2 min-h-[3rem] leading-relaxed">
                             {event.title}
                         </h3>
                         {event.is_paid && (
@@ -499,8 +499,8 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice }: Card
                         )}
                     </div>
 
-                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                        {event.short_description || truncateText(event.description || '', 80)}
+                    <p className="text-sm text-gray-600 mb-2 line-clamp-2 min-h-[2.5rem] leading-relaxed">
+                        {getEventCardDescription(event.description, event.short_description, 80)}
                     </p>
 
                     <div className="flex items-center gap-4 text-xs text-gray-500">
@@ -510,7 +510,7 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice }: Card
                         </span>
                         <span className="flex items-center gap-1">
                             <MapPin className="w-3 h-3" />
-                            {truncateText(event.location || 'Location TBD', 25)}
+                            {truncateText(formatLocationForCard(event.location), 25)}
                         </span>
                         <span className="flex items-center gap-1">
                             <Users className="w-3 h-3" />

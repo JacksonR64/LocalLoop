@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function Footer() {
     return (
@@ -7,11 +8,14 @@ export function Footer() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="text-center">
                     <Link href="/" className="flex items-center justify-center mb-4" data-test-id="footer-logo">
-                        <img 
+                        <Image 
                             src="/logo.svg" 
                             alt="LocalLoop" 
+                            width={96}
+                            height={48}
                             className="w-24 h-12" 
                         />
+                        <span className="ml-2 text-xl font-bold text-foreground" data-test-id="footer-title">LocalLoop</span>
                     </Link>
                     <p className="text-muted-foreground mb-6" data-test-id="footer-description">
                         Connecting communities through local events

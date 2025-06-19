@@ -439,6 +439,22 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                                 {validationErrors.title && (
                                     <p className="text-red-500 text-sm mt-1">{validationErrors.title}</p>
                                 )}
+                                <div className="flex justify-between items-center mt-1">
+                                    <p className="text-gray-500 text-sm">
+                                        Keep it concise and engaging
+                                    </p>
+                                    <p className={cn(
+                                        "text-sm",
+                                        formData.title.length > 60 ? "text-orange-600 font-medium" : "text-gray-400"
+                                    )}>
+                                        {formData.title.length}/60
+                                    </p>
+                                </div>
+                                {formData.title.length > 60 && (
+                                    <p className="text-orange-600 text-sm mt-1">
+                                        Consider shortening your title for better display in event cards and search results
+                                    </p>
+                                )}
                             </div>
 
                             <div>
@@ -482,9 +498,22 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                                     onChange={(e) => handleInputChange('short_description', e.target.value)}
                                     placeholder="Brief one-line description (optional)"
                                 />
-                                <p className="text-gray-500 text-sm mt-1">
-                                    This appears in event listings and search results
-                                </p>
+                                <div className="flex justify-between items-center mt-1">
+                                    <p className="text-gray-500 text-sm">
+                                        This appears in event listings and search results
+                                    </p>
+                                    <p className={cn(
+                                        "text-sm",
+                                        formData.short_description.length > 120 ? "text-orange-600 font-medium" : "text-gray-400"
+                                    )}>
+                                        {formData.short_description.length}/120
+                                    </p>
+                                </div>
+                                {formData.short_description.length > 120 && (
+                                    <p className="text-orange-600 text-sm mt-1">
+                                        Consider shortening your description - it may be truncated in event listings
+                                    </p>
+                                )}
                             </div>
 
                             <div className="md:col-span-2">

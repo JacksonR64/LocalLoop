@@ -32,6 +32,7 @@ import {
     Mail,
 } from 'lucide-react'
 import { format } from 'date-fns'
+import { formatPrice } from '@/lib/utils/ticket-utils'
 
 interface Attendee {
     id: string
@@ -353,7 +354,7 @@ export default function AttendeeManagement() {
                         <CardContent>
                             <div className="text-2xl font-bold">{summary.ticketHolders}</div>
                             <p className="text-xs text-muted-foreground">
-                                ${(summary.totalRevenue / 100).toFixed(2)} revenue
+                                {formatPrice(summary.totalRevenue)} revenue
                             </p>
                         </CardContent>
                     </Card>
@@ -554,7 +555,7 @@ export default function AttendeeManagement() {
                                             <div className="text-xs text-muted-foreground mt-1">
                                                 {attendee.ticketType}
                                                 {attendee.ticketPrice > 0 && (
-                                                    <span> • ${(attendee.ticketPrice / 100).toFixed(2)}</span>
+                                                    <span> • {formatPrice(attendee.ticketPrice)}</span>
                                                 )}
                                             </div>
                                         </TableCell>

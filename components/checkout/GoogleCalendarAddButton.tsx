@@ -18,9 +18,12 @@ export default function GoogleCalendarAddButton({
     className = ''
 }: GoogleCalendarAddButtonProps) {
     return (
-        <div className={`space-y-3 ${className}`}>
-            <div className="text-sm text-gray-600 text-center mb-4">
-                Add this event to your Google Calendar for easy access
+        <div className={`w-full max-w-md mx-auto ${className}`}>
+            <div className="text-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Add to Calendar</h3>
+                <p className="text-sm text-gray-600">
+                    Add this event to your Google Calendar for easy access
+                </p>
             </div>
             <GoogleCalendarConnectWithStatus
                 action="create_event"
@@ -36,6 +39,7 @@ export default function GoogleCalendarAddButton({
                     rsvp_count: 0,
                     organizer: { display_name: 'Event Organizer' }
                 }}
+                className="w-full"
             />
         </div>
     )

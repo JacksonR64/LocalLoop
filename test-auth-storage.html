@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Storage Inspector</title>
+</head>
+<body>
+    <h1>Authentication Storage Inspector</h1>
+    <div id="results"></div>
+    
+    <script>
+        function inspectStorage() {
+            const results = document.getElementById('results');
+            let output = '';
+            
+            // Check localStorage
+            output += '<h2>LocalStorage</h2>';
+            output += '<ul>';
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.includes('sb-') || key.includes('supabase'))) {
+                    output += `<li><strong>${key}:</strong> ${localStorage.getItem(key)}</li>`;
+                }
+            }
+            output += '</ul>';
+            
+            // Check sessionStorage
+            output += '<h2>SessionStorage</h2>';
+            output += '<ul>';
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                if (key && (key.includes('sb-') || key.includes('supabase'))) {
+                    output += `<li><strong>${key}:</strong> ${sessionStorage.getItem(key)}</li>`;
+                }
+            }
+            output += '</ul>';
+            
+            // Check cookies
+            output += '<h2>Cookies</h2>';
+            const cookies = document.cookie.split(';').filter(c => c.includes('supabase') || c.includes('sb-'));
+            output += '<ul>';
+            cookies.forEach(cookie => {
+                output += `<li>${cookie.trim()}</li>`;
+            });
+            output += '</ul>';
+            
+            // Show all localStorage keys for debugging
+            output += '<h2>All LocalStorage Keys</h2>';
+            const allKeys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                allKeys.push(localStorage.key(i));
+            }
+            output += `<p>${allKeys.join(', ')}</p>`;
+            
+            results.innerHTML = output;
+        }
+        
+        // Clear all Supabase auth data
+        function clearAuthData() {
+            // Clear localStorage
+            for (let i = localStorage.length - 1; i >= 0; i--) {
+                const key = localStorage.key(i);
+                if (key && (key.includes('sb-') || key.includes('supabase'))) {
+                    localStorage.removeItem(key);
+                    console.log('Removed localStorage key:', key);
+                }
+            }
+            
+            // Clear sessionStorage
+            for (let i = sessionStorage.length - 1; i >= 0; i--) {
+                const key = sessionStorage.key(i);
+                if (key && (key.includes('sb-') || key.includes('supabase'))) {
+                    sessionStorage.removeItem(key);
+                    console.log('Removed sessionStorage key:', key);
+                }
+            }
+            
+            // Clear cookies (attempt to clear common Supabase cookie patterns)
+            const cookiesToClear = [
+                'sb-access-token',
+                'sb-refresh-token',
+                'supabase-auth-token',
+                'supabase.auth.token'
+            ];
+            
+            cookiesToClear.forEach(cookieName => {
+                document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+                document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.vercel.app;`;
+                document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.local-loop-qa.vercel.app;`;
+                console.log('Attempted to clear cookie:', cookieName);
+            });
+            
+            alert('Auth data cleared! Refresh the page to see changes.');
+        }
+        
+        // Run inspection on load
+        inspectStorage();
+    </script>
+    
+    <button onclick="inspectStorage()">Refresh Inspection</button>
+    <button onclick="clearAuthData()">Clear All Auth Data</button>
+</body>
+</html>

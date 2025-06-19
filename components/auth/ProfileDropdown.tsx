@@ -1,13 +1,16 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { User, LogOut, ChevronDown, Settings, Calendar, BarChart3 } from 'lucide-react'
+import { User, LogOut, ChevronDown, Settings, Calendar, BarChart3, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { useAuth as useAuthHook } from '@/lib/hooks/useAuth'
 import Link from 'next/link'
 
 export function ProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false)
+  const [calendarConnected, setCalendarConnected] = useState(false)
+  const [calendarLoading, setCalendarLoading] = useState(false)
+  const [calendarCheckLoading, setCalendarCheckLoading] = useState(true)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const { user, signOut } = useAuth()
   const { user: userProfile, isStaff, isAdmin } = useAuthHook()
@@ -19,6 +22,84 @@ export function ProfileDropdown() {
       user.user_metadata?.name ||
       user.email?.split('@')[0] ||
       'User'
+  }
+
+  // Check Google Calendar connection status
+  const checkCalendarStatus = async () => {
+    try {
+      setCalendarCheckLoading(true)
+      const response = await fetch('/api/auth/google/status', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setCalendarConnected(data.connected || false)
+      } else {
+        setCalendarConnected(false)
+      }
+    } catch (error) {
+      console.error('Error checking Google Calendar status:', error)
+      setCalendarConnected(false)
+    } finally {
+      setCalendarCheckLoading(false)
+    }
+  }
+
+  // Handle Google Calendar connect
+  const handleCalendarConnect = async () => {
+    try {
+      setCalendarLoading(true)
+      
+      // Build OAuth initiation URL
+      const params = new URLSearchParams({
+        action: 'connect',
+        returnUrl: window.location.pathname
+      })
+
+      // Redirect to OAuth initiation endpoint
+      const connectUrl = `/api/auth/google/connect?${params.toString()}`
+      window.location.href = connectUrl
+
+    } catch (error) {
+      console.error('Error initiating Google Calendar connection:', error)
+      setCalendarLoading(false)
+    }
+  }
+
+  // Handle Google Calendar disconnect
+  const handleCalendarDisconnect = async () => {
+    try {
+      setCalendarLoading(true)
+
+      const response = await fetch('/api/auth/google/disconnect', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+
+      if (response.ok) {
+        setCalendarConnected(false)
+        // Show success feedback
+        alert('Google Calendar disconnected successfully!')
+      } else {
+        const error = await response.json()
+        console.error('Failed to disconnect Google Calendar:', error)
+        alert(`Failed to disconnect: ${error.error || 'Unknown error'}`)
+      }
+
+    } catch (error) {
+      console.error('Error disconnecting Google Calendar:', error)
+      alert('An error occurred while disconnecting. Please try again.')
+    } finally {
+      setCalendarLoading(false)
+    }
   }
 
   // Handle sign out
@@ -41,6 +122,13 @@ export function ProfileDropdown() {
       }
     }
   }
+
+  // Check calendar status on mount
+  useEffect(() => {
+    if (user) {
+      checkCalendarStatus()
+    }
+  }, [user])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -102,6 +190,48 @@ export function ProfileDropdown() {
               {isAdmin ? 'Admin Dashboard' : 'Staff Dashboard'}
             </Link>
           )}
+
+          <div className="border-t border-border my-1" />
+
+          {/* Google Calendar Connection */}
+          <div className="px-4 py-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm text-foreground">Google Calendar</span>
+              </div>
+              
+              {calendarCheckLoading ? (
+                <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
+              ) : (
+                <div className="flex items-center gap-2">
+                  {calendarConnected ? (
+                    <>
+                      <CheckCircle className="w-3 h-3 text-green-600" />
+                      <button
+                        onClick={handleCalendarDisconnect}
+                        disabled={calendarLoading}
+                        className="text-xs text-red-600 hover:text-red-700 disabled:opacity-50"
+                      >
+                        {calendarLoading ? 'Disconnecting...' : 'Disconnect'}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle className="w-3 h-3 text-amber-500" />
+                      <button
+                        onClick={handleCalendarConnect}
+                        disabled={calendarLoading}
+                        className="text-xs text-blue-600 hover:text-blue-700 disabled:opacity-50"
+                      >
+                        {calendarLoading ? 'Connecting...' : 'Connect'}
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
 
           <div className="border-t border-border my-1" />
 

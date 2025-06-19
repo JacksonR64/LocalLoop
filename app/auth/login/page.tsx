@@ -18,6 +18,7 @@ export default function LoginPage() {
         signIn,
         signInWithGoogle,
         signInWithApple,
+        clearStaleAuthData,
         isGoogleAuthEnabled,
         isAppleAuthEnabled
     } = useAuth()
@@ -98,9 +99,20 @@ export default function LoginPage() {
         }
     }
 
+    const handleClearAuthData = async () => {
+        try {
+            await clearStaleAuthData()
+            setError('')
+            // Optionally refresh the page to ensure clean state
+            window.location.reload()
+        } catch (error: unknown) {
+            setError(error instanceof Error ? error.message : 'Failed to clear auth data')
+        }
+    }
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background">
-            <div className="max-w-md w-full space-y-8">
+        <div className="min-h-screen flex items-center justify-center bg-background px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full space-y-8 p-6 sm:p-8 border border-border rounded-lg shadow-sm bg-card">
                 <div>
                     <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">
                         Sign in to LocalLoop
@@ -113,21 +125,21 @@ export default function LoginPage() {
                     </p>
                 </div>
 
-                <form className="mt-8 space-y-6" onSubmit={handleEmailLogin}>
+                <form className="mt-6 space-y-6" onSubmit={handleEmailLogin}>
                     {error && (
-                        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded">
+                        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-md">
                             {error}
                         </div>
                     )}
 
-                    <div className="rounded-md shadow-sm -space-y-px">
+                    <div className="space-y-4">
                         <div>
                             <input
                                 type="email"
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="relative block w-full px-3 py-2 border border-border placeholder-muted-foreground text-foreground bg-background rounded-t-md focus:outline-none focus:ring-primary focus:border-primary"
+                                className="block w-full px-4 py-3 border border-border placeholder-muted-foreground text-foreground bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-base"
                                 placeholder="Email address"
                             />
                         </div>
@@ -137,7 +149,7 @@ export default function LoginPage() {
                                 required
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="relative block w-full px-3 py-2 border border-border placeholder-muted-foreground text-foreground bg-background rounded-b-md focus:outline-none focus:ring-primary focus:border-primary"
+                                className="block w-full px-4 py-3 border border-border placeholder-muted-foreground text-foreground bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-base"
                                 placeholder="Password"
                             />
                         </div>
@@ -153,7 +165,7 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 min-h-[44px]"
                         >
                             {loading ? 'Signing in...' : 'Sign in'}
                         </button>
@@ -169,13 +181,13 @@ export default function LoginPage() {
                             </div>
                         </div>
 
-                        <div className="mt-6 grid grid-cols-2 gap-3">
+                        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {/* Google Auth Button */}
                             <button
                                 onClick={handleGoogleLogin}
                                 type="button"
                                 disabled={!isGoogleAuthEnabled}
-                                className={`w-full inline-flex justify-center py-2 px-4 border rounded-md shadow-sm text-sm font-medium transition-colors ${isGoogleAuthEnabled
+                                className={`w-full inline-flex justify-center py-3 px-4 border rounded-md shadow-sm text-base font-medium transition-colors min-h-[44px] ${isGoogleAuthEnabled
                                     ? 'border-border bg-background text-muted-foreground hover:bg-accent'
                                     : 'border-border bg-muted text-muted-foreground cursor-not-allowed'
                                     }`}
@@ -188,7 +200,7 @@ export default function LoginPage() {
                                 onClick={handleAppleLogin}
                                 type="button"
                                 disabled={!isAppleAuthEnabled}
-                                className={`w-full inline-flex justify-center items-center py-2 px-4 border rounded-md shadow-sm text-sm font-medium transition-colors ${isAppleAuthEnabled
+                                className={`w-full inline-flex justify-center items-center py-3 px-4 border rounded-md shadow-sm text-base font-medium transition-colors min-h-[44px] ${isAppleAuthEnabled
                                     ? 'border-border bg-background text-muted-foreground hover:bg-accent'
                                     : 'border-border bg-muted text-muted-foreground cursor-not-allowed relative'
                                     }`}
@@ -211,6 +223,17 @@ export default function LoginPage() {
                         )}
                     </div>
                 </form>
+
+                {/* Debug: Clear stale auth data button */}
+                <div className="mt-6 pt-4 border-t border-border">
+                    <button
+                        onClick={handleClearAuthData}
+                        type="button"
+                        className="w-full text-xs text-muted-foreground hover:text-foreground underline decoration-dotted underline-offset-4 transition-colors"
+                    >
+                        Having login issues? Clear authentication data
+                    </button>
+                </div>
             </div>
         </div>
     )

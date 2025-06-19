@@ -57,6 +57,35 @@ export function truncateText(text: string, length: number): string {
 }
 
 /**
+ * Get display description for event cards with consistent length
+ * Prioritizes short_description, falls back to truncated description
+ * @param description - Full description
+ * @param shortDescription - Short description (optional)
+ * @param maxLength - Maximum character length (default: 85)
+ * @returns Consistent length description for card display
+ */
+export function getEventCardDescription(
+    description?: string, 
+    shortDescription?: string, 
+    maxLength: number = 85
+): string {
+    // Prioritize short description if it exists
+    if (shortDescription) {
+        // If short description is too long, truncate it too
+        return shortDescription.length > maxLength 
+            ? truncateText(shortDescription, maxLength)
+            : shortDescription;
+    }
+    
+    // Fall back to truncated full description
+    if (description) {
+        return truncateText(description, maxLength);
+    }
+    
+    return '';
+}
+
+/**
  * Convert price from cents to dollars
  * @param cents - Price in cents
  * @returns Formatted price string
@@ -66,6 +95,23 @@ export function formatPrice(cents: number): string {
         style: 'currency',
         currency: 'USD',
     }).format(cents / 100);
+}
+
+/**
+ * Format location to show only building/venue and city (first 2 lines)
+ * @param location - Full location string
+ * @returns Formatted location with building and city only
+ */
+export function formatLocationForCard(location?: string): string {
+    if (!location) return 'Location TBD';
+    
+    // Split by common address delimiters
+    const lines = location.split(/[,\n\r]+/).map(line => line.trim()).filter(Boolean);
+    
+    // Take only first 2 lines (building/venue and city)
+    const displayLines = lines.slice(0, 2);
+    
+    return displayLines.join(', ');
 }
 
 /**
