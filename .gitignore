@@ -105,6 +105,9 @@ lighthouse-report/
 .env.development.local
 .env.test.local
 .env.production.local
+settings.local.json
+.claude/
+claude/
 
 # ESLint cache
 .eslintcache
