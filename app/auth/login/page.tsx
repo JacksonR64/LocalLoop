@@ -18,6 +18,7 @@ export default function LoginPage() {
         signIn,
         signInWithGoogle,
         signInWithApple,
+        clearStaleAuthData,
         isGoogleAuthEnabled,
         isAppleAuthEnabled
     } = useAuth()
@@ -95,6 +96,17 @@ export default function LoginPage() {
             await signInWithApple()
         } catch (error: unknown) {
             setError(error instanceof Error ? error.message : 'An unknown error occurred')
+        }
+    }
+
+    const handleClearAuthData = async () => {
+        try {
+            await clearStaleAuthData()
+            setError('')
+            // Optionally refresh the page to ensure clean state
+            window.location.reload()
+        } catch (error: unknown) {
+            setError(error instanceof Error ? error.message : 'Failed to clear auth data')
         }
     }
 
@@ -211,6 +223,17 @@ export default function LoginPage() {
                         )}
                     </div>
                 </form>
+
+                {/* Debug: Clear stale auth data button */}
+                <div className="mt-6 pt-4 border-t border-border">
+                    <button
+                        onClick={handleClearAuthData}
+                        type="button"
+                        className="w-full text-xs text-muted-foreground hover:text-foreground underline decoration-dotted underline-offset-4 transition-colors"
+                    >
+                        Having login issues? Clear authentication data
+                    </button>
+                </div>
             </div>
         </div>
     )

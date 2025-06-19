@@ -98,6 +98,23 @@ export function formatPrice(cents: number): string {
 }
 
 /**
+ * Format location to show only building/venue and city (first 2 lines)
+ * @param location - Full location string
+ * @returns Formatted location with building and city only
+ */
+export function formatLocationForCard(location?: string): string {
+    if (!location) return 'Location TBD';
+    
+    // Split by common address delimiters
+    const lines = location.split(/[,\n\r]+/).map(line => line.trim()).filter(Boolean);
+    
+    // Take only first 2 lines (building/venue and city)
+    const displayLines = lines.slice(0, 2);
+    
+    return displayLines.join(', ');
+}
+
+/**
  * Generate a slug from a string
  * @param text - Text to convert to slug
  * @returns URL-friendly slug

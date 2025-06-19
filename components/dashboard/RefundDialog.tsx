@@ -21,7 +21,7 @@ import {
     Ticket,
     CheckCircle2
 } from 'lucide-react'
-import { calculateRefundAmount, convertToDollars, formatPrice } from '@/lib/utils/ticket-utils'
+import { calculateRefundAmount, formatPrice } from '@/lib/utils/ticket-utils'
 
 interface OrderTicket {
     id: string

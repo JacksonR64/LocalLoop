@@ -19,6 +19,7 @@ interface AuthContextType {
   signInWithApple: () => Promise<void>
   resetPassword: (email: string) => Promise<void>
   updatePassword: (password: string) => Promise<void>
+  clearStaleAuthData: () => Promise<void>
   // Feature flags
   isGoogleAuthEnabled: boolean
   isAppleAuthEnabled: boolean
@@ -115,6 +116,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut()
+    
+    // Clear any potential stale auth data from localStorage/sessionStorage
+    try {
+      // Clear localStorage
+      Object.keys(localStorage).forEach(key => {
+        if (key.includes('sb-') || key.includes('supabase')) {
+          localStorage.removeItem(key)
+        }
+      })
+      
+      // Clear sessionStorage
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.includes('sb-') || key.includes('supabase')) {
+          sessionStorage.removeItem(key)
+        }
+      })
+    } catch (storageError) {
+      console.warn('Failed to clear client storage:', storageError)
+    }
+    
     if (error) throw error
   }
 
@@ -150,6 +171,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error
   }
 
+  const clearStaleAuthData = async () => {
+    try {
+      // Sign out from Supabase
+      await supabase.auth.signOut()
+      
+      // Clear localStorage
+      Object.keys(localStorage).forEach(key => {
+        if (key.includes('sb-') || key.includes('supabase')) {
+          localStorage.removeItem(key)
+        }
+      })
+      
+      // Clear sessionStorage
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.includes('sb-') || key.includes('supabase')) {
+          sessionStorage.removeItem(key)
+        }
+      })
+      
+      // Reset auth state
+      setUser(null)
+      setSession(null)
+      setLoading(false)
+      
+      console.log('🧹 Cleared all stale auth data')
+    } catch (error) {
+      console.error('❌ Failed to clear stale auth data:', error)
+    }
+  }
+
   const value = {
     user,
     session,
@@ -161,6 +212,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signInWithApple,
     resetPassword,
     updatePassword,
+    clearStaleAuthData,
     isGoogleAuthEnabled: ENABLE_GOOGLE_AUTH,
     isAppleAuthEnabled: ENABLE_APPLE_AUTH,
   }

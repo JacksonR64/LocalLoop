@@ -31,9 +31,58 @@ export async function updateSession(request: NextRequest) {
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  let user = null
+  let isAuthValid = false
+  
+  try {
+    // Check both session and user for comprehensive auth validation
+    const [
+      { data: { session }, error: sessionError },
+      { data: { user: authUser }, error: userError }
+    ] = await Promise.all([
+      supabase.auth.getSession(),
+      supabase.auth.getUser()
+    ])
+    
+    // Authentication is valid only if:
+    // 1. No errors occurred
+    // 2. Session exists and is not expired
+    // 3. User exists
+    const hasValidSession = session && !sessionError && session.expires_at && 
+      new Date(session.expires_at * 1000) > new Date()
+    const hasValidUser = authUser && !userError
+    
+    isAuthValid = hasValidSession && hasValidUser
+    user = isAuthValid ? authUser : null
+    
+    // If there are auth errors or invalid session, clear stale cookies
+    if (!isAuthValid && (sessionError || userError)) {
+      const errorMsg = sessionError?.message || userError?.message
+      console.warn('Middleware auth validation failed:', errorMsg)
+      
+      const cookiesToClear = request.cookies.getAll().filter(cookie => 
+        cookie.name.includes('sb-') || cookie.name.includes('supabase')
+      )
+      
+      if (cookiesToClear.length > 0) {
+        console.log('Clearing stale auth cookies:', cookiesToClear.map(c => c.name))
+        supabaseResponse = NextResponse.next({ request })
+        cookiesToClear.forEach(cookie => {
+          supabaseResponse.cookies.set(cookie.name, '', {
+            expires: new Date(0),
+            path: '/',
+            httpOnly: false,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax'
+          })
+        })
+      }
+    }
+  } catch (error) {
+    console.error('Middleware auth exception:', error)
+    user = null
+    isAuthValid = false
+  }
 
   // Protected routes
   const protectedRoutes = ['/dashboard', '/profile', '/admin']

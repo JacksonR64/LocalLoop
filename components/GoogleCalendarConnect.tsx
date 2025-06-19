@@ -111,8 +111,6 @@ export interface GoogleCalendarConnectProps {
     returnUrl?: string
     /** Additional CSS classes */
     className?: string
-    /** Callback when connection status changes */
-    onStatusChange?: (connected: boolean) => void
     eventData?: EventData // Add eventData prop for passing event information
 }
 
@@ -121,7 +119,6 @@ export default function GoogleCalendarConnect({
     action = 'connect',
     returnUrl,
     className = '',
-    onStatusChange,  
     eventData
 }: GoogleCalendarConnectProps) {
     // const router = useRouter() // Will be used in disconnect functionality later
@@ -154,35 +151,36 @@ export default function GoogleCalendarConnect({
         }
     }
 
-    const handleDisconnect = async () => {
-        try {
-            setIsLoading(true)
+    // Note: handleDisconnect moved to ProfileDropdown component
+    // const handleDisconnect = async () => {
+    //     try {
+    //         setIsLoading(true)
 
-            const response = await fetch('/api/auth/google/disconnect', {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
+    //         const response = await fetch('/api/auth/google/disconnect', {
+    //             method: 'POST',
+    //             credentials: 'include',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             }
+    //         })
 
-            if (response.ok) {
-                setLocalConnected(false)
-                onStatusChange?.(false)
-                alert('Google Calendar disconnected successfully!')
-            } else {
-                const error = await response.json()
-                console.error('Failed to disconnect Google Calendar:', error)
-                alert(`Failed to disconnect: ${error.error || 'Unknown error'}`)
-            }
+    //         if (response.ok) {
+    //             setLocalConnected(false)
+    //             onStatusChange?.(false)
+    //             alert('Google Calendar disconnected successfully!')
+    //         } else {
+    //             const error = await response.json()
+    //             console.error('Failed to disconnect Google Calendar:', error)
+    //             alert(`Failed to disconnect: ${error.error || 'Unknown error'}`)
+    //         }
 
-        } catch (error) {
-            console.error('Error disconnecting Google Calendar:', error)
-            alert('An error occurred while disconnecting. Please try again.')
-        } finally {
-            setIsLoading(false)
-        }
-    }
+    //     } catch (error) {
+    //         console.error('Error disconnecting Google Calendar:', error)
+    //         alert('An error occurred while disconnecting. Please try again.')
+    //     } finally {
+    //         setIsLoading(false)
+    //     }
+    // }
 
     const getActionText = () => {
         switch (action) {
@@ -358,7 +356,6 @@ export function GoogleCalendarConnectWithStatus({
     action = 'connect',
     returnUrl,
     className = '',
-    onStatusChange,
     eventData
 }: Omit<GoogleCalendarConnectProps, 'isConnected'>) {
     const { isConnected, isLoading, refresh } = useGoogleCalendarStatus()
@@ -391,7 +388,6 @@ export function GoogleCalendarConnectWithStatus({
             action={action}
             returnUrl={returnUrl}
             className={className}
-            onStatusChange={onStatusChange}
             eventData={eventData}
         />
     )
