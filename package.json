@@ -10,7 +10,6 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "prepare": "node -e \"if (process.env.NODE_ENV !== 'production') require('husky').install()\"",    "test": "jest",
     "test:unit": "jest --testPathPattern='tests/unit|lib.*__tests__|components.*__tests__'",
     "test:unit:coverage": "jest --testPathPattern='tests/unit|lib.*__tests__|components.*__tests__' --coverage",
     "test:integration": "jest --testPathPattern='tests/integration'",
