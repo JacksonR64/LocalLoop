@@ -212,7 +212,7 @@ export default function GoogleCalendarConnect({
     }
 
     return (
-        <div className={`p-4 border rounded-lg ${className}`}>
+        <div className={`p-4 sm:p-6 border border-border rounded-lg bg-card shadow-sm ${className}`}>
             {/* Success/Error Messages */}
             {callbackMessage && (
                 <div className={`mb-4 p-3 rounded-md ${callbackMessage.type === 'success'
@@ -221,40 +221,42 @@ export default function GoogleCalendarConnect({
                     }`}>
                     <div className="flex">
                         {callbackMessage.type === 'success' ? (
-                            <CheckCircle className="w-4 h-4 mr-2 mt-0.5" />
+                            <CheckCircle className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
                         ) : (
-                            <AlertCircle className="w-4 h-4 mr-2 mt-0.5" />
+                            <AlertCircle className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
                         )}
                         <span className="text-sm">{callbackMessage.message}</span>
                     </div>
                 </div>
             )}
 
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
+            {/* Header Section */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="space-y-2">
                     <div className="flex items-center space-x-2">
-                        <Calendar className="w-5 h-5 text-blue-600" />
+                        <Calendar className="w-5 h-5 text-blue-600 flex-shrink-0" />
                         <span className="font-medium text-gray-900">Google Calendar</span>
                     </div>
 
-                    <div className="flex items-center space-x-1">
+                    <div className="flex items-center space-x-2">
                         {localConnected ? (
                             <>
-                                <CheckCircle className="w-4 h-4 text-green-600" />
+                                <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
                                 <span className="text-sm text-green-600">{getStatusText()}</span>
                             </>
                         ) : (
                             <>
-                                <AlertCircle className="w-4 h-4 text-amber-500" />
+                                <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
                                 <span className="text-sm text-gray-500">{getStatusText()}</span>
                             </>
                         )}
                     </div>
                 </div>
 
-                <div className="flex items-center space-x-2 flex-shrink-0">
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     {localConnected ? (
-                        <div className="flex items-center space-x-2 flex-wrap gap-2">
+                        <>
                             {action === 'create_event' && (
                                 <button
                                     onClick={async () => {
@@ -269,7 +271,7 @@ export default function GoogleCalendarConnect({
                                                 headers: {
                                                     'Content-Type': 'application/json',
                                                 },
-                                                credentials: 'include', // Important: include cookies for Supabase session
+                                                credentials: 'include',
                                                 body: JSON.stringify({
                                                     eventData: {
                                                         id: eventData.id,
@@ -301,40 +303,37 @@ export default function GoogleCalendarConnect({
                                             alert('An error occurred while adding the event to your calendar. Please try again.')
                                         }
                                     }}
-                                    className="flex items-center space-x-2 px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm whitespace-nowrap"
+                                    className="flex items-center justify-center space-x-2 px-4 py-2.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium min-h-[44px]"
                                 >
                                     <Calendar className="w-4 h-4 flex-shrink-0" />
-                                    <span className="hidden sm:inline">Add to Calendar</span>
-                                    <span className="sm:hidden">Add</span>
+                                    <span>Add to Calendar</span>
                                 </button>
                             )}
                             <button
                                 onClick={handleDisconnect}
                                 disabled={isLoading}
-                                className="px-3 py-1.5 text-sm border border-gray-300 text-gray-700 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                                className="flex items-center justify-center px-4 py-2.5 text-sm font-medium border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[44px]"
                             >
                                 {isLoading ? (
-                                    <div className="flex items-center space-x-1">
-                                        <Loader2 className="w-3 h-3 animate-spin flex-shrink-0" />
-                                        <span className="hidden sm:inline">Disconnecting...</span>
-                                        <span className="sm:hidden">...</span>
+                                    <div className="flex items-center space-x-2">
+                                        <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+                                        <span>Disconnecting...</span>
                                     </div>
                                 ) : (
                                     'Disconnect'
                                 )}
                             </button>
-                        </div>
+                        </>
                     ) : (
                         <button
                             onClick={handleConnect}
                             disabled={isLoading}
-                            className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                            className="flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[44px]"
                         >
                             {isLoading ? (
-                                <div className="flex items-center space-x-1">
-                                    <Loader2 className="w-3 h-3 animate-spin flex-shrink-0" />
-                                    <span className="hidden sm:inline">{getActionText().replace('Connect', 'Connecting...')}</span>
-                                    <span className="sm:hidden">...</span>
+                                <div className="flex items-center space-x-2">
+                                    <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+                                    <span>{getActionText().replace('Connect', 'Connecting...')}</span>
                                 </div>
                             ) : (
                                 getActionText()
@@ -346,19 +345,19 @@ export default function GoogleCalendarConnect({
 
             {/* Additional context based on action */}
             {action === 'create_event' && !localConnected && (
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-4 text-sm text-gray-600 text-center">
                     Connect your Google Calendar to add this event directly to your calendar
                 </p>
             )}
 
             {action === 'sync' && (
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-4 text-sm text-gray-600 text-center">
                     Synchronizes your LocalLoop events with your Google Calendar
                 </p>
             )}
 
             {action === 'connect' && (
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-4 text-sm text-gray-600 text-center">
                     Connect your Google Calendar to enable event management and one-click calendar additions
                 </p>
             )}
@@ -391,9 +390,9 @@ export function GoogleCalendarConnectWithStatus({
 
     if (isLoading) {
         return (
-            <div className={`p-4 border rounded-lg ${className}`}>
-                <div className="flex items-center space-x-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
+            <div className={`p-4 sm:p-6 border border-border rounded-lg bg-card shadow-sm ${className}`}>
+                <div className="flex items-center justify-center space-x-2">
+                    <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
                     <span className="text-sm text-gray-500">Checking Google Calendar connection...</span>
                 </div>
             </div>
