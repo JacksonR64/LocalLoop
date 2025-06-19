@@ -72,13 +72,15 @@ export function Navigation({
                     <>
                         {/* Desktop Navigation */}
                         <nav className="hidden md:flex items-center gap-6" data-test-id="desktop-navigation">
-                            <button
-                                onClick={handleBrowseEvents}
-                                className="text-muted-foreground hover:text-foreground transition-colors"
-                                data-test-id="browse-events-button"
-                            >
-                                Browse Events
-                            </button>
+                            {(isStaff || isAdmin) && (
+                                <Link
+                                    href="/create-event"
+                                    className="text-muted-foreground hover:text-foreground transition-colors"
+                                    data-test-id="create-event-link"
+                                >
+                                    Create Event
+                                </Link>
+                            )}
 
                             {(isStaff || isAdmin) && (
                                 <Link href="/staff" className="text-muted-foreground hover:text-foreground transition-colors">
@@ -93,13 +95,13 @@ export function Navigation({
                                 My Events
                             </Link>
 
-                            <Link
-                                href="/create-event"
+                            <button
+                                onClick={handleBrowseEvents}
                                 className="text-muted-foreground hover:text-foreground transition-colors"
-                                data-test-id="create-event-link"
+                                data-test-id="browse-events-button"
                             >
-                                Create Event
-                            </Link>
+                                Browse Events
+                            </button>
 
                             <ThemeToggle />
 
@@ -157,15 +159,15 @@ export function Navigation({
                         )}
                         
                         <nav className="flex flex-col space-y-4">
-                            <button
-                                onClick={() => {
-                                    handleBrowseEvents()
-                                    setIsMobileMenuOpen(false)
-                                }}
-                                className="text-muted-foreground hover:text-foreground transition-colors py-2 text-left"
-                            >
-                                Browse Events
-                            </button>
+                            {(isStaff || isAdmin) && (
+                                <Link
+                                    href="/create-event"
+                                    className="text-muted-foreground hover:text-foreground transition-colors py-2"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    Create Event
+                                </Link>
+                            )}
 
                             {(isStaff || isAdmin) && (
                                 <Link
@@ -185,13 +187,15 @@ export function Navigation({
                                 My Events
                             </Link>
 
-                            <Link
-                                href="/create-event"
-                                className="text-muted-foreground hover:text-foreground transition-colors py-2"
-                                onClick={() => setIsMobileMenuOpen(false)}
+                            <button
+                                onClick={() => {
+                                    handleBrowseEvents()
+                                    setIsMobileMenuOpen(false)
+                                }}
+                                className="text-muted-foreground hover:text-foreground transition-colors py-2 text-left"
                             >
-                                Create Event
-                            </Link>
+                                Browse Events
+                            </button>
 
                             <ThemeToggle />
 
