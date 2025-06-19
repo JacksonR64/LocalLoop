@@ -57,6 +57,35 @@ export function truncateText(text: string, length: number): string {
 }
 
 /**
+ * Get display description for event cards with consistent length
+ * Prioritizes short_description, falls back to truncated description
+ * @param description - Full description
+ * @param shortDescription - Short description (optional)
+ * @param maxLength - Maximum character length (default: 85)
+ * @returns Consistent length description for card display
+ */
+export function getEventCardDescription(
+    description?: string, 
+    shortDescription?: string, 
+    maxLength: number = 85
+): string {
+    // Prioritize short description if it exists
+    if (shortDescription) {
+        // If short description is too long, truncate it too
+        return shortDescription.length > maxLength 
+            ? truncateText(shortDescription, maxLength)
+            : shortDescription;
+    }
+    
+    // Fall back to truncated full description
+    if (description) {
+        return truncateText(description, maxLength);
+    }
+    
+    return '';
+}
+
+/**
  * Convert price from cents to dollars
  * @param cents - Price in cents
  * @returns Formatted price string

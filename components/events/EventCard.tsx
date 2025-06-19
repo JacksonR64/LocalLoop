@@ -4,7 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { Calendar, MapPin, Users, Clock, Tag, ExternalLink, ImageIcon } from 'lucide-react';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui';
-import { formatDateTime, formatPrice, truncateText } from '@/lib/utils';
+import { formatDateTime, formatPrice, truncateText, getEventCardDescription } from '@/lib/utils';
 
 // Event interface (simplified from database types)
 export interface EventData {
@@ -204,8 +204,8 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                         )}
                     </div>
                 </div>
-                <CardDescription>
-                    {event.short_description || truncateText(event.description || '', 100)}
+                <CardDescription className="min-h-[3rem] line-clamp-2 text-sm leading-relaxed">
+                    {getEventCardDescription(event.description, event.short_description)}
                 </CardDescription>
             </CardHeader>
 
@@ -291,8 +291,8 @@ function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowe
                         </div>
                     </div>
 
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                        {event.short_description || truncateText(event.description || '', 120)}
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2 min-h-[2.5rem] leading-relaxed">
+                        {getEventCardDescription(event.description, event.short_description)}
                     </p>
 
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -362,8 +362,8 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
                         )}
                     </div>
                 </div>
-                <CardDescription className="text-base">
-                    {event.short_description || truncateText(event.description || '', 120)}
+                <CardDescription className="text-base line-clamp-2 min-h-[3rem] leading-relaxed">
+                    {getEventCardDescription(event.description, event.short_description)}
                 </CardDescription>
             </CardHeader>
 
@@ -499,8 +499,8 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice }: Card
                         )}
                     </div>
 
-                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                        {event.short_description || truncateText(event.description || '', 80)}
+                    <p className="text-sm text-gray-600 mb-2 line-clamp-2 min-h-[2.5rem] leading-relaxed">
+                        {getEventCardDescription(event.description, event.short_description, 80)}
                     </p>
 
                     <div className="flex items-center gap-4 text-xs text-gray-500">
