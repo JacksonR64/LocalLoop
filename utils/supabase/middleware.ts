@@ -48,9 +48,9 @@ export async function updateSession(request: NextRequest) {
     // 1. No errors occurred
     // 2. Session exists and is not expired
     // 3. User exists
-    const hasValidSession = session && !sessionError && session.expires_at && 
-      new Date(session.expires_at * 1000) > new Date()
-    const hasValidUser = authUser && !userError
+    const hasValidSession = !!(session && !sessionError && session.expires_at && 
+      new Date(session.expires_at * 1000) > new Date())
+    const hasValidUser = !!(authUser && !userError)
     
     isAuthValid = hasValidSession && hasValidUser
     user = isAuthValid ? authUser : null
