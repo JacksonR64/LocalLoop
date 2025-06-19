@@ -1,17 +1,17 @@
 import React from 'react';
 import Link from 'next/link';
-import { Calendar } from 'lucide-react';
 
 export function Footer() {
     return (
         <footer className="bg-muted border-t mt-20" data-test-id="homepage-footer">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="text-center">
-                    <Link href="/" className="flex items-center justify-center gap-3 mb-4" data-test-id="footer-logo">
-                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                            <Calendar className="w-5 h-5 text-primary-foreground" />
-                        </div>
-                        <span className="text-xl font-bold text-foreground" data-test-id="footer-title">LocalLoop</span>
+                    <Link href="/" className="flex items-center justify-center mb-4" data-test-id="footer-logo">
+                        <img 
+                            src="/logo.svg" 
+                            alt="LocalLoop" 
+                            className="w-24 h-12" 
+                        />
                     </Link>
                     <p className="text-muted-foreground mb-6" data-test-id="footer-description">
                         Connecting communities through local events
