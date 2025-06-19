@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Menu, X, Shield, Settings } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
@@ -41,9 +42,11 @@ export function Navigation({
                     {/* Left side - Logo and Admin/Staff Badge */}
                     <div className="flex items-center gap-3">
                         <Link href="/" className="flex items-center gap-2">
-                            <img 
+                            <Image 
                                 src="/logo.svg" 
                                 alt="LocalLoop" 
+                                width={48}
+                                height={48}
                                 className="w-12 h-12" 
                             />
                             <span className="text-xl font-bold text-card-foreground" data-test-id="homepage-title">LocalLoop</span>
