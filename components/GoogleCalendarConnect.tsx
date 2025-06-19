@@ -254,7 +254,7 @@ export default function GoogleCalendarConnect({
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <div className="flex justify-center sm:justify-end">
                     {localConnected ? (
                         <>
                             {action === 'create_event' && (
@@ -309,20 +309,6 @@ export default function GoogleCalendarConnect({
                                     <span>Add to Calendar</span>
                                 </button>
                             )}
-                            <button
-                                onClick={handleDisconnect}
-                                disabled={isLoading}
-                                className="flex items-center justify-center px-4 py-2.5 text-sm font-medium border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[44px]"
-                            >
-                                {isLoading ? (
-                                    <div className="flex items-center space-x-2">
-                                        <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
-                                        <span>Disconnecting...</span>
-                                    </div>
-                                ) : (
-                                    'Disconnect'
-                                )}
-                            </button>
                         </>
                     ) : (
                         <button
