@@ -382,7 +382,7 @@ export async function POST(request: NextRequest) {
                 eventLocation: event.location,
                 eventAddress: event.location_details || event.location,
                 organizerName: organizerData?.display_name || 'Event Organizer',
-                organizerEmail: organizerData?.email || 'organizer@localloop.app',
+                organizerEmail: organizerData?.email || 'organizer@localloopevents.xyz',
                 rsvpId: newRsvp.id,
                 guestCount: 1,
                 isAuthenticated: !!user,

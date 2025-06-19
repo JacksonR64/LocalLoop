@@ -26,7 +26,7 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-foreground">Email</h3>
-                                        <p className="text-muted-foreground">hello@localloop.events</p>
+                                        <p className="text-muted-foreground">hello@localloopevents.xyz</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">

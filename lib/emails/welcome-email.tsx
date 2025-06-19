@@ -122,7 +122,7 @@ export const WelcomeEmail = ({
                         </Text>
 
                         <Text style={footerText}>
-                            Have questions? Contact us at <Link href="mailto:support@localloop.app" style={link}>support@localloop.app</Link>
+                            Have questions? Contact us at <Link href="mailto:support@localloopevents.xyz" style={link}>support@localloopevents.xyz</Link>
                         </Text>
 
                         <Hr style={divider} />

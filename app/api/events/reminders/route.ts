@@ -241,7 +241,7 @@ export async function POST(request: NextRequest) {
                     eventLocation: event.location,
                     eventAddress: event.location_details || event.location,
                     organizerName: organizerData?.display_name || 'Event Organizer',
-                    organizerEmail: organizerData?.email || 'organizer@localloop.app',
+                    organizerEmail: organizerData?.email || 'organizer@localloopevents.xyz',
                     rsvpId: attendee.rsvp_id,
                     isTicketHolder: attendee.type === 'ticket',
                     ticketCount: attendee.ticket_count,

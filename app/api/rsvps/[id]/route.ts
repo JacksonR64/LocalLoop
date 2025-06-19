@@ -205,7 +205,7 @@ export async function PATCH(
                         eventLocation: eventDetails.location,
                         eventAddress: eventDetails.address || eventDetails.location,
                         organizerName: organizerData?.full_name || 'Event Organizer',
-                        organizerEmail: organizerData?.email || 'organizer@localloop.app',
+                        organizerEmail: organizerData?.email || 'organizer@localloopevents.xyz',
                         rsvpId: updatedRsvp.id,
                         cancellationReason: updateData.notes || undefined,
                         eventSlug: eventDetails.slug

@@ -223,7 +223,7 @@ async function ensureUserRecord(userId: string) {
             .eq('id', userId)
             .single()
 
-        const userEmail = authUser?.email || `user-${userId}@localloop.app`
+        const userEmail = authUser?.email || `user-${userId}@localloopevents.xyz`
         const userName = authUser?.raw_user_meta_data?.full_name || authUser?.raw_user_meta_data?.name || 'User'
 
         console.log(`[DEBUG] Retrieved user data: email=${userEmail}, name=${userName}`)

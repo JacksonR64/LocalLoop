@@ -174,7 +174,7 @@ export async function sendRSVPConfirmationEmail(
 
         // Send the email
         const response = await getResendInstance().emails.send({
-            from: process.env.RESEND_FROM_EMAIL || 'LocalLoop <noreply@localloop.app>',
+            from: process.env.RESEND_FROM_EMAIL || 'LocalLoop <noreply@localloopevents.xyz>',
             to: getRecipientEmail(props.to),
             subject: `RSVP Confirmed: ${props.eventTitle}`,
             html: emailHtml,
@@ -280,7 +280,7 @@ export async function sendWelcomeEmail(
 
         // Send the email
         const response = await getResendInstance().emails.send({
-            from: process.env.RESEND_FROM_EMAIL || 'LocalLoop <noreply@localloop.app>',
+            from: process.env.RESEND_FROM_EMAIL || 'LocalLoop <noreply@localloopevents.xyz>',
             to: getRecipientEmail(props.to),
             subject: 'Welcome to LocalLoop! 🎉',
             html: emailHtml,
@@ -348,7 +348,7 @@ QUICK ACTIONS:
 NEED HELP GETTING STARTED?
 Visit your My Events page to manage your RSVPs and created events: ${baseUrl}/my-events
 
-Have questions? Contact us at support@localloop.app
+Have questions? Contact us at support@localloopevents.xyz
 
 ---
 This email was sent by LocalLoop. You're receiving this because you created an account.
@@ -387,7 +387,7 @@ export async function sendEventReminderEmail(
 
         // Send the email
         const response = await getResendInstance().emails.send({
-            from: process.env.RESEND_FROM_EMAIL || 'LocalLoop <noreply@localloop.app>',
+            from: process.env.RESEND_FROM_EMAIL || 'LocalLoop <noreply@localloopevents.xyz>',
             to: getRecipientEmail(props.to),
             subject: getReminderSubject(),
             html: emailHtml,
@@ -512,7 +512,7 @@ export async function sendEventCancellationEmail(
 
         // Send the email
         const response = await getResendInstance().emails.send({
-            from: process.env.RESEND_FROM_EMAIL || 'LocalLoop <noreply@localloop.app>',
+            from: process.env.RESEND_FROM_EMAIL || 'LocalLoop <noreply@localloopevents.xyz>',
             to: getRecipientEmail(props.to),
             subject: `Event Cancelled: ${props.eventTitle}`,
             html: emailHtml,
@@ -596,7 +596,7 @@ QUICK ACTIONS:
 • Contact Organizer: ${props.organizerEmail}
 
 Questions about this cancellation? Contact the event organizer: ${props.organizerName} at ${props.organizerEmail}
-${props.isTicketHolder ? `For refund inquiries, please contact: support@localloop.app\n` : ''}
+${props.isTicketHolder ? `For refund inquiries, please contact: support@localloopevents.xyz\n` : ''}
 ---
 This cancellation notice was sent by LocalLoop on behalf of ${props.organizerName}.
 Unsubscribe: ${baseUrl}/unsubscribe?email=${encodeURIComponent(props.userEmail)}
@@ -624,7 +624,7 @@ export async function sendRSVPCancellationEmail(
 
         // Send the email
         const response = await getResendInstance().emails.send({
-            from: process.env.RESEND_FROM_EMAIL || 'LocalLoop <noreply@localloop.app>',
+            from: process.env.RESEND_FROM_EMAIL || 'LocalLoop <noreply@localloopevents.xyz>',
             to: getRecipientEmail(props.to),
             subject: `RSVP Cancelled: ${props.eventTitle}`,
             html: emailHtml,
@@ -748,7 +748,7 @@ export async function sendRefundConfirmationEmail(
 
         // Send the email
         const response = await getResendInstance().emails.send({
-            from: process.env.RESEND_FROM_EMAIL || 'LocalLoop <noreply@localloop.app>',
+            from: process.env.RESEND_FROM_EMAIL || 'LocalLoop <noreply@localloopevents.xyz>',
             to: getRecipientEmail(props.to),
             subject: subject,
             html: emailHtml,
@@ -762,7 +762,7 @@ export async function sendRefundConfirmationEmail(
                 { name: 'order', value: props.orderId }
             ],
             // Add reply-to support email for refund inquiries
-            replyTo: 'support@localloop.app',
+            replyTo: 'support@localloopevents.xyz',
         });
 
         console.log('Refund confirmation email sent successfully:', {
@@ -836,7 +836,7 @@ REFUND INFORMATION:
 QUICK ACTIONS:
 • View Event Details: ${eventUrl}
 • Browse Other Events: ${baseUrl}/events
-• Contact Support: support@localloop.app
+• Contact Support: support@localloopevents.xyz
 
 ${isEventCancellation
             ? 'We apologize for any inconvenience caused by the event cancellation.'
