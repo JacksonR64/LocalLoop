@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { sendRSVPCancellationEmail } from '@/lib/email-service'
+import { EMAIL_ADDRESSES } from '@/lib/config/email-addresses'
 import { z } from 'zod'
 
 // RSVP update schema
@@ -173,8 +174,8 @@ export async function PATCH(
                         : existingRsvp.guest_name || 'Guest';
 
                     const userEmail = existingRsvp.user_id
-                        ? user?.email || 'unknown@email.com'
-                        : existingRsvp.guest_email || 'unknown@email.com';
+                        ? user?.email || EMAIL_ADDRESSES.SYSTEM_FROM
+                        : existingRsvp.guest_email || EMAIL_ADDRESSES.SYSTEM_FROM;
 
                     // Handle organizer data from Supabase join
                     const organizer = Array.isArray(eventDetails.users) ? eventDetails.users[0] : eventDetails.users;
@@ -205,7 +206,7 @@ export async function PATCH(
                         eventLocation: eventDetails.location,
                         eventAddress: eventDetails.address || eventDetails.location,
                         organizerName: organizerData?.full_name || 'Event Organizer',
-                        organizerEmail: organizerData?.email || 'organizer@localloopevents.xyz',
+                        organizerEmail: organizerData?.email || EMAIL_ADDRESSES.ORGANIZER,
                         rsvpId: updatedRsvp.id,
                         cancellationReason: updateData.notes || undefined,
                         eventSlug: eventDetails.slug

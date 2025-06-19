@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { sendEventReminderEmail } from '@/lib/email-service'
+import { EMAIL_ADDRESSES } from '@/lib/config/email-addresses'
 import { z } from 'zod'
 
 // Event reminder request schema
@@ -241,7 +242,7 @@ export async function POST(request: NextRequest) {
                     eventLocation: event.location,
                     eventAddress: event.location_details || event.location,
                     organizerName: organizerData?.display_name || 'Event Organizer',
-                    organizerEmail: organizerData?.email || 'organizer@localloopevents.xyz',
+                    organizerEmail: organizerData?.email || EMAIL_ADDRESSES.ORGANIZER,
                     rsvpId: attendee.rsvp_id,
                     isTicketHolder: attendee.type === 'ticket',
                     ticketCount: attendee.ticket_count,

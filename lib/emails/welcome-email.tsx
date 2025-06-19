@@ -13,6 +13,7 @@ import {
     Heading,
 } from '@react-email/components';
 import * as React from 'react';
+import { EMAIL_ADDRESSES } from '../config/email-addresses';
 
 interface WelcomeEmailProps {
     userName: string;
@@ -122,7 +123,7 @@ export const WelcomeEmail = ({
                         </Text>
 
                         <Text style={footerText}>
-                            Have questions? Contact us at <Link href="mailto:support@localloopevents.xyz" style={link}>support@localloopevents.xyz</Link>
+                            Have questions? Contact us at <Link href={`mailto:${EMAIL_ADDRESSES.SUPPORT}`} style={link}>{EMAIL_ADDRESSES.SUPPORT}</Link>
                         </Text>
 
                         <Hr style={divider} />
