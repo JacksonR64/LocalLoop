@@ -61,11 +61,11 @@ const nextConfig: NextConfig = {
   // PoweredBy header removal for security
   poweredByHeader: false,
 
-  // Headers for performance and caching
+  // Headers for security, performance and caching
   async headers() {
     return [
       {
-        // Apply to all static assets
+        // Security headers for all pages
         source: '/(.*)',
         headers: [
           {
@@ -75,6 +75,54 @@ const nextConfig: NextConfig = {
           {
             key: 'X-Frame-Options',
             value: 'DENY'
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin'
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(), gyroscope=(), magnetometer=(), payment=()'
+          },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload'
+          }
+        ],
+      },
+      {
+        // Additional security for authentication pages
+        source: '/auth/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, proxy-revalidate'
+          },
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow, noarchive, nosnippet, noimageindex'
+          }
+        ],
+      },
+      {
+        // API security headers
+        source: '/api/(.*)',
+        headers: [
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY'
+          },
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate'
           }
         ],
       },
