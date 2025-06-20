@@ -158,6 +158,14 @@ const nextConfig: NextConfig = {
 
   // Webpack optimizations for performance
   webpack: (config, { dev, isServer }) => {
+    // Suppress Supabase realtime-js warnings
+    const ignoreWarnings = [
+      ...(config.ignoreWarnings || []),
+      { module: /node_modules\/@supabase\/realtime-js/, message: /Critical dependency: the request of a dependency is an expression/ },
+      { module: /realtime-js/, message: /Critical dependency: the request of a dependency is an expression/ },
+    ];
+    config.ignoreWarnings = ignoreWarnings;
+
     // Handle client-side only libraries
     if (isServer) {
       config.resolve = config.resolve || {}
