@@ -42,6 +42,7 @@
     "ci:e2e": "npm run test:e2e",
     "ci:security": "npm audit --audit-level=high",
     "ci:full": "npm run ci:lint && npm run ci:test && npm run ci:e2e",
+    "ci:local": "scripts/ci-local-check.sh",
     "init:project": "cp -n .env.example .env.local && echo '\\u001b[32m✔︎ .env.local created → add your keys then run npm run secrets:push\\u001b[0m'",
     "secrets:push": "scripts/push-secrets.sh",
     "changeset": "changeset",

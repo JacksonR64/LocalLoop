@@ -10,6 +10,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run lint` - ESLint checking
 - `npm run type-check` - TypeScript validation
 
+### 🔍 Local CI Verification (CRITICAL for avoiding CI failures)
+- `npm run ci:local` - **Run this before every commit/push** - Comprehensive local CI check that matches GitHub Actions exactly
+- `npm run ci:lint` - Quick lint + type check only
+- `npm run ci:test` - Run tests in CI mode with coverage
+- `npm run ci:full` - Full CI suite (lint, test, e2e)
+
+**🎯 Pre-Push Checklist:**
+1. **ALWAYS run `npm run ci:local` before pushing commits**
+2. Fix any ESLint errors (not just warnings)
+3. Ensure TypeScript compiles without errors
+4. Verify build succeeds
+5. Check unit tests pass with coverage
+
+**Environment Matching:**
+- Uses Node 18 (check with `node -v`, use `nvm use 18` if needed)
+- Clean install with `npm ci --legacy-peer-deps` (matches GitHub Actions)
+- Same ESLint rules and TypeScript config as CI
+- Tests run in CI mode (`--ci --coverage --watchAll=false`)
+
 ### Testing Suite
 - `npm test` - Unit tests with Jest
 - `npm run test:ci` - CI testing with coverage
