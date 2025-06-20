@@ -44,7 +44,7 @@ export function Navigation({
                         <Link href="/" className="flex items-center gap-2">
                             <Image 
                                 src="/logo.svg" 
-                                alt="LocalLoop" 
+                                alt="" 
                                 width={48}
                                 height={48}
                                 className="w-12 h-12" 

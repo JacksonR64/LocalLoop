@@ -152,7 +152,7 @@ export function EventFilters({
                         onKeyDown={handleSearchKeyDown}
                         className="block w-full pl-10 pr-3 py-2 border border-border rounded-md leading-5 bg-background placeholder:text-muted-foreground text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring text-sm"
                         aria-autocomplete="list"
-                        aria-controls="search-suggestions"
+                        aria-controls={isSearchFocused && suggestions.length > 0 ? "search-suggestions" : undefined}
                         aria-activedescendant={highlightedIndex >= 0 ? `suggestion-${highlightedIndex}` : undefined}
                     />
                     {/* Autocomplete Suggestions Dropdown */}

@@ -10,7 +10,7 @@ export function Footer() {
                     <Link href="/" className="flex items-center justify-center mb-4" data-test-id="footer-logo">
                         <Image 
                             src="/logo.svg" 
-                            alt="LocalLoop" 
+                            alt="" 
                             width={48}
                             height={48}
                             className="w-12 h-12" 
