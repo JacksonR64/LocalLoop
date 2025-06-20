@@ -62,6 +62,7 @@ interface CardComponentProps {
     isUpcoming: boolean;
     hasPrice: boolean;
     lowestPrice: number;
+    isSoon: boolean;
 }
 
 // Safe Image component with error handling
@@ -127,6 +128,12 @@ export function EventCard({
     const isUpcoming = new Date(event.start_time) > new Date();
     const hasPrice = Boolean(event.is_paid && event.ticket_types && event.ticket_types.length > 0);
     const lowestPrice = hasPrice ? Math.min(...event.ticket_types!.map(t => t.price)) : 0;
+    
+    // Check if event is soon (within 7 days)
+    const eventDate = new Date(event.start_time);
+    const today = new Date();
+    const daysDifference = Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    const isSoon = isUpcoming && daysDifference <= 7 && daysDifference >= 0;
 
     const commonProps: CardComponentProps = {
         event,
@@ -138,7 +145,8 @@ export function EventCard({
         spotsRemaining,
         isUpcoming,
         hasPrice,
-        lowestPrice
+        lowestPrice,
+        isSoon
     };
 
     // Render based on style
@@ -157,7 +165,7 @@ export function EventCard({
 }
 
 // Default Card Style (same as current homepage implementation)
-function DefaultCard({ event, size, featured, showImage, className, onClick, spotsRemaining, isUpcoming, hasPrice, lowestPrice }: CardComponentProps) {
+function DefaultCard({ event, size, featured, showImage, className, onClick, spotsRemaining, isUpcoming, hasPrice, lowestPrice, isSoon }: Readonly<CardComponentProps>) {
     return (
         <Card
             size={size}
@@ -192,13 +200,23 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                         {event.title}
                     </CardTitle>
                     <div className="flex gap-2">
+                        {!event.is_paid && isUpcoming && (
+                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                                Free
+                            </span>
+                        )}
                         {event.is_paid && (
-                            <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-full">
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                                 {hasPrice ? formatPrice(lowestPrice) : 'Paid'}
                             </span>
                         )}
+                        {isSoon && (
+                            <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
+                                Soon
+                            </span>
+                        )}
                         {!isUpcoming && (
-                            <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
+                            <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
                                 Past
                             </span>
                         )}
@@ -250,7 +268,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
 }
 
 // Preview List Style - Compact horizontal layout for list views
-function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowestPrice }: CardComponentProps) {
+function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowestPrice, isSoon }: Readonly<CardComponentProps>) {
     return (
         <Card
             variant="outlined"
@@ -278,13 +296,23 @@ function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowe
                             {event.title}
                         </h3>
                         <div className="flex gap-1 flex-shrink-0">
+                            {!event.is_paid && isUpcoming && (
+                                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                                    Free
+                                </span>
+                            )}
                             {event.is_paid && (
-                                <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-full">
+                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                                     {hasPrice ? formatPrice(lowestPrice) : 'Paid'}
                                 </span>
                             )}
+                            {isSoon && (
+                                <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
+                                    Soon
+                                </span>
+                            )}
                             {!isUpcoming && (
-                                <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
+                                <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
                                     Past
                                 </span>
                             )}
@@ -316,7 +344,7 @@ function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowe
 }
 
 // Full List Style - Detailed view with all information
-function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, hasPrice, lowestPrice }: CardComponentProps) {
+function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, hasPrice, lowestPrice, isSoon }: Readonly<CardComponentProps>) {
     return (
         <Card
             variant="default"
@@ -350,13 +378,23 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
                         {event.title}
                     </CardTitle>
                     <div className="flex gap-2">
+                        {!event.is_paid && isUpcoming && (
+                            <span className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium">
+                                Free Event
+                            </span>
+                        )}
                         {event.is_paid && (
-                            <span className="text-sm bg-secondary text-secondary-foreground px-3 py-1 rounded-full font-medium">
+                            <span className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium">
                                 {hasPrice ? formatPrice(lowestPrice) : 'Paid Event'}
                             </span>
                         )}
+                        {isSoon && (
+                            <span className="text-sm bg-orange-100 text-orange-800 px-3 py-1 rounded-full font-medium">
+                                Soon
+                            </span>
+                        )}
                         {!isUpcoming && (
-                            <span className="text-sm bg-muted text-muted-foreground px-3 py-1 rounded-full">
+                            <span className="text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
                                 Past Event
                             </span>
                         )}
@@ -433,7 +471,7 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
 }
 
 // Compact Card Style - Minimal information for dense layouts
-function CompactCard({ event, className, onClick, hasPrice, lowestPrice }: CardComponentProps) {
+function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcoming, isSoon }: Readonly<CardComponentProps>) {
     return (
         <Card
             size="sm"
@@ -455,9 +493,19 @@ function CompactCard({ event, className, onClick, hasPrice, lowestPrice }: CardC
                     </div>
                 </div>
                 <div className="flex items-center gap-2 ml-3">
+                    {!event.is_paid && isUpcoming && (
+                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                            Free
+                        </span>
+                    )}
                     {event.is_paid && (
-                        <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded">
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                             {hasPrice ? formatPrice(lowestPrice) : 'Paid'}
+                        </span>
+                    )}
+                    {isSoon && (
+                        <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">
+                            Soon
                         </span>
                     )}
                     <ExternalLink className="w-3 h-3 text-muted-foreground group-hover:text-foreground" />
@@ -468,7 +516,7 @@ function CompactCard({ event, className, onClick, hasPrice, lowestPrice }: CardC
 }
 
 // Timeline Card Style - Vertical timeline layout
-function TimelineCard({ event, className, onClick, hasPrice, lowestPrice }: CardComponentProps) {
+function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpcoming, isSoon }: Readonly<CardComponentProps>) {
     const eventDate = new Date(event.start_time);
     const day = eventDate.getDate();
     const month = eventDate.toLocaleDateString('en-US', { month: 'short' });
@@ -492,11 +540,23 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice }: Card
                         <h3 className="font-semibold text-base text-foreground group-hover:text-blue-600 transition-colors line-clamp-2 min-h-[3rem] leading-relaxed">
                             {event.title}
                         </h3>
-                        {event.is_paid && (
-                            <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-full ml-2">
-                                {hasPrice ? formatPrice(lowestPrice) : 'Paid'}
-                            </span>
-                        )}
+                        <div className="flex gap-1 ml-2">
+                            {!event.is_paid && isUpcoming && (
+                                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                                    Free
+                                </span>
+                            )}
+                            {event.is_paid && (
+                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                                    {hasPrice ? formatPrice(lowestPrice) : 'Paid'}
+                                </span>
+                            )}
+                            {isSoon && (
+                                <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
+                                    Soon
+                                </span>
+                            )}
+                        </div>
                     </div>
 
                     <p className="text-sm text-gray-600 mb-2 line-clamp-2 min-h-[2.5rem] leading-relaxed">
