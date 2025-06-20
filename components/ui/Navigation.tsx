@@ -44,7 +44,7 @@ export function Navigation({
                         <Link href="/" className="flex items-center gap-2">
                             <Image 
                                 src="/logo.svg" 
-                                alt="LocalLoop" 
+                                alt="" 
                                 width={48}
                                 height={48}
                                 className="w-12 h-12" 
@@ -75,6 +75,13 @@ export function Navigation({
                     <>
                         {/* Desktop Navigation */}
                         <nav className="hidden md:flex items-center gap-6" data-test-id="desktop-navigation">
+
+                            {(isStaff || isAdmin) && (
+                                <Link href="/staff" className="text-muted-foreground hover:text-foreground transition-colors">
+                                    Staff
+                                </Link>
+                            )}
+
                             {(isStaff || isAdmin) && (
                                 <Link
                                     href="/create-event"
@@ -82,12 +89,6 @@ export function Navigation({
                                     data-test-id="create-event-link"
                                 >
                                     Create Event
-                                </Link>
-                            )}
-
-                            {(isStaff || isAdmin) && (
-                                <Link href="/staff" className="text-muted-foreground hover:text-foreground transition-colors">
-                                    Staff
                                 </Link>
                             )}
 
@@ -162,15 +163,6 @@ export function Navigation({
                         )}
                         
                         <nav className="flex flex-col space-y-4">
-                            {(isStaff || isAdmin) && (
-                                <Link
-                                    href="/create-event"
-                                    className="text-muted-foreground hover:text-foreground transition-colors py-2"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                    Create Event
-                                </Link>
-                            )}
 
                             {(isStaff || isAdmin) && (
                                 <Link
@@ -179,6 +171,16 @@ export function Navigation({
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     Staff
+                                </Link>
+                            )}
+
+                            {(isStaff || isAdmin) && (
+                                <Link
+                                    href="/create-event"
+                                    className="text-muted-foreground hover:text-foreground transition-colors py-2"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    Create Event
                                 </Link>
                             )}
 

@@ -213,83 +213,74 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                         <div className="sticky top-24 space-y-6">
                             {/* Registration/Ticket Section */}
                             {event.is_paid && ticketTypes.length > 0 ? (
-                                <Card data-test-id="ticket-section">
-                                    <CardContent className="p-6">
-                                        <h2 className="text-xl font-semibold mb-4 text-foreground" data-test-id="ticket-section-title">Get Tickets</h2>
-
-                                        {checkoutStep === 'tickets' ? (
-                                            <div className="space-y-4" data-test-id="ticket-selection">
-                                                <div data-test-id="ticket-selection-component">
-                                                    <TicketSelection
-                                                        eventId={event.id}
-                                                        selectedTickets={selectedTickets}
-                                                        onTicketsChange={handleTicketsChange}
-                                                    />
-                                                </div>
-
-                                                {getTotalTickets() > 0 && (
-                                                    <div className="border-t border-border pt-4" data-test-id="ticket-summary">
-                                                        <div className="flex justify-between items-center mb-4">
-                                                            <span className="font-medium text-foreground">Total:</span>
-                                                            <span className="text-xl font-bold text-foreground" data-test-id="total-price">{formatPrice(getTotalPrice())}</span>
-                                                        </div>
-                                                        <button
-                                                            onClick={handleProceedToCheckout}
-                                                            className="w-full bg-primary text-primary-foreground py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors"
-                                                            data-test-id="proceed-to-checkout-button"
-                                                        >
-                                                            Proceed to Checkout
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-4" data-test-id="checkout-section">
-                                                <button
-                                                    onClick={handleBackToTickets}
-                                                    className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
-                                                    data-test-id="back-to-tickets-button"
-                                                >
-                                                    <ArrowLeft className="w-4 h-4" />
-                                                    Back to Tickets
-                                                </button>
-
-                                                <div data-test-id="checkout-form">
-                                                    <CheckoutForm
-                                                        eventId={event.id}
-                                                        selectedTickets={selectedTickets}
-                                                        onSuccess={(paymentIntentId) => {
-                                                            console.log('Payment successful:', paymentIntentId)
-                                                            // Handle success - could redirect or show success message
-                                                            setCheckoutStep('tickets')
-                                                        }}
-                                                        onCancel={() => {
-                                                            setCheckoutStep('tickets')
-                                                        }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            ) : (
-                                <Card data-test-id="rsvp-section">
-                                    <CardContent className="p-6">
-                                        <h2 className="text-xl font-semibold mb-4 text-foreground" data-test-id="rsvp-section-title">RSVP</h2>
-                                        <div data-test-id="rsvp-component">
-                                            <RSVPTicketSection
-                                                eventId={event.database_id || event.id}
-                                                eventTitle={event.title}
-                                                eventDate={formatDate(event.start_time)}
-                                                eventTime={formatTime(event.start_time)}
-                                                eventLocation={event.location || 'Location TBD'}
-                                                capacity={event.capacity}
-                                                currentRSVPs={event.rsvp_count}
-                                                isRegistrationOpen={true}
+                                checkoutStep === 'tickets' ? (
+                                    <div className="space-y-4" data-test-id="ticket-selection">
+                                        <div data-test-id="ticket-selection-component">
+                                            <TicketSelection
+                                                eventId={event.id}
+                                                selectedTickets={selectedTickets}
+                                                onTicketsChange={handleTicketsChange}
                                             />
                                         </div>
-                                    </CardContent>
-                                </Card>
+
+                                        {getTotalTickets() > 0 && (
+                                            <Card data-test-id="ticket-summary">
+                                                <CardContent className="p-4">
+                                                    <div className="flex justify-between items-center mb-4">
+                                                        <span className="font-medium text-foreground">Total:</span>
+                                                        <span className="text-xl font-bold text-foreground" data-test-id="total-price">{formatPrice(getTotalPrice())}</span>
+                                                    </div>
+                                                    <button
+                                                        onClick={handleProceedToCheckout}
+                                                        className="w-full bg-primary text-primary-foreground py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors"
+                                                        data-test-id="proceed-to-checkout-button"
+                                                    >
+                                                        Proceed to Checkout
+                                                    </button>
+                                                </CardContent>
+                                            </Card>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4" data-test-id="checkout-section">
+                                        <button
+                                            onClick={handleBackToTickets}
+                                            className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
+                                            data-test-id="back-to-tickets-button"
+                                        >
+                                            <ArrowLeft className="w-4 h-4" />
+                                            Back to Tickets
+                                        </button>
+
+                                        <div data-test-id="checkout-form">
+                                            <CheckoutForm
+                                                eventId={event.id}
+                                                selectedTickets={selectedTickets}
+                                                onSuccess={(paymentIntentId) => {
+                                                    console.log('Payment successful:', paymentIntentId)
+                                                    // Handle success - could redirect or show success message
+                                                    setCheckoutStep('tickets')
+                                                }}
+                                                onCancel={() => {
+                                                    setCheckoutStep('tickets')
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                )
+                            ) : (
+                                <div data-test-id="rsvp-component">
+                                    <RSVPTicketSection
+                                        eventId={event.database_id || event.id}
+                                        eventTitle={event.title}
+                                        eventDate={formatDate(event.start_time)}
+                                        eventTime={formatTime(event.start_time)}
+                                        eventLocation={event.location || 'Location TBD'}
+                                        capacity={event.capacity}
+                                        currentRSVPs={event.rsvp_count}
+                                        isRegistrationOpen={true}
+                                    />
+                                </div>
                             )}
 
                             {/* Event Stats */}

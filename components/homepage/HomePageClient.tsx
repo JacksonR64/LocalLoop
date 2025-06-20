@@ -11,12 +11,14 @@ import { Footer } from '@/components/ui/Footer';
 
 interface HomePageClientProps {
   featuredEvents: EventData[];
-  nonFeaturedEvents: EventData[];
+  upcomingEvents: EventData[];
+  pastEvents: EventData[];
 }
 
-export function HomePageClient({ featuredEvents, nonFeaturedEvents }: HomePageClientProps) {
+export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: HomePageClientProps) {
   const router = useRouter();
-  const [filteredEvents, setFilteredEvents] = React.useState(nonFeaturedEvents);
+  const [filteredEvents, setFilteredEvents] = React.useState(upcomingEvents);
+  const [showPastEvents, setShowPastEvents] = React.useState(false);
 
   // Memoize the filtered events setter to prevent infinite re-renders
   const handleFilteredEventsChange = React.useCallback((events: EventData[]) => {
@@ -33,11 +35,29 @@ export function HomePageClient({ featuredEvents, nonFeaturedEvents }: HomePageCl
     pageSize: 8
   });
 
-  // Infinite scroll setup
+  // Pagination for past events
+  const {
+    paginatedData: paginatedPastEvents,
+    loadMore: loadMorePast,
+    state: pastPaginationState
+  } = usePagination({
+    data: pastEvents,
+    pageSize: 8
+  });
+
+  // Infinite scroll setup for upcoming events
   const { loadingTriggerRef } = useInfiniteScroll({
     loadMore,
     hasMore: paginationState.hasMore,
     isLoading: paginationState.isLoading,
+    threshold: 300
+  });
+
+  // Infinite scroll setup for past events
+  const { loadingTriggerRef: pastLoadingTriggerRef } = useInfiniteScroll({
+    loadMore: loadMorePast,
+    hasMore: pastPaginationState.hasMore,
+    isLoading: pastPaginationState.isLoading,
     threshold: 300
   });
 
@@ -48,10 +68,9 @@ export function HomePageClient({ featuredEvents, nonFeaturedEvents }: HomePageCl
 
   // Category filter handler for hero pills
   const handleCategoryFilter = (category: string) => {
-    // Filter events by category and update filtered events
-    const allEvents = [...featuredEvents, ...nonFeaturedEvents];
-    const categoryFiltered = allEvents.filter(event =>
-      !event.featured && event.category && event.category.toLowerCase() === category.toLowerCase()
+    // Filter upcoming events by category
+    const categoryFiltered = upcomingEvents.filter(event =>
+      event.category && event.category.toLowerCase() === category.toLowerCase()
     );
     handleFilteredEventsChange(categoryFiltered);
 
@@ -64,7 +83,7 @@ export function HomePageClient({ featuredEvents, nonFeaturedEvents }: HomePageCl
 
   // View all events handler
   const handleViewAll = () => {
-    handleFilteredEventsChange(nonFeaturedEvents);
+    handleFilteredEventsChange(upcomingEvents);
     const upcomingSection = document.getElementById('upcoming-events');
     if (upcomingSection) {
       upcomingSection.scrollIntoView({ behavior: 'smooth' });
@@ -85,7 +104,7 @@ export function HomePageClient({ featuredEvents, nonFeaturedEvents }: HomePageCl
           {/* EventFilters Integration */}
           <div className="max-w-3xl mx-auto mb-6 sm:mb-8" data-test-id="event-filters-container">
             <EventFilters
-              events={nonFeaturedEvents}
+              events={upcomingEvents}
               onFilteredEventsChange={handleFilteredEventsChange}
               showSearch={true}
               showActiveFilters={true}
@@ -212,6 +231,56 @@ export function HomePageClient({ featuredEvents, nonFeaturedEvents }: HomePageCl
             </>
           )}
         </section>
+
+        {/* Past Events Section */}
+        {pastEvents.length > 0 && (
+          <section className="mt-12 sm:mt-16" data-test-id="past-events-section">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground" data-test-id="past-events-title">Past Events</h2>
+              <button
+                onClick={() => setShowPastEvents(!showPastEvents)}
+                className="text-muted-foreground hover:text-foreground font-medium text-left sm:text-right transition-colors"
+                data-test-id="toggle-past-events-button"
+              >
+                {showPastEvents ? 'Hide Past Events' : 'Show Past Events'} {showPastEvents ? '↑' : '↓'}
+              </button>
+            </div>
+
+            {showPastEvents && (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" data-test-id="past-events-grid">
+                  {paginatedPastEvents.map((event) => (
+                    <div key={event.id} data-test-id={`past-event-${event.id}`}>
+                      <EventCard
+                        event={event}
+                        size="md"
+                        onClick={() => handleEventClick(event.id)}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Past Events Infinite Scroll Loading Trigger */}
+                <div ref={pastLoadingTriggerRef} className="mt-6 sm:mt-8" data-test-id="past-events-loading-trigger">
+                  {pastPaginationState.isLoading && (
+                    <div data-test-id="past-events-loading-spinner">
+                      <LoadingSpinner
+                        size="md"
+                        text="Loading more past events..."
+                        className="py-6 sm:py-8"
+                      />
+                    </div>
+                  )}
+                  {!pastPaginationState.hasMore && paginatedPastEvents.length > 0 && (
+                    <div className="text-center py-6 sm:py-8 text-gray-500" data-test-id="end-of-past-events-message">
+                      <p>You&apos;ve reached the end of the past events list.</p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </section>
+        )}
       </main>
 
       <Footer />

@@ -25,9 +25,7 @@ import {
     AlertCircle,
     Save,
     X,
-    Plus,
-    Eye,
-    EyeOff
+    Plus
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -60,6 +58,7 @@ interface EventFormProps {
     isEdit?: boolean
     onSuccess?: (eventId: string) => void
     onCancel?: () => void
+    showPreview?: boolean
 }
 
 const CATEGORIES = [
@@ -114,7 +113,6 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
     const [error, setError] = useState<string | null>(null)
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
     const [tagInput, setTagInput] = useState('')
-    const [showPreview, setShowPreview] = useState(false)
 
     // Load event data for editing
     const loadEventData = useCallback(async () => {
@@ -384,30 +382,7 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">
-                        {isEdit ? 'Edit Event' : 'Create New Event'}
-                    </h1>
-                    <p className="text-gray-600 mt-1">
-                        {isEdit ? 'Update your event details below' : 'Fill in the details below to create your event'}
-                    </p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setShowPreview(!showPreview)}
-                        className="flex items-center gap-2"
-                    >
-                        {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        {showPreview ? 'Hide Preview' : 'Show Preview'}
-                    </Button>
-                </div>
-            </div>
+        <div className="max-w-4xl mx-auto space-y-6">
 
             {error && (
                 <Alert className="border-red-200 bg-red-50">
@@ -416,7 +391,7 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                 </Alert>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Basic Information */}
                 <Card>
                     <CardHeader>
@@ -425,27 +400,28 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                             Basic Information
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <CardContent className="space-y-4 p-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="md:col-span-2">
-                                <Label htmlFor="title">Event Title *</Label>
+                                <Label htmlFor="title" className="block mb-2">Event Title *</Label>
                                 <Input
                                     id="title"
                                     value={formData.title}
                                     onChange={(e) => handleInputChange('title', e.target.value)}
-                                    placeholder="Enter a compelling event title"
+                                    placeholder="Summer Food Truck Festival"
                                     className={cn(validationErrors.title && 'border-red-500')}
                                 />
                                 {validationErrors.title && (
                                     <p className="text-red-500 text-sm mt-1">{validationErrors.title}</p>
                                 )}
-                                <div className="flex justify-between items-center mt-1">
-                                    <p className="text-gray-500 text-sm">
+                                <div className="flex justify-between items-center mt-2">
+                                    <p className="text-muted-foreground text-sm">
+
                                         Keep it concise and engaging
                                     </p>
                                     <p className={cn(
                                         "text-sm",
-                                        formData.title.length > 60 ? "text-orange-600 font-medium" : "text-gray-400"
+                                        formData.title.length > 60 ? "text-orange-600 font-medium" : "text-muted-foreground"
                                     )}>
                                         {formData.title.length}/60
                                     </p>
@@ -458,24 +434,24 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                             </div>
 
                             <div>
-                                <Label htmlFor="slug">URL Slug *</Label>
+                                <Label htmlFor="slug" className="block mb-2">URL Slug *</Label>
                                 <Input
                                     id="slug"
                                     value={formData.slug}
                                     onChange={(e) => handleInputChange('slug', e.target.value)}
-                                    placeholder="event-url-slug"
+                                    placeholder="summer-food-truck-festival"
                                     className={cn(validationErrors.slug && 'border-red-500')}
                                 />
                                 {validationErrors.slug && (
                                     <p className="text-red-500 text-sm mt-1">{validationErrors.slug}</p>
                                 )}
-                                <p className="text-gray-500 text-sm mt-1">
+                                <p className="text-muted-foreground text-sm mt-2">
                                     This will be part of your event URL
                                 </p>
                             </div>
 
                             <div>
-                                <Label htmlFor="category">Category *</Label>
+                                <Label htmlFor="category" className="block mb-2">Category *</Label>
                                 <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select category" />
@@ -491,15 +467,16 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                             </div>
 
                             <div className="md:col-span-2">
-                                <Label htmlFor="short_description">Short Description</Label>
+                                <Label htmlFor="short_description" className="block mb-2">Short Description</Label>
                                 <Input
                                     id="short_description"
                                     value={formData.short_description}
                                     onChange={(e) => handleInputChange('short_description', e.target.value)}
-                                    placeholder="Brief one-line description (optional)"
+                                    placeholder="Local food trucks with diverse cuisines and live music"
                                 />
                                 <div className="flex justify-between items-center mt-1">
-                                    <p className="text-gray-500 text-sm">
+                                    <p className="text-muted-foreground text-sm">
+
                                         This appears in event listings and search results
                                     </p>
                                     <p className={cn(
@@ -517,12 +494,12 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                             </div>
 
                             <div className="md:col-span-2">
-                                <Label htmlFor="description">Full Description *</Label>
+                                <Label htmlFor="description" className="block mb-2">Full Description *</Label>
                                 <Textarea
                                     id="description"
                                     value={formData.description}
                                     onChange={(e) => handleInputChange('description', e.target.value)}
-                                    placeholder="Provide detailed information about your event..."
+                                    placeholder="Join us for a celebration of local food trucks featuring diverse cuisines from around the world. Enjoy live music, family activities, and delicious food from 15+ local vendors. Free parking available at the community center."
                                     rows={6}
                                     className={cn(validationErrors.description && 'border-red-500')}
                                 />
@@ -542,10 +519,10 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                             Date & Time
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-4 p-6">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
-                                <Label htmlFor="start_time">Start Date & Time *</Label>
+                                <Label htmlFor="start_time" className="block mb-2">Start Date & Time *</Label>
                                 <Input
                                     id="start_time"
                                     type="datetime-local"
@@ -559,7 +536,7 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                             </div>
 
                             <div>
-                                <Label htmlFor="end_time">End Date & Time *</Label>
+                                <Label htmlFor="end_time" className="block mb-2">End Date & Time *</Label>
                                 <Input
                                     id="end_time"
                                     type="datetime-local"
@@ -573,7 +550,7 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                             </div>
 
                             <div>
-                                <Label htmlFor="timezone">Timezone</Label>
+                                <Label htmlFor="timezone" className="block mb-2">Timezone</Label>
                                 <Select value={formData.timezone} onValueChange={(value) => handleInputChange('timezone', value)}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select timezone" />
@@ -599,25 +576,25 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                             Location
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-4 p-6">
                         <div className="flex items-center space-x-2">
                             <Switch
                                 id="is_online"
                                 checked={formData.is_online}
                                 onCheckedChange={(checked) => handleInputChange('is_online', checked)}
                             />
-                            <Label htmlFor="is_online">This is an online event</Label>
+                            <Label htmlFor="is_online" className="font-medium">This is an online event</Label>
                         </div>
 
                         {formData.is_online ? (
                             <div>
-                                <Label htmlFor="online_url">Online Event URL *</Label>
+                                <Label htmlFor="online_url" className="block mb-2">Online Event URL *</Label>
                                 <Input
                                     id="online_url"
                                     type="url"
                                     value={formData.online_url}
                                     onChange={(e) => handleInputChange('online_url', e.target.value)}
-                                    placeholder="https://zoom.us/j/123456789"
+                                    placeholder="https://youtube.com/live/food-truck-festival"
                                     className={cn(validationErrors.online_url && 'border-red-500')}
                                 />
                                 {validationErrors.online_url && (
@@ -627,12 +604,12 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                         ) : (
                             <div className="space-y-4">
                                 <div>
-                                    <Label htmlFor="location">Venue/Location *</Label>
+                                    <Label htmlFor="location" className="block mb-2">Venue/Location *</Label>
                                     <Input
                                         id="location"
                                         value={formData.location}
                                         onChange={(e) => handleInputChange('location', e.target.value)}
-                                        placeholder="Venue name or address"
+                                        placeholder="Downtown Plaza, 123 Main Street"
                                         className={cn(validationErrors.location && 'border-red-500')}
                                     />
                                     {validationErrors.location && (
@@ -641,26 +618,26 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                                 </div>
 
                                 <div>
-                                    <Label htmlFor="location_details">Location Details</Label>
+                                    <Label htmlFor="location_details" className="block mb-2">Location Details</Label>
                                     <Textarea
                                         id="location_details"
                                         value={formData.location_details}
                                         onChange={(e) => handleInputChange('location_details', e.target.value)}
-                                        placeholder="Additional location details, directions, parking info..."
+                                        placeholder="Free parking available behind the community center. Enter from Oak Street entrance."
                                         rows={3}
                                     />
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <Label htmlFor="latitude">Latitude (optional)</Label>
+                                        <Label htmlFor="latitude" className="block mb-2">Latitude (optional)</Label>
                                         <Input
                                             id="latitude"
                                             type="number"
                                             step="any"
                                             value={formData.latitude}
                                             onChange={(e) => handleInputChange('latitude', e.target.value)}
-                                            placeholder="40.7128"
+                                            placeholder="40.7580"
                                             className={cn(validationErrors.latitude && 'border-red-500')}
                                         />
                                         {validationErrors.latitude && (
@@ -669,14 +646,14 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                                     </div>
 
                                     <div>
-                                        <Label htmlFor="longitude">Longitude (optional)</Label>
+                                        <Label htmlFor="longitude" className="block mb-2">Longitude (optional)</Label>
                                         <Input
                                             id="longitude"
                                             type="number"
                                             step="any"
                                             value={formData.longitude}
                                             onChange={(e) => handleInputChange('longitude', e.target.value)}
-                                            placeholder="-74.0060"
+                                            placeholder="-73.9855"
                                             className={cn(validationErrors.longitude && 'border-red-500')}
                                         />
                                         {validationErrors.longitude && (
@@ -697,23 +674,23 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                             Capacity & Ticketing
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <CardContent className="space-y-4 p-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <Label htmlFor="capacity">Event Capacity</Label>
+                                <Label htmlFor="capacity" className="block mb-2">Event Capacity</Label>
                                 <Input
                                     id="capacity"
                                     type="number"
                                     min="1"
                                     value={formData.capacity}
                                     onChange={(e) => handleInputChange('capacity', e.target.value)}
-                                    placeholder="Leave empty for unlimited"
+                                    placeholder="500"
                                     className={cn(validationErrors.capacity && 'border-red-500')}
                                 />
                                 {validationErrors.capacity && (
                                     <p className="text-red-500 text-sm mt-1">{validationErrors.capacity}</p>
                                 )}
-                                <p className="text-gray-500 text-sm mt-1">
+                                <p className="text-muted-foreground text-sm mt-2">
                                     Maximum number of attendees (leave empty for unlimited)
                                 </p>
                             </div>
@@ -724,7 +701,7 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                                     checked={formData.is_paid}
                                     onCheckedChange={(checked) => handleInputChange('is_paid', checked)}
                                 />
-                                <Label htmlFor="is_paid">This is a paid event</Label>
+                                <Label htmlFor="is_paid" className="font-medium">This is a paid event</Label>
                             </div>
                         </div>
 
@@ -747,31 +724,31 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                             Media & Presentation
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <CardContent className="space-y-4 p-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <Label htmlFor="image_url">Event Image URL</Label>
+                                <Label htmlFor="image_url" className="block mb-2">Event Image URL</Label>
                                 <Input
                                     id="image_url"
                                     type="url"
                                     value={formData.image_url}
                                     onChange={(e) => handleInputChange('image_url', e.target.value)}
-                                    placeholder="https://example.com/event-image.jpg"
+                                    placeholder="https://images.unsplash.com/food-trucks-downtown-plaza.jpg"
                                 />
-                                <p className="text-gray-500 text-sm mt-1">
+                                <p className="text-muted-foreground text-sm mt-2">
                                     URL to an image that represents your event
                                 </p>
                             </div>
 
                             <div>
-                                <Label htmlFor="image_alt_text">Image Alt Text</Label>
+                                <Label htmlFor="image_alt_text" className="block mb-2">Image Alt Text</Label>
                                 <Input
                                     id="image_alt_text"
                                     value={formData.image_alt_text}
                                     onChange={(e) => handleInputChange('image_alt_text', e.target.value)}
-                                    placeholder="Describe the image for accessibility"
+                                    placeholder="Colorful food trucks lined up in downtown plaza with people enjoying meals"
                                 />
-                                <p className="text-gray-500 text-sm mt-1">
+                                <p className="text-muted-foreground text-sm mt-2">
                                     Describe the image for accessibility
                                 </p>
                             </div>
@@ -798,7 +775,7 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                                 <Input
                                     value={tagInput}
                                     onChange={(e) => setTagInput(e.target.value)}
-                                    placeholder="Add a tag"
+                                    placeholder="food, music, family-friendly"
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
                                             e.preventDefault()
@@ -825,14 +802,14 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                             Publishing Options
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 p-6">
                         <div className="flex items-center space-x-2">
                             <Switch
                                 id="published"
                                 checked={formData.published}
                                 onCheckedChange={(checked) => handleInputChange('published', checked)}
                             />
-                            <Label htmlFor="published">Publish event (make it visible to the public)</Label>
+                            <Label htmlFor="published" className="font-medium">Publish event (make it visible to the public)</Label>
                         </div>
 
                         <div className="flex items-center space-x-2">
@@ -841,7 +818,7 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                                 checked={formData.featured}
                                 onCheckedChange={(checked) => handleInputChange('featured', checked)}
                             />
-                            <Label htmlFor="featured">Feature this event (appears in featured section)</Label>
+                            <Label htmlFor="featured" className="font-medium">Feature this event (appears in featured section)</Label>
                         </div>
                     </CardContent>
                 </Card>

@@ -25,9 +25,11 @@ export default async function StaffEventCreatePage() {
     return (
         <div className="min-h-screen bg-background">
             <div className="max-w-4xl mx-auto py-8 px-4">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-foreground">Create New Event</h1>
-                    <p className="mt-2 text-muted-foreground">Create and manage your event details</p>
+                <div className="mb-6 flex items-start justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold text-foreground">Create New Event</h1>
+                        <p className="mt-2 text-muted-foreground">Create and manage your event details</p>
+                    </div>
                 </div>
                 <StaffEventCreateClient />
             </div>

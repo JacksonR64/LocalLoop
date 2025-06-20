@@ -171,13 +171,13 @@ export default function TicketSelection({
     return (
         <div className="space-y-6" data-test-id="ticket-selection-container">
             <Card data-test-id="ticket-types-card">
-                <CardHeader>
+                <CardHeader className="pb-6">
                     <CardTitle className="flex items-center gap-2" data-test-id="ticket-section-title">
                         <ShoppingCart className="h-5 w-5" />
                         Get Your Tickets
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 pt-0">
                     {ticketTypes.map((ticket) => {
                         // Handle undefined sold_count gracefully
                         const soldCount = ticket.sold_count || 0
