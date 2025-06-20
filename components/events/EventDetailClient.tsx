@@ -214,7 +214,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                             {/* Registration/Ticket Section */}
                             {event.is_paid && ticketTypes.length > 0 ? (
                                 checkoutStep === 'tickets' ? (
-                                    <div className="space-y-4" data-test-id="ticket-selection">
+                                    <div className="space-y-4" data-test-id="ticket-section">
                                         <div data-test-id="ticket-selection-component">
                                             <TicketSelection
                                                 eventId={event.id}
@@ -269,7 +269,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                     </div>
                                 )
                             ) : (
-                                <div data-test-id="rsvp-component">
+                                <div data-test-id="rsvp-section">
                                     <RSVPTicketSection
                                         eventId={event.database_id || event.id}
                                         eventTitle={event.title}

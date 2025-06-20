@@ -36,15 +36,25 @@ export function Navigation({
 
 
     return (
-        <header className={`bg-card shadow-sm border-b border-border sticky top-0 z-50 ${className}`} data-test-id="homepage-header">
+        <>
+            {/* Skip link for keyboard navigation */}
+            <a
+                href="#main-content"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-lg focus:z-[60] focus:outline-none focus:ring-2 focus:ring-ring"
+                data-test-id="skip-to-main-content"
+            >
+                Skip to main content
+            </a>
+            <header className={`bg-card shadow-sm border-b border-border sticky top-0 z-50 ${className}`} data-test-id="homepage-header">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Left side - Logo and Admin/Staff Badge */}
                     <div className="flex items-center gap-3">
-                        <Link href="/" className="flex items-center gap-2">
+                        <Link href="/" className="flex items-center gap-2" data-test-id="homepage-logo">
                             <Image 
                                 src="/logo.svg" 
-                                alt="" 
+                                alt="LocalLoop logo" 
+
                                 width={48}
                                 height={48}
                                 className="w-12 h-12" 
@@ -54,15 +64,19 @@ export function Navigation({
                         
                         {/* Admin/Staff Badge */}
                         {user && (isAdmin || isStaff) && (
-                            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                                isAdmin 
-                                    ? 'bg-red-100 text-red-700 border border-red-200' 
-                                    : 'bg-blue-100 text-blue-700 border border-blue-200'
-                            }`}>
+                            <div 
+                                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                                    isAdmin 
+                                        ? 'bg-red-100 text-red-700 border border-red-200' 
+                                        : 'bg-blue-100 text-blue-700 border border-blue-200'
+                                }`}
+                                aria-label={`Current user role: ${isAdmin ? 'Administrator' : 'Staff member'}`}
+                                data-test-id="user-role-badge"
+                            >
                                 {isAdmin ? (
-                                    <Settings className="w-3 h-3" />
+                                    <Settings className="w-3 h-3" aria-hidden="true" />
                                 ) : (
-                                    <Shield className="w-3 h-3" />
+                                    <Shield className="w-3 h-3" aria-hidden="true" />
                                 )}
                                 <span className="hidden sm:inline">
                                     {isAdmin ? 'Admin' : 'Staff'}
@@ -74,10 +88,10 @@ export function Navigation({
                     {/* Right side - Full Navigation (always shown) */}
                     <>
                         {/* Desktop Navigation */}
-                        <nav className="hidden md:flex items-center gap-6" data-test-id="desktop-navigation">
+                        <nav className="hidden md:flex items-center gap-6" aria-label="Primary navigation" data-test-id="desktop-navigation">
 
                             {(isStaff || isAdmin) && (
-                                <Link href="/staff" className="text-muted-foreground hover:text-foreground transition-colors">
+                                <Link href="/staff" className="text-muted-foreground hover:text-foreground transition-colors" data-test-id="staff-link">
                                     Staff
                                 </Link>
                             )}
@@ -95,6 +109,7 @@ export function Navigation({
                             <Link
                                 href="/my-events"
                                 className="text-muted-foreground hover:text-foreground transition-colors"
+                                data-test-id="my-events-link"
                             >
                                 My Events
                             </Link>
@@ -119,6 +134,7 @@ export function Navigation({
                                     className={`bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-all duration-200 ${
                                         authLoading ? 'opacity-75 pointer-events-none' : 'opacity-100'
                                     }`}
+                                    data-test-id="sign-in-link"
                                 >
                                     Sign In
                                 </Link>
@@ -133,9 +149,9 @@ export function Navigation({
                             data-test-id="mobile-menu-button"
                         >
                             {isMobileMenuOpen ? (
-                                <X className="w-6 h-6 text-muted-foreground" />
+                                <X className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
                             ) : (
-                                <Menu className="w-6 h-6 text-muted-foreground" />
+                                <Menu className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
                             )}
                         </button>
                     </>
@@ -143,7 +159,7 @@ export function Navigation({
 
                 {/* Mobile Navigation */}
                 {isMobileMenuOpen && (
-                    <div className="md:hidden border-t border-border py-4">
+                    <div className="md:hidden border-t border-border py-4" data-test-id="mobile-navigation">
                         {/* Mobile Admin/Staff Badge */}
                         {user && (isAdmin || isStaff) && (
                             <div className="mb-4 flex justify-center">
@@ -162,13 +178,15 @@ export function Navigation({
                             </div>
                         )}
                         
-                        <nav className="flex flex-col space-y-4">
+                        <nav className="flex flex-col space-y-4" aria-label="Mobile navigation">
+
 
                             {(isStaff || isAdmin) && (
                                 <Link
                                     href="/staff"
                                     className="text-muted-foreground hover:text-foreground transition-colors py-2"
                                     onClick={() => setIsMobileMenuOpen(false)}
+                                    data-test-id="mobile-staff-link"
                                 >
                                     Staff
                                 </Link>
@@ -179,6 +197,7 @@ export function Navigation({
                                     href="/create-event"
                                     className="text-muted-foreground hover:text-foreground transition-colors py-2"
                                     onClick={() => setIsMobileMenuOpen(false)}
+                                    data-test-id="mobile-create-event-link"
                                 >
                                     Create Event
                                 </Link>
@@ -188,6 +207,7 @@ export function Navigation({
                                 href="/my-events"
                                 className="text-muted-foreground hover:text-foreground transition-colors py-2"
                                 onClick={() => setIsMobileMenuOpen(false)}
+                                data-test-id="mobile-my-events-link"
                             >
                                 My Events
                             </Link>
@@ -198,6 +218,7 @@ export function Navigation({
                                     setIsMobileMenuOpen(false)
                                 }}
                                 className="text-muted-foreground hover:text-foreground transition-colors py-2 text-left"
+                                data-test-id="mobile-browse-events-button"
                             >
                                 Browse Events
                             </button>
@@ -215,6 +236,7 @@ export function Navigation({
                                         authLoading ? 'opacity-75 pointer-events-none' : 'opacity-100'
                                     }`}
                                     onClick={() => setIsMobileMenuOpen(false)}
+                                    data-test-id="mobile-sign-in-link"
                                 >
                                     Sign In
                                 </Link>
@@ -224,5 +246,6 @@ export function Navigation({
                 )}
             </div>
         </header>
+        </>
     )
 } 

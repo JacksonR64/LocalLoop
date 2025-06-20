@@ -93,8 +93,8 @@ function SafeImage({
 
     if (hasError || !src) {
         return (
-            <div className={`bg-muted flex items-center justify-center ${className}`}>
-                <ImageIcon className="w-8 h-8 text-muted-foreground" />
+            <div className={`bg-muted flex items-center justify-center ${className}`} role="img" aria-label="Event image unavailable">
+                <ImageIcon className="w-8 h-8 text-muted-foreground" aria-hidden="true" />
             </div>
         );
     }
@@ -166,12 +166,19 @@ export function EventCard({
 
 // Default Card Style (same as current homepage implementation)
 function DefaultCard({ event, size, featured, showImage, className, onClick, spotsRemaining, isUpcoming, hasPrice, lowestPrice, isSoon }: Readonly<CardComponentProps>) {
+    const cardId = `event-card-${event.id}`
+    
+
     return (
         <Card
             size={size}
             variant={featured ? 'elevated' : 'default'}
             className={`hover:shadow-lg transition-shadow cursor-pointer group ${className}`}
             onClick={onClick}
+            role="article"
+            aria-labelledby={`${cardId}-title`}
+            aria-describedby={`${cardId}-description ${cardId}-details`}
+            data-test-id={`event-card-${event.id}`}
         >
             {showImage && event.image_url && (
                 <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
@@ -186,7 +193,11 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                     />
                     {featured && (
                         <div className="absolute top-3 left-3">
-                            <span className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-medium">
+                            <span 
+                                className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-medium"
+                                aria-label="Featured event"
+                                data-test-id="featured-badge"
+                            >
                                 Featured
                             </span>
                         </div>
@@ -196,51 +207,78 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
 
             <CardHeader>
                 <div className="flex items-start justify-between">
-                    <CardTitle as={featured ? 'h2' : 'h3'} className={`${featured ? 'text-lg' : 'text-base'} line-clamp-2 min-h-[3rem] leading-relaxed pr-2`}>
+                    <CardTitle 
+                        as={featured ? 'h2' : 'h3'} 
+                        className={`${featured ? 'text-lg' : 'text-base'} line-clamp-2 min-h-[3rem] leading-relaxed pr-2`}
+                        id={`${cardId}-title`}
+                    >
                         {event.title}
                     </CardTitle>
                     <div className="flex gap-2">
                         {!event.is_paid && isUpcoming && (
-                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                            <span 
+                                className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full"
+                                aria-label="Free event"
+                                data-test-id="free-badge"
+                            >
+
                                 Free
                             </span>
                         )}
                         {event.is_paid && (
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                            <span 
+                                className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full"
+                                aria-label={`Paid event, ${hasPrice ? `starting at ${formatPrice(lowestPrice)}` : 'pricing available'}`}
+                                data-test-id="paid-badge"
+                            >
+
                                 {hasPrice ? formatPrice(lowestPrice) : 'Paid'}
                             </span>
                         )}
                         {isSoon && (
-                            <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
+                            <span 
+                                className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full"
+                                aria-label="Event starting soon"
+                                data-test-id="soon-badge"
+                            >
+
                                 Soon
                             </span>
                         )}
                         {!isUpcoming && (
-                            <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                            <span 
+                                className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full"
+                                aria-label="Past event"
+                                data-test-id="past-badge"
+                            >
+
                                 Past
                             </span>
                         )}
                     </div>
                 </div>
-                <CardDescription className="min-h-[3rem] line-clamp-2 text-sm leading-relaxed">
+                <CardDescription 
+                    className="min-h-[3rem] line-clamp-2 text-sm leading-relaxed"
+                    id={`${cardId}-description`}
+                >
                     {getEventCardDescription(event.description, event.short_description)}
                 </CardDescription>
             </CardHeader>
 
             <CardContent>
-                <div className="space-y-2 text-sm">
+                <div className="space-y-2 text-sm" id={`${cardId}-details`}>
                     <div className="flex items-center gap-2 text-muted-foreground">
-                        <Calendar className="w-4 h-4 flex-shrink-0" />
+                        <Calendar className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
                         <span>{formatDateTime(event.start_time)}</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-muted-foreground">
-                        <MapPin className="w-4 h-4 flex-shrink-0" />
+                        <MapPin className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
                         <span className="line-clamp-2">{formatLocationForCard(event.location)}</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-muted-foreground">
-                        <Users className="w-4 h-4 flex-shrink-0" />
+                        <Users className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
                         <span>
                             {event.rsvp_count} attending
                             {spotsRemaining && spotsRemaining > 0 && ` • ${spotsRemaining} spots left`}
@@ -248,7 +286,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                     </div>
 
                     <div className="flex items-center gap-2 text-muted-foreground">
-                        <Tag className="w-4 h-4 flex-shrink-0" />
+                        <Tag className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
                         <span className="capitalize">{event.category || 'General'}</span>
                     </div>
                 </div>
@@ -258,9 +296,13 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                 <span className="text-sm text-muted-foreground">
                     by {event.organizer.display_name}
                 </span>
-                <button className="text-blue-600 hover:text-blue-800 font-medium text-sm group-hover:underline flex items-center gap-1">
+                <button 
+                    className="text-blue-600 hover:text-blue-800 font-medium text-sm group-hover:underline flex items-center gap-1"
+                    aria-label={`View details for ${event.title}`}
+                    data-test-id="view-details-button"
+                >
                     View Details
-                    <ExternalLink className="w-3 h-3" />
+                    <ExternalLink className="w-3 h-3" aria-hidden="true" />
                 </button>
             </CardFooter>
         </Card>
