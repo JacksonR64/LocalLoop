@@ -39,7 +39,7 @@ test.describe('Authentication System Tests', () => {
                 sessionStorage.clear();
             });
         } catch (error) {
-            console.log('Cleanup navigation failed, skipping storage clear:', error.message || error);
+            console.log('Cleanup navigation failed, skipping storage clear:', error instanceof Error ? error.message : String(error));
         }
         
         // Clear cookies
@@ -61,7 +61,7 @@ test.describe('Authentication System Tests', () => {
             console.log('✅ Standard user login test passed');
         });
 
-        test('should login with staff credentials', async () => {
+        test('should login with staff credentials', async ({ page }) => {
             await helpers.auth.loginAsStaff();
             
             // Verify authentication state
@@ -73,7 +73,7 @@ test.describe('Authentication System Tests', () => {
                 // If we get here without 403/401, staff access is working
                 console.log('✅ Staff area accessible');
             } catch (error) {
-                console.log('ℹ️ Staff area not accessible or doesn\'t exist:', error.message || error);
+                console.log('ℹ️ Staff area not accessible or doesn\'t exist:', error instanceof Error ? error.message : String(error));
             }
             
             console.log('✅ Staff user login test passed');
@@ -95,7 +95,7 @@ test.describe('Authentication System Tests', () => {
                 expect(await helpers.auth.isAuthenticated()).toBe(false);
             } catch (error) {
                 // Expected behavior - login should fail
-                console.log('Expected login failure:', error.message || error);
+                console.log('Expected login failure:', error instanceof Error ? error.message : String(error));
                 expect(await helpers.auth.isAuthenticated()).toBe(false);
                 console.log('✅ Invalid credentials handled correctly');
             }
@@ -110,13 +110,13 @@ test.describe('Authentication System Tests', () => {
                 expect(await helpers.auth.isAuthenticated()).toBe(true);
                 console.log('✅ Google OAuth test passed');
             } catch (error) {
-                console.log('ℹ️ Google OAuth not fully implemented yet:', error.message || error);
+                console.log('ℹ️ Google OAuth not fully implemented yet:', error instanceof Error ? error.message : String(error));
             }
         });
     });
 
     test.describe('Guest Access', () => {
-        test('should allow guest access to public content', async () => {
+        test('should allow guest access to public content', async ({ page }) => {
             await helpers.auth.proceedAsGuest();
             
             // Verify we're not authenticated
@@ -152,7 +152,7 @@ test.describe('Authentication System Tests', () => {
                 await helpers.auth.loginWithEmail('invalid@test.com', 'wrong');
             } catch (error) {
                 // Expected to fail
-                console.log('Expected failed login:', error.message || error);
+                console.log('Expected failed login:', error instanceof Error ? error.message : String(error));
             }
             
             // Should still be in guest state
@@ -192,14 +192,14 @@ test.describe('Authentication System Tests', () => {
                 await page.goto('/dashboard');
                 console.log('✅ Dashboard accessible');
             } catch (error) {
-                console.log('ℹ️ Dashboard route not available:', error.message || error);
+                console.log('ℹ️ Dashboard route not available:', error instanceof Error ? error.message : String(error));
             }
             
             try {
                 await page.goto('/profile');
                 console.log('✅ Profile accessible');
             } catch (error) {
-                console.log('ℹ️ Profile route not available:', error.message || error);
+                console.log('ℹ️ Profile route not available:', error instanceof Error ? error.message : String(error));
             }
             
             console.log('✅ User dashboard pattern test passed');
@@ -207,7 +207,7 @@ test.describe('Authentication System Tests', () => {
     });
 
     test.describe('Authentication State Persistence', () => {
-        test('should maintain authentication across page navigations', async () => {
+        test('should maintain authentication across page navigations', async ({ page }) => {
             await helpers.auth.loginAsUser();
             expect(await helpers.auth.isAuthenticated()).toBe(true);
             console.log('✅ Initial login verified');
@@ -236,7 +236,7 @@ test.describe('Authentication System Tests', () => {
             console.log('✅ Authentication persistence test passed');
         });
 
-        test('should handle page refresh while authenticated', async () => {
+        test('should handle page refresh while authenticated', async ({ page }) => {
             await helpers.auth.loginAsUser();
             expect(await helpers.auth.isAuthenticated()).toBe(true);
             
@@ -263,7 +263,7 @@ test.describe('Authentication System Tests', () => {
                 await helpers.auth.loginAsUser();
                 console.log('✅ Slow auth network test passed');
             } catch (error) {
-                console.log('ℹ️ Auth timeout handled gracefully:', error.message || error);
+                console.log('ℹ️ Auth timeout handled gracefully:', error instanceof Error ? error.message : String(error));
             }
         });
 

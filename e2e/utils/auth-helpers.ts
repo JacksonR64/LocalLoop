@@ -20,7 +20,7 @@ export class AuthHelpers {
             await this.page.waitForLoadState('networkidle', { timeout: 3000 });
         } catch (error) {
             // If networkidle fails, just wait for domcontentloaded
-            console.log('Network idle wait failed, using domcontentloaded:', error.message || error);
+            console.log('Network idle wait failed, using domcontentloaded:', error instanceof Error ? error.message : String(error));
             await this.page.waitForLoadState('domcontentloaded');
         }
 
@@ -57,7 +57,7 @@ export class AuthHelpers {
                 console.log('Tried Enter key submission as fallback');
             } catch (error) {
                 // Continue if Enter press fails
-                console.log('Enter key press failed:', error.message || error);
+                console.log('Enter key press failed:', error instanceof Error ? error.message : String(error));
             }
         }
         
@@ -68,7 +68,7 @@ export class AuthHelpers {
             console.log('✅ Redirected after login');
         } catch (error) {
             // If no redirect, check if we're still on login page but auth state changed
-            console.log('No redirect detected, checking auth state...', error.message || error);
+            console.log('No redirect detected, checking auth state...', error instanceof Error ? error.message : String(error));
             // Wait longer for auth to process
             await this.page.waitForTimeout(2000);
         }
@@ -115,7 +115,7 @@ export class AuthHelpers {
             await this.page.waitForLoadState('networkidle', { timeout: 3000 });
         } catch (error) {
             // If networkidle fails, just wait for domcontentloaded
-            console.log('Network idle wait failed, using domcontentloaded:', error.message || error);
+            console.log('Network idle wait failed, using domcontentloaded:', error instanceof Error ? error.message : String(error));
             await this.page.waitForLoadState('domcontentloaded');
         }
 
@@ -250,7 +250,7 @@ export class AuthHelpers {
             try {
                 await this.page.waitForLoadState('networkidle', { timeout: 3000 });
             } catch (error) {
-                console.log('Network idle wait failed during logout:', error.message || error);
+                console.log('Network idle wait failed during logout:', error instanceof Error ? error.message : String(error));
                 await this.page.waitForLoadState('domcontentloaded');
                 await this.page.waitForTimeout(1000);
             }
@@ -266,7 +266,7 @@ export class AuthHelpers {
             await this.page.waitForLoadState('networkidle', { timeout: 2000 });
         } catch (error) {
             // If networkidle fails, just wait for domcontentloaded - this prevents timeouts
-            console.log('Network idle wait failed after logout:', error.message || error);
+            console.log('Network idle wait failed after logout:', error instanceof Error ? error.message : String(error));
             await this.page.waitForLoadState('domcontentloaded');
         }
         
@@ -325,7 +325,7 @@ export class AuthHelpers {
                     }
                 } catch (error) {
                     // Element not visible or accessible
-                    console.log(`Auth element check failed for ${selector}:`, error.message || error);
+                    console.log(`Auth element check failed for ${selector}:`, error instanceof Error ? error.message : String(error));
                     continue;
                 }
             }
@@ -390,7 +390,7 @@ export class AuthHelpers {
 
             return null;
         } catch (error) {
-            console.log('Error getting current user name:', error.message || error);
+            console.log('Error getting current user name:', error instanceof Error ? error.message : String(error));
             return null;
         }
     }
@@ -408,7 +408,7 @@ export class AuthHelpers {
             await this.page.waitForTimeout(1000); // Give Supabase auth time to initialize
         } catch (error) {
             // Continue if load state fails
-            console.log('Load state wait failed during auth wait:', error.message || error);
+            console.log('Load state wait failed during auth wait:', error instanceof Error ? error.message : String(error));
         }
         
         while (Date.now() - startTime < timeout) {
@@ -426,7 +426,7 @@ export class AuthHelpers {
                 
                 await this.page.waitForTimeout(1000); // Increased wait time for auth recovery
             } catch (error) {
-                console.log('Auth state check failed, waiting:', error.message || error);
+                console.log('Auth state check failed, waiting:', error instanceof Error ? error.message : String(error));
                 await this.page.waitForTimeout(1000);
             }
         }

@@ -51,12 +51,12 @@ test.describe('RSVP User Flow', () => {
                 console.log('RSVP completed successfully');
             } catch (error) {
                 // If success message not found, check for error
-                console.log('RSVP success message not found:', error.message || error);
+                console.log('RSVP success message not found:', error instanceof Error ? error.message : String(error));
                 try {
                     await helpers.verifyErrorMessage();
                     console.log('RSVP showed expected error (likely auth required)');
                 } catch (errorInner) {
-                    console.log('RSVP submission completed without clear success/error indication:', errorInner.message || errorInner);
+                    console.log('RSVP submission completed without clear success/error indication:', errorInner instanceof Error ? errorInner.message : String(errorInner));
                 }
             }
         }
@@ -119,7 +119,7 @@ test.describe('RSVP User Flow', () => {
                 await helpers.submitRSVP();
                 console.log('Guest RSVP form submitted');
             } catch (error) {
-                console.log('Guest RSVP requires additional validation or has other requirements:', error.message || error);
+                console.log('Guest RSVP requires additional validation or has other requirements:', error instanceof Error ? error.message : String(error));
             }
         } else {
             console.log('Guest RSVP not supported or not visible without authentication');

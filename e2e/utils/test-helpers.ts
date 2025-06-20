@@ -64,7 +64,7 @@ export class TestHelpers {
             await this.page.waitForLoadState('networkidle', { timeout: 3000 });
         } catch (error) {
             // Fallback to domcontentloaded if networkidle fails
-            console.log('Network idle wait failed, using domcontentloaded:', error.message || error);
+            console.log('Network idle wait failed, using domcontentloaded:', error instanceof Error ? error.message : String(error));
             await this.page.waitForLoadState('domcontentloaded', { timeout });
             // Add small delay to let any lazy loading complete
             await this.page.waitForTimeout(500);
@@ -105,7 +105,7 @@ export class TestHelpers {
         try {
             await expect(this.page.locator('[data-test-id="rsvp-form"]')).toBeVisible({ timeout: 3000 });
         } catch (error) {
-            console.warn('RSVP form not immediately visible - may require authentication or different event type:', error.message || error);
+            console.warn('RSVP form not immediately visible - may require authentication or different event type:', error instanceof Error ? error.message : String(error));
             return this;
         }
 
@@ -143,7 +143,7 @@ export class TestHelpers {
             // Wait for submission to complete with fallback
             await this.waitForPageLoad();
         } catch (error) {
-            console.warn('RSVP submit button not found or clickable - may not be available:', error.message || error);
+            console.warn('RSVP submit button not found or clickable - may not be available:', error instanceof Error ? error.message : String(error));
         }
 
         return this;
@@ -186,7 +186,7 @@ export class TestHelpers {
             // Wait for redirect to checkout or Stripe
             await this.waitForPageLoad();
         } catch (error) {
-            console.warn('Checkout button not found - may require tickets to be selected first:', error.message || error);
+            console.warn('Checkout button not found - may require tickets to be selected first:', error instanceof Error ? error.message : String(error));
         }
 
         return this;
@@ -214,7 +214,7 @@ export class TestHelpers {
                 break;
             } catch (error) {
                 // Continue to next selector
-                console.log(`Selector ${selector} not found:`, error.message || error);
+                console.log(`Selector ${selector} not found:`, error instanceof Error ? error.message : String(error));
             }
         }
 
@@ -246,7 +246,7 @@ export class TestHelpers {
                 break;
             } catch (error) {
                 // Continue to next selector
-                console.log(`Selector ${selector} not found:`, error.message || error);
+                console.log(`Selector ${selector} not found:`, error instanceof Error ? error.message : String(error));
             }
         }
 
@@ -278,7 +278,7 @@ export class TestHelpers {
                 break;
             } catch (error) {
                 // Continue to next selector
-                console.log(`Selector ${selector} not found:`, error.message || error);
+                console.log(`Selector ${selector} not found:`, error instanceof Error ? error.message : String(error));
             }
         }
 

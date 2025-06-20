@@ -81,7 +81,7 @@ test.describe('Debug Authentication', () => {
                 }
             } catch (error) {
                 // Continue to next selector - some selectors may not exist
-                console.log(`Selector "${selector}" not found:`, error.message || error);
+                console.log(`Selector "${selector}" not found:`, error instanceof Error ? error.message : String(error));
             }
         }
         
@@ -112,7 +112,7 @@ test.describe('Debug Authentication', () => {
                 }
             } catch (error) {
                 // Continue to next selector - some selectors may not exist
-                console.log(`Selector "${selector}" not found:`, error.message || error);
+                console.log(`Selector "${selector}" not found:`, error instanceof Error ? error.message : String(error));
             }
         }
         

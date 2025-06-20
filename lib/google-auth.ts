@@ -197,7 +197,7 @@ export class GoogleCalendarAuth {
 
             return tokens
         } catch (error) {
-            console.warn('[WARN] getUserTokens - Failed to get user Google Calendar tokens (likely corrupted/expired):', error.message)
+            console.warn('[WARN] getUserTokens - Failed to get user Google Calendar tokens (likely corrupted/expired):', error instanceof Error ? error.message : String(error))
             return null
         }
     }
@@ -286,7 +286,7 @@ export class GoogleCalendarAuth {
 
             return JSON.parse(decrypted)
         } catch (error) {
-            console.warn('Token decryption failed - likely corrupted/old format tokens:', error.message)
+            console.warn('Token decryption failed - likely corrupted/old format tokens:', error instanceof Error ? error.message : String(error))
             throw new Error('Failed to decrypt tokens')
         }
     }

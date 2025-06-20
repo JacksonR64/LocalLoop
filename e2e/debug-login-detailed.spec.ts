@@ -36,7 +36,7 @@ test.describe('Detailed Login Debug', () => {
                 }
             } catch (error) {
                 // Element might not be visible
-                console.log(`Error reading initial error element ${i}:`, error.message || error);
+                console.log(`Error reading initial error element ${i}:`, error instanceof Error ? error.message : String(error));
             }
         }
 
@@ -63,10 +63,10 @@ test.describe('Detailed Login Debug', () => {
                 const responseBody = await response.text();
                 console.log(`Response body: ${responseBody.substring(0, 500)}...`);
             } catch (error) {
-                console.log('Could not read response body:', error.message || error);
+                console.log('Could not read response body:', error instanceof Error ? error.message : String(error));
             }
         } catch (error) {
-            console.log('No API response captured or timeout:', error.message || error);
+            console.log('No API response captured or timeout:', error instanceof Error ? error.message : String(error));
         }
 
         // Wait a bit for any async operations
@@ -86,7 +86,7 @@ test.describe('Detailed Login Debug', () => {
                 }
             } catch (error) {
                 // Element might not be visible
-                console.log(`Error reading post-submit error element ${i}:`, error.message || error);
+                console.log(`Error reading post-submit error element ${i}:`, error instanceof Error ? error.message : String(error));
             }
         }
 

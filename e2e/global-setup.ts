@@ -19,7 +19,7 @@ async function globalSetup(config: FullConfig) {
             });
         } catch (error) {
             // Fallback to simple page load
-            console.log('Initial page load failed, trying fallback:', error.message || error);
+            console.log('Initial page load failed, trying fallback:', error instanceof Error ? error.message : String(error));
             await page.goto(config.webServer?.url || 'http://localhost:3000', {
                 timeout: 10000
             });

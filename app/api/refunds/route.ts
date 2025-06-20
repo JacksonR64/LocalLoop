@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
             }
 
             return NextResponse.json(
-                { error: 'Refund processing failed', details: error.message },
+                { error: 'Refund processing failed', details: error instanceof Error ? error.message : String(error) },
                 { status: 500 }
             )
         }

@@ -71,8 +71,7 @@ Thumbs.db
 memory-bank/
 .taskmasterconfig
 tasks/
-docs/
-!docs/CLIENT_TESTING_GUIDE_PROTECTED.pdf
+.github/docs/
 reports/
 reports-temp/
 

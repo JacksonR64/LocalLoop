@@ -38,7 +38,7 @@ test.describe('Debug Authenticated State', () => {
                 const isVisible = await button.isVisible();
                 console.log(`Button ${i}: "${text}" | Class: "${classNames}" | Visible: ${isVisible}`);
             } catch (error) {
-                console.log(`Button ${i}: Could not read properties:`, error.message || error);
+                console.log(`Button ${i}: Could not read properties:`, error instanceof Error ? error.message : String(error));
             }
         }
         
@@ -56,7 +56,7 @@ test.describe('Debug Authenticated State', () => {
                     console.log(`Link ${i}: "${text.trim()}" -> ${href} | Visible: ${isVisible}`);
                 }
             } catch (error) {
-                console.log(`Link ${i}: Could not read properties:`, error.message || error);
+                console.log(`Link ${i}: Could not read properties:`, error instanceof Error ? error.message : String(error));
             }
         }
         

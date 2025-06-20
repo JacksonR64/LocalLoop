@@ -25,7 +25,7 @@ test.describe('Authentication Logout Flow - Rock Solid', () => {
         try {
             await page.waitForLoadState('networkidle', { timeout: 5000 });
         } catch (error) {
-            console.log('Network idle wait failed, falling back to domcontentloaded:', error.message || error);
+            console.log('Network idle wait failed, falling back to domcontentloaded:', error instanceof Error ? error.message : String(error));
             await page.waitForLoadState('domcontentloaded');
         }
         
@@ -84,7 +84,7 @@ test.describe('Authentication Logout Flow - Rock Solid', () => {
         try {
             await page.waitForLoadState('networkidle', { timeout: 5000 });
         } catch (error) {
-            console.log('Network idle wait failed, falling back to domcontentloaded:', error.message || error);
+            console.log('Network idle wait failed, falling back to domcontentloaded:', error instanceof Error ? error.message : String(error));
             await page.waitForLoadState('domcontentloaded');
         }
         
@@ -104,7 +104,7 @@ test.describe('Authentication Logout Flow - Rock Solid', () => {
         try {
             await page.waitForLoadState('networkidle', { timeout: 5000 });
         } catch (error) {
-            console.log('Network idle wait failed, falling back to domcontentloaded:', error.message || error);
+            console.log('Network idle wait failed, falling back to domcontentloaded:', error instanceof Error ? error.message : String(error));
             await page.waitForLoadState('domcontentloaded');
         }
         
@@ -129,7 +129,7 @@ test.describe('Authentication Logout Flow - Rock Solid', () => {
         try {
             await page.waitForLoadState('networkidle', { timeout: 5000 });
         } catch (error) {
-            console.log('Network idle wait failed, falling back to domcontentloaded:', error.message || error);
+            console.log('Network idle wait failed, falling back to domcontentloaded:', error instanceof Error ? error.message : String(error));
             await page.waitForLoadState('domcontentloaded');
         }
         
