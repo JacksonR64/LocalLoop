@@ -14,6 +14,7 @@ export function Footer() {
                             width={48}
                             height={48}
                             className="w-12 h-12" 
+
                         />
                         <span className="ml-2 text-xl font-bold text-foreground" data-test-id="footer-title">LocalLoop</span>
                     </Link>

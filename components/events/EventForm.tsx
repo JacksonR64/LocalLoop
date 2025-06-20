@@ -418,12 +418,13 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                                 )}
                                 <div className="flex justify-between items-center mt-2">
                                     <p className="text-muted-foreground text-sm">
+
                                         Keep it concise and engaging
                                     </p>
                                     <p className={cn(
                                         "text-sm",
                                         formData.title.length > 60 ? "text-orange-600 font-medium" : "text-muted-foreground"
-                                    )}>
+
                                         {formData.title.length}/60
                                     </p>
                                 </div>
@@ -477,6 +478,7 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                                 />
                                 <div className="flex justify-between items-center mt-1">
                                     <p className="text-muted-foreground text-sm">
+
                                         This appears in event listings and search results
                                     </p>
                                     <p className={cn(

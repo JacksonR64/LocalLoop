@@ -75,6 +75,7 @@ export function Navigation({
                     <>
                         {/* Desktop Navigation */}
                         <nav className="hidden md:flex items-center gap-6" data-test-id="desktop-navigation">
+
                             {(isStaff || isAdmin) && (
                                 <Link href="/staff" className="text-muted-foreground hover:text-foreground transition-colors">
                                     Staff
@@ -107,6 +108,7 @@ export function Navigation({
                             </button>
 
                             <ThemeToggle />
+
 
                             {/* Auth state conditional rendering - Optimistic UI */}
                             {user ? (
@@ -161,6 +163,7 @@ export function Navigation({
                         )}
                         
                         <nav className="flex flex-col space-y-4">
+
                             {(isStaff || isAdmin) && (
                                 <Link
                                     href="/staff"
