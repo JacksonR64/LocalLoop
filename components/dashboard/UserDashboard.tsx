@@ -379,8 +379,8 @@ export default function UserDashboard({ user }: UserDashboardProps) {
         return (
             <div className="max-w-4xl mx-auto p-6">
                 <div className="text-center">
-                    <h1 className="text-2xl font-bold text-gray-900 mb-4">Please Sign In</h1>
-                    <p className="text-gray-600">You need to be signed in to view your dashboard.</p>
+                    <h1 className="text-2xl font-bold text-foreground mb-4">Please Sign In</h1>
+                    <p className="text-muted-foreground">You need to be signed in to view your dashboard.</p>
                 </div>
             </div>
         )
@@ -425,7 +425,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                         {loading ? (
                             <div className="flex items-center justify-center py-12">
                                 <RefreshCw className="w-6 h-6 animate-spin mr-2" />
-                                <span className="text-gray-600">Loading your orders...</span>
+                                <span className="text-muted-foreground">Loading your orders...</span>
                             </div>
                         ) : error ? (
                             <Alert variant="destructive">
@@ -434,9 +434,9 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                             </Alert>
                         ) : orders.length === 0 ? (
                             <div className="text-center py-12">
-                                <Ticket className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                                <h3 className="text-lg font-medium text-gray-900 mb-2">No orders yet</h3>
-                                <p className="text-gray-600 mb-6">
+                                <Ticket className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                                <h3 className="text-lg font-medium text-foreground mb-2">No orders yet</h3>
+                                <p className="text-muted-foreground mb-6">
                                     When you purchase tickets, they&apos;ll appear here.
                                 </p>
                                 <Button asChild>
@@ -449,23 +449,25 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                     const refundInfo = getRefundEligibilityInfo(order)
 
                                     return (
-                                        <div key={order.id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                                        <div key={order.id} className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
                                             {/* Order Header */}
-                                            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-4">
-                                                        <div>
-                                                            <h3 className="text-lg font-semibold text-gray-900">
+                                            <div className="bg-muted px-4 sm:px-6 py-4 border-b border-border">
+                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                                        <div className="flex-1 min-w-0">
+                                                            <h3 className="text-lg font-semibold text-foreground truncate">
                                                                 {order.events.title}
                                                             </h3>
-                                                            <p className="text-sm text-gray-600">
+                                                            <p className="text-sm text-muted-foreground">
                                                                 Order #{order.id.slice(-8)} • {formatDateTime(order.created_at)}
                                                             </p>
                                                         </div>
-                                                        {getOrderStatusBadge(order)}
+                                                        <div className="flex-shrink-0">
+                                                            {getOrderStatusBadge(order)}
+                                                        </div>
                                                     </div>
-                                                    <div className="text-right">
-                                                        <div className="text-lg font-semibold text-gray-900">
+                                                    <div className="text-left sm:text-right">
+                                                        <div className="text-lg font-semibold text-foreground">
                                                             {formatPrice(order.net_amount)}
                                                         </div>
                                                         {order.refund_amount > 0 && (
@@ -478,19 +480,19 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                             </div>
 
                                             {/* Event Details */}
-                                            <div className="px-6 py-4">
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                        <CalendarDays className="w-4 h-4" />
-                                                        <span>{formatDateTime(order.events.start_time)}</span>
+                                            <div className="px-4 sm:px-6 py-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4">
+                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                        <CalendarDays className="w-4 h-4 flex-shrink-0" />
+                                                        <span className="truncate">{formatDateTime(order.events.start_time)}</span>
                                                     </div>
-                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                        <MapPin className="w-4 h-4" />
+                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                        <MapPin className="w-4 h-4 flex-shrink-0" />
                                                         {order.events.location && (
-                                                            <span>{order.events.location}</span>
+                                                            <span className="truncate">{order.events.location}</span>
                                                         )}
                                                     </div>
-                                                    <div className="flex items-center gap-2 text-sm">
+                                                    <div className="flex items-center gap-2 text-sm col-span-1 sm:col-span-2 lg:col-span-1">
                                                         {refundInfo.icon}
                                                         <span className={
                                                             refundInfo.variant === 'success' ? 'text-green-600' :
@@ -504,25 +506,25 @@ export default function UserDashboard({ user }: UserDashboardProps) {
 
                                                 {/* Tickets */}
                                                 <div className="space-y-2">
-                                                    <h4 className="text-sm font-medium text-gray-700">Tickets</h4>
+                                                    <h4 className="text-sm font-medium text-foreground">Tickets</h4>
                                                     {order.tickets.map((ticket) => (
-                                                        <div key={ticket.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                                            <div className="flex items-center gap-3">
-                                                                <Ticket className="w-4 h-4 text-gray-500" />
-                                                                <div>
-                                                                    <div className="font-medium text-gray-900">
+                                                        <div key={ticket.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-muted rounded-lg">
+                                                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                                <Ticket className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                                                                <div className="min-w-0 flex-1">
+                                                                    <div className="font-medium text-foreground truncate">
                                                                         {ticket.quantity}x {ticket.ticket_types.name}
                                                                     </div>
-                                                                    <div className="text-sm text-gray-600">
+                                                                    <div className="text-sm text-muted-foreground truncate">
                                                                         Confirmation: {ticket.confirmation_code}
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <div className="text-right">
-                                                                <div className="font-medium text-gray-900">
+                                                            <div className="text-left sm:text-right flex-shrink-0">
+                                                                <div className="font-medium text-foreground">
                                                                     {formatPrice(ticket.total_price)}
                                                                 </div>
-                                                                <div className="text-sm text-gray-600">
+                                                                <div className="text-sm text-muted-foreground">
                                                                     {formatPrice(ticket.unit_price)} each
                                                                 </div>
                                                             </div>
@@ -532,18 +534,18 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                             </div>
 
                                             {/* Actions */}
-                                            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-3">
-                                                        <Button variant="outline" size="sm" asChild>
+                                            <div className="bg-muted px-4 sm:px-6 py-4 border-t border-border">
+                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+                                                        <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
                                                             <Link href={`/events/${order.events.slug}`}>
                                                                 <ExternalLink className="w-4 h-4 mr-2" />
                                                                 View Event
                                                             </Link>
                                                         </Button>
-                                                        <Button variant="outline" size="sm">
+                                                        <Button variant="outline" size="sm" className="w-full sm:w-auto">
                                                             <Download className="w-4 h-4 mr-2" />
-                                                            Download Receipt
+                                                            <span className="hidden sm:inline">Download </span>Receipt
                                                         </Button>
                                                     </div>
 
@@ -552,7 +554,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                                             variant="outline"
                                                             size="sm"
                                                             onClick={() => handleRefundClick(order)}
-                                                            className="text-red-600 border-red-200 hover:bg-red-50"
+                                                            className="text-red-600 border-red-200 hover:bg-red-50 w-full sm:w-auto"
                                                         >
                                                             <DollarSign className="w-4 h-4 mr-2" />
                                                             Request Refund
@@ -573,7 +575,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                         {rsvpLoading ? (
                             <div className="flex items-center justify-center py-12">
                                 <RefreshCw className="w-6 h-6 animate-spin mr-2" />
-                                <span className="text-gray-600">Loading your RSVPs...</span>
+                                <span className="text-muted-foreground">Loading your RSVPs...</span>
                             </div>
                         ) : rsvpError ? (
                             <Alert variant="destructive">
@@ -582,9 +584,9 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                             </Alert>
                         ) : rsvps.length === 0 ? (
                             <div className="text-center py-12">
-                                <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                                <h3 className="text-lg font-medium text-gray-900 mb-2">No RSVPs yet</h3>
-                                <p className="text-gray-600 mb-6">
+                                <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                                <h3 className="text-lg font-medium text-foreground mb-2">No RSVPs yet</h3>
+                                <p className="text-muted-foreground mb-6">
                                     When you RSVP to free events, they&apos;ll appear here.
                                 </p>
                                 <Button asChild>
@@ -597,26 +599,28 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                     const isUpcoming = isEventUpcoming(rsvp.events.start_time)
 
                                     return (
-                                        <div key={rsvp.id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                                        <div key={rsvp.id} className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
                                             {/* RSVP Header */}
-                                            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-4">
-                                                        <div>
-                                                            <h3 className="text-lg font-semibold text-gray-900">
+                                            <div className="bg-muted px-4 sm:px-6 py-4 border-b border-border">
+                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                                        <div className="flex-1 min-w-0">
+                                                            <h3 className="text-lg font-semibold text-foreground truncate">
                                                                 {rsvp.events.title}
                                                             </h3>
-                                                            <p className="text-sm text-gray-600">
+                                                            <p className="text-sm text-muted-foreground">
                                                                 RSVP #{rsvp.id.slice(-8)} • {formatDateTime(rsvp.created_at)}
                                                             </p>
                                                         </div>
-                                                        {getRSVPStatusBadge(rsvp)}
+                                                        <div className="flex-shrink-0">
+                                                            {getRSVPStatusBadge(rsvp)}
+                                                        </div>
                                                     </div>
-                                                    <div className="text-right">
+                                                    <div className="text-left sm:text-right">
                                                         <div className="text-lg font-semibold text-green-600">
                                                             FREE
                                                         </div>
-                                                        <div className="text-sm text-gray-600">
+                                                        <div className="text-sm text-muted-foreground">
                                                             {isUpcoming ? 'Upcoming' : 'Past Event'}
                                                         </div>
                                                     </div>
@@ -624,16 +628,16 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                             </div>
 
                                             {/* Event Details */}
-                                            <div className="px-6 py-4">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                        <CalendarDays className="w-4 h-4" />
-                                                        <span>{formatDateTime(rsvp.events.start_time)}</span>
+                                            <div className="px-4 sm:px-6 py-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
+                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                        <CalendarDays className="w-4 h-4 flex-shrink-0" />
+                                                        <span className="truncate">{formatDateTime(rsvp.events.start_time)}</span>
                                                     </div>
-                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                        <MapPin className="w-4 h-4" />
+                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                        <MapPin className="w-4 h-4 flex-shrink-0" />
                                                         {rsvp.events.location && (
-                                                            <span>{rsvp.events.location}</span>
+                                                            <span className="truncate">{rsvp.events.location}</span>
                                                         )}
                                                     </div>
                                                 </div>
@@ -641,28 +645,28 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                                 {/* Notes */}
                                                 {rsvp.notes && (
                                                     <div className="space-y-2">
-                                                        <h4 className="text-sm font-medium text-gray-700">Notes</h4>
-                                                        <div className="p-3 bg-gray-50 rounded-lg">
-                                                            <p className="text-sm text-gray-600">{rsvp.notes}</p>
+                                                        <h4 className="text-sm font-medium text-foreground">Notes</h4>
+                                                        <div className="p-3 bg-muted rounded-lg">
+                                                            <p className="text-sm text-muted-foreground">{rsvp.notes}</p>
                                                         </div>
                                                     </div>
                                                 )}
                                             </div>
 
                                             {/* Actions */}
-                                            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-3">
-                                                        <Button variant="outline" size="sm" asChild>
+                                            <div className="bg-muted px-4 sm:px-6 py-4 border-t border-border">
+                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+                                                        <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
                                                             <Link href={`/events/${rsvp.event_id}`}>
                                                                 <ExternalLink className="w-4 h-4 mr-2" />
                                                                 View Event
                                                             </Link>
                                                         </Button>
                                                         {isUpcoming && (
-                                                            <Button variant="outline" size="sm">
+                                                            <Button variant="outline" size="sm" className="w-full sm:w-auto">
                                                                 <Calendar className="w-4 h-4 mr-2" />
-                                                                Add to Calendar
+                                                                <span className="hidden sm:inline">Add to </span>Calendar
                                                             </Button>
                                                         )}
                                                     </div>
@@ -671,7 +675,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
-                                                            className="text-red-600 border-red-200 hover:bg-red-50"
+                                                            className="text-red-600 border-red-200 hover:bg-red-50 w-full sm:w-auto"
                                                         >
                                                             <XCircle className="w-4 h-4 mr-2" />
                                                             Cancel RSVP
