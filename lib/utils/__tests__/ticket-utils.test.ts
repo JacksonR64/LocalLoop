@@ -99,8 +99,8 @@ describe('Ticket Utils', () => {
 
         it('should handle invalid values', () => {
             expect(formatPrice(NaN)).toBe('Free')
-            expect(formatPrice(null as any)).toBe('Free')
-            expect(formatPrice(undefined as any)).toBe('Free')
+            expect(formatPrice(null as unknown as number)).toBe('Free')
+            expect(formatPrice(undefined as unknown as number)).toBe('Free')
         })
     })
 

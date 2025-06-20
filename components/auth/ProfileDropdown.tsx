@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { User, LogOut, ChevronDown, Settings, Calendar, BarChart3, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { useAuth as useAuthHook } from '@/lib/hooks/useAuth'
@@ -16,10 +16,10 @@ export function ProfileDropdown({ testIdPrefix = "", mobileIconOnly = false, onO
   const [isOpen, setIsOpen] = useState(false)
   
   // Helper function to update open state and notify parent
-  const updateOpenState = (newIsOpen: boolean) => {
+  const updateOpenState = useCallback((newIsOpen: boolean) => {
     setIsOpen(newIsOpen)
     onOpenChange?.(newIsOpen)
-  }
+  }, [onOpenChange])
   const [calendarConnected, setCalendarConnected] = useState(false)
   const [calendarLoading, setCalendarLoading] = useState(false)
   const [calendarCheckLoading, setCalendarCheckLoading] = useState(true)
