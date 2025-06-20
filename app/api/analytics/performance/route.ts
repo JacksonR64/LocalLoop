@@ -40,7 +40,29 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Empty request body' }, { status: 400 })
         }
         
-        const data: MetricData = await request.json()
+        // Safely parse JSON with better error handling
+        let data: MetricData
+        try {
+            const text = await request.text()
+            if (!text || text.trim() === '') {
+                return NextResponse.json({ error: 'Empty request body' }, { status: 400 })
+            }
+            data = JSON.parse(text)
+        } catch (jsonError) {
+            console.error('JSON parsing error:', jsonError)
+            return NextResponse.json({ error: 'Invalid JSON format' }, { status: 400 })
+        }
+        
+        // Validate that data is an object
+        if (!data || typeof data !== 'object') {
+            return NextResponse.json({ error: 'Invalid data format' }, { status: 400 })
+        }
+        
+        // Basic validation for required fields
+        if (!('timestamp' in data) || typeof data.timestamp !== 'number') {
+            return NextResponse.json({ error: 'Missing or invalid timestamp' }, { status: 400 })
+        }
+        
         const supabase = await createServerSupabaseClient()
 
         // Get user info if available

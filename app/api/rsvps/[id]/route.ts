@@ -31,15 +31,14 @@ export async function GET(
                     start_time,
                     end_time,
                     location,
-                    image_url,
-                    is_cancellable
+                    image_url
                 )
             `)
             .eq('id', id)
 
         // Apply RLS - users can only see their own RSVPs
         if (user) {
-            query = query.or(`user_id.eq.${user.id},guest_email.eq.${user.email}`)
+            query = query.eq('user_id', user.id)
         } else {
             // For unauthenticated guests, they need to provide email verification
             // This will be handled by a separate endpoint for security
@@ -48,6 +47,8 @@ export async function GET(
                 { status: 401 }
             )
         }
+
+        console.log('GET RSVP - User ID:', user.id, 'RSVP ID:', id);
 
         const { data: rsvp, error } = await query.single()
 
@@ -100,14 +101,13 @@ export async function PATCH(
                 events:event_id (
                     id,
                     title,
-                    start_time,
-                    is_cancellable
+                    start_time
                 )
             `)
             .eq('id', id)
 
         if (user) {
-            existingRsvpQuery = existingRsvpQuery.or(`user_id.eq.${user.id},guest_email.eq.${user.email}`)
+            existingRsvpQuery = existingRsvpQuery.eq('user_id', user.id)
         } else {
             return NextResponse.json(
                 { error: 'Authentication required' },
@@ -115,21 +115,30 @@ export async function PATCH(
             )
         }
 
+        console.log('PATCH RSVP - User ID:', user.id, 'RSVP ID:', id);
+
         const { data: existingRsvp, error: rsvpError } = await existingRsvpQuery.single()
 
         if (rsvpError || !existingRsvp) {
+            console.error('RSVP lookup error (PATCH):', rsvpError);
             return NextResponse.json(
                 { error: 'RSVP not found or access denied' },
                 { status: 404 }
             )
         }
 
-        // Check if cancellation is allowed (business rule: 2 hours before event)
-        if (updateData.status === 'cancelled' && !existingRsvp.events.is_cancellable) {
-            return NextResponse.json(
-                { error: 'RSVP cancellation is not allowed within 2 hours of the event' },
-                { status: 400 }
-            )
+        // Check if cancellation is allowed (calculate the 2-hour rule directly)
+        if (updateData.status === 'cancelled') {
+            const eventStartTime = new Date(existingRsvp.events.start_time);
+            const now = new Date();
+            const twoHoursFromNow = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+            
+            if (existingRsvp.status !== 'confirmed' || eventStartTime <= twoHoursFromNow) {
+                return NextResponse.json(
+                    { error: 'RSVP cancellation is not allowed within 2 hours of the event' },
+                    { status: 400 }
+                )
+            }
         }
 
         // Update the RSVP
@@ -259,6 +268,8 @@ export async function DELETE(
             )
         }
 
+        console.log('DELETE RSVP - User ID:', user.id, 'RSVP ID:', id);
+
         // Verify RSVP exists and user has permission
         const { data: existingRsvp, error: rsvpError } = await supabase
             .from('rsvps')
@@ -267,23 +278,27 @@ export async function DELETE(
                 events:event_id (
                     id,
                     title,
-                    start_time,
-                    is_cancellable
+                    start_time
                 )
             `)
             .eq('id', id)
-            .or(`user_id.eq.${user.id},guest_email.eq.${user.email}`)
+            .eq('user_id', user.id)
             .single()
 
         if (rsvpError || !existingRsvp) {
+            console.error('RSVP lookup error:', rsvpError);
             return NextResponse.json(
                 { error: 'RSVP not found or access denied' },
                 { status: 404 }
             )
         }
 
-        // Check if deletion is allowed (same business rules as cancellation)
-        if (!existingRsvp.events.is_cancellable) {
+        // Check if deletion is allowed (calculate the 2-hour rule directly)
+        const eventStartTime = new Date(existingRsvp.events.start_time);
+        const now = new Date();
+        const twoHoursFromNow = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+        
+        if (existingRsvp.status !== 'confirmed' || eventStartTime <= twoHoursFromNow) {
             return NextResponse.json(
                 { error: 'RSVP deletion is not allowed within 2 hours of the event' },
                 { status: 400 }

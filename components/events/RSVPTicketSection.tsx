@@ -91,9 +91,17 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
             if (response.ok) {
                 const data = await response.json();
                 setExistingRSVP(data.rsvp || null);
+            } else if (response.status === 401) {
+                // Auth error - clear user state
+                setUser(null);
+                setExistingRSVP(null);
+            } else {
+                console.error('Failed to check existing RSVP:', response.status, response.statusText);
             }
         } catch (error) {
             console.error('Error checking existing RSVP:', error);
+            // Don't block the UI if RSVP check fails
+            setExistingRSVP(null);
         }
     }, [eventId, user]);
 
@@ -121,7 +129,17 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
             }
         };
 
-        initializeAuth();
+        // Add timeout to prevent infinite loading
+        const timeoutId = setTimeout(() => {
+            console.warn('Auth initialization timeout, setting loading to false');
+            setLoading(false);
+        }, 5000); // 5 second timeout
+
+        initializeAuth().finally(() => {
+            clearTimeout(timeoutId);
+        });
+
+        return () => clearTimeout(timeoutId);
     }, [eventId]);
 
     // Separate effect to check RSVP when user changes
@@ -196,7 +214,18 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
 
             if (!response.ok) {
                 const result = await response.json();
-                throw new Error(result.error || 'Failed to cancel RSVP');
+                let errorMessage = result.error || 'Failed to cancel RSVP';
+                
+                // Provide user-friendly error messages
+                if (response.status === 400 && errorMessage.includes('2 hours')) {
+                    errorMessage = 'RSVPs can only be cancelled up to 2 hours before the event starts.';
+                } else if (response.status === 401) {
+                    errorMessage = 'You must be logged in to cancel your RSVP.';
+                } else if (response.status === 404) {
+                    errorMessage = 'RSVP not found or you do not have permission to cancel it.';
+                }
+                
+                throw new Error(errorMessage);
             }
 
             setSuccess('RSVP cancelled successfully');
