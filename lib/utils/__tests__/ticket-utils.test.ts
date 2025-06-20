@@ -147,8 +147,8 @@ describe('Ticket Utils', () => {
             const result = calculateStripeFee(2500) // $25.00
             expect(result.subtotal).toBe(2500)
             expect(result.stripe_fee).toBe(103) // 2.9% + $0.30 = $0.73 + $0.30 = $1.03
-            expect(result.application_fee).toBe(75) // 3% of $25.00 = $0.75
-            expect(result.total).toBe(2678) // $25.00 + $1.03 + $0.75 = $26.78
+            expect(result.application_fee).toBe(0) // No additional application fee
+            expect(result.total).toBe(2603) // $25.00 + $1.03 = $26.03
             expect(result.currency).toBe('USD')
         })
 
@@ -164,23 +164,23 @@ describe('Ticket Utils', () => {
             const result = calculateStripeFee(100) // $1.00
             expect(result.subtotal).toBe(100)
             expect(result.stripe_fee).toBe(33) // 2.9% of $1.00 + $0.30 = $0.03 + $0.30 = $0.33
-            expect(result.application_fee).toBe(3) // 3% of $1.00 = $0.03
-            expect(result.total).toBe(136)
+            expect(result.application_fee).toBe(0) // No additional application fee
+            expect(result.total).toBe(133)
         })
 
         it('should handle large amounts', () => {
             const result = calculateStripeFee(10000) // $100.00
             expect(result.subtotal).toBe(10000)
             expect(result.stripe_fee).toBe(320) // 2.9% + $0.30 = $2.90 + $0.30 = $3.20
-            expect(result.application_fee).toBe(300) // 3% of $100.00 = $3.00
-            expect(result.total).toBe(10620)
+            expect(result.application_fee).toBe(0) // No additional application fee
+            expect(result.total).toBe(10320) // $100.00 + $3.20 = $103.20
         })
     })
 
     describe('calculateCustomerTotal', () => {
         it('should calculate total amount customer pays', () => {
             const total = calculateCustomerTotal(2500) // $25.00 ticket
-            expect(total).toBe(2678) // Same as calculateStripeFee total
+            expect(total).toBe(2603) // Same as calculateStripeFee total
         })
 
         it('should handle free tickets', () => {

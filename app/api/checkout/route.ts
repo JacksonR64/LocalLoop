@@ -168,8 +168,8 @@ export async function POST(request: NextRequest) {
             subtotal += ticketType.price * item.quantity
         }
 
-        // Calculate processing fee (3% + $0.30)
-        const processingFee = Math.round(subtotal * 0.03 + 30)
+        // Calculate processing fee (2.9% + $0.30 - Stripe's standard rate)
+        const processingFee = Math.round(subtotal * 0.029 + 30)
         const total = subtotal + processingFee
 
         // Initialize Stripe

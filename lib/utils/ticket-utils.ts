@@ -14,9 +14,9 @@ import type {
  * @returns Formatted price string
  */
 export const formatPrice: FormatPriceFunction = (amountInCents: number, currency = 'USD'): string => {
-    // Handle invalid values
+    // Handle invalid values - default to 0 for calculations
     if (amountInCents == null || isNaN(amountInCents)) {
-        return 'Free';
+        amountInCents = 0;
     }
 
     const amount = amountInCents / 100;
@@ -61,10 +61,10 @@ export const calculateStripeFee: CalculateStripeFeeFunction = (amount: number): 
     const stripeFixedFee = 30; // $0.30 in cents
     const totalStripeFee = stripePercentageFee + stripeFixedFee;
 
-    // Optional application fee (e.g., 3% platform fee)
-    const applicationFee = Math.round(amount * 0.03); // 3%
+    // No additional application fee - just pass through actual Stripe costs
+    const applicationFee = 0;
 
-    const total = amount + totalStripeFee + applicationFee;
+    const total = amount + totalStripeFee;
 
     return {
         subtotal: amount,
