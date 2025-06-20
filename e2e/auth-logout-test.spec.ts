@@ -24,7 +24,8 @@ test.describe('Authentication Logout Flow - Rock Solid', () => {
         await page.goto('/', { timeout: 15000, waitUntil: 'domcontentloaded' });
         try {
             await page.waitForLoadState('networkidle', { timeout: 5000 });
-        } catch {
+        } catch (error) {
+            console.log('Network idle wait failed, falling back to domcontentloaded:', error.message || error);
             await page.waitForLoadState('domcontentloaded');
         }
         
@@ -82,7 +83,8 @@ test.describe('Authentication Logout Flow - Rock Solid', () => {
         await page.goto('/', { timeout: 15000, waitUntil: 'domcontentloaded' });
         try {
             await page.waitForLoadState('networkidle', { timeout: 5000 });
-        } catch {
+        } catch (error) {
+            console.log('Network idle wait failed, falling back to domcontentloaded:', error.message || error);
             await page.waitForLoadState('domcontentloaded');
         }
         
@@ -101,7 +103,8 @@ test.describe('Authentication Logout Flow - Rock Solid', () => {
         // Wait for logout to complete
         try {
             await page.waitForLoadState('networkidle', { timeout: 5000 });
-        } catch {
+        } catch (error) {
+            console.log('Network idle wait failed, falling back to domcontentloaded:', error.message || error);
             await page.waitForLoadState('domcontentloaded');
         }
         
@@ -125,7 +128,8 @@ test.describe('Authentication Logout Flow - Rock Solid', () => {
         await page.goto('/my-events', { timeout: 15000, waitUntil: 'domcontentloaded' });
         try {
             await page.waitForLoadState('networkidle', { timeout: 5000 });
-        } catch {
+        } catch (error) {
+            console.log('Network idle wait failed, falling back to domcontentloaded:', error.message || error);
             await page.waitForLoadState('domcontentloaded');
         }
         

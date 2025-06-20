@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 
 test.describe('Detailed Login Debug', () => {
     test('capture network requests and errors during login', async ({ page }) => {
@@ -34,8 +34,9 @@ test.describe('Detailed Login Debug', () => {
                 if (text && text.trim()) {
                     console.log(`Initial error ${i}: "${text}"`);
                 }
-            } catch (e) {
+            } catch (error) {
                 // Element might not be visible
+                console.log(`Error reading initial error element ${i}:`, error.message || error);
             }
         }
 
@@ -61,11 +62,11 @@ test.describe('Detailed Login Debug', () => {
             try {
                 const responseBody = await response.text();
                 console.log(`Response body: ${responseBody.substring(0, 500)}...`);
-            } catch (e) {
-                console.log('Could not read response body');
+            } catch (error) {
+                console.log('Could not read response body:', error.message || error);
             }
-        } catch (e) {
-            console.log('No API response captured or timeout');
+        } catch (error) {
+            console.log('No API response captured or timeout:', error.message || error);
         }
 
         // Wait a bit for any async operations
@@ -83,8 +84,9 @@ test.describe('Detailed Login Debug', () => {
                 if (text && text.trim()) {
                     console.log(`Post-submit error ${i}: "${text}"`);
                 }
-            } catch (e) {
+            } catch (error) {
                 // Element might not be visible
+                console.log(`Error reading post-submit error element ${i}:`, error.message || error);
             }
         }
 

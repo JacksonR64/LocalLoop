@@ -1,4 +1,4 @@
-import { Page, BrowserContext, expect } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 
 /**
  * Browser Testing Utilities
@@ -182,6 +182,7 @@ export async function testNavigationResponsiveness(page: Page, viewport: Viewpor
  */
 export async function testScrollBehavior(page: Page, viewport: ViewportSize): Promise<void> {
     // Test smooth scrolling
+    console.log(`Testing scroll behavior for viewport: ${viewport.width}x${viewport.height}`);
     await page.evaluate(() => {
         window.scrollTo({ top: 500, behavior: 'smooth' });
     });

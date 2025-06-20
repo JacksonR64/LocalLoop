@@ -62,8 +62,9 @@ export class TestHelpers {
         try {
             // Try networkidle first with shorter timeout
             await this.page.waitForLoadState('networkidle', { timeout: 3000 });
-        } catch {
+        } catch (error) {
             // Fallback to domcontentloaded if networkidle fails
+            console.log('Network idle wait failed, using domcontentloaded:', error.message || error);
             await this.page.waitForLoadState('domcontentloaded', { timeout });
             // Add small delay to let any lazy loading complete
             await this.page.waitForTimeout(500);
@@ -83,6 +84,7 @@ export class TestHelpers {
      */
     async mockGoogleLogin(email: string = 'test@example.com', name: string = 'Test User') {
         // This would typically involve mocking the OAuth flow
+        console.log(`Mocking Google login for ${name} (${email})`);
         // For now, we'll simulate the post-login state
         await this.page.goto('/auth/login');
 
@@ -102,8 +104,8 @@ export class TestHelpers {
         // Wait for RSVP form to be visible - but don't fail if it doesn't exist
         try {
             await expect(this.page.locator('[data-test-id="rsvp-form"]')).toBeVisible({ timeout: 3000 });
-        } catch {
-            console.warn('RSVP form not immediately visible - may require authentication or different event type');
+        } catch (error) {
+            console.warn('RSVP form not immediately visible - may require authentication or different event type:', error.message || error);
             return this;
         }
 
@@ -140,8 +142,8 @@ export class TestHelpers {
 
             // Wait for submission to complete with fallback
             await this.waitForPageLoad();
-        } catch {
-            console.warn('RSVP submit button not found or clickable - may not be available');
+        } catch (error) {
+            console.warn('RSVP submit button not found or clickable - may not be available:', error.message || error);
         }
 
         return this;
@@ -183,8 +185,8 @@ export class TestHelpers {
 
             // Wait for redirect to checkout or Stripe
             await this.waitForPageLoad();
-        } catch {
-            console.warn('Checkout button not found - may require tickets to be selected first');
+        } catch (error) {
+            console.warn('Checkout button not found - may require tickets to be selected first:', error.message || error);
         }
 
         return this;
@@ -210,8 +212,9 @@ export class TestHelpers {
                 await expect(this.page.locator(selector)).toBeVisible({ timeout: 3000 });
                 found = true;
                 break;
-            } catch {
+            } catch (error) {
                 // Continue to next selector
+                console.log(`Selector ${selector} not found:`, error.message || error);
             }
         }
 
@@ -241,8 +244,9 @@ export class TestHelpers {
                 await expect(this.page.locator(selector)).toBeVisible({ timeout: 3000 });
                 found = true;
                 break;
-            } catch {
+            } catch (error) {
                 // Continue to next selector
+                console.log(`Selector ${selector} not found:`, error.message || error);
             }
         }
 
@@ -272,8 +276,9 @@ export class TestHelpers {
                 await expect(this.page.locator(selector)).toBeVisible({ timeout: 3000 });
                 found = true;
                 break;
-            } catch {
+            } catch (error) {
                 // Continue to next selector
+                console.log(`Selector ${selector} not found:`, error.message || error);
             }
         }
 

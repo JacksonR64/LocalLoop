@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 import { createAuthHelpers } from './utils/auth-helpers';
 
 test.describe('Debug Authenticated State', () => {
@@ -37,8 +37,8 @@ test.describe('Debug Authenticated State', () => {
                 const classNames = await button.getAttribute('class');
                 const isVisible = await button.isVisible();
                 console.log(`Button ${i}: "${text}" | Class: "${classNames}" | Visible: ${isVisible}`);
-            } catch (e) {
-                console.log(`Button ${i}: Could not read properties`);
+            } catch (error) {
+                console.log(`Button ${i}: Could not read properties:`, error.message || error);
             }
         }
         
@@ -55,8 +55,8 @@ test.describe('Debug Authenticated State', () => {
                 if (text && text.trim()) {
                     console.log(`Link ${i}: "${text.trim()}" -> ${href} | Visible: ${isVisible}`);
                 }
-            } catch (e) {
-                console.log(`Link ${i}: Could not read properties`);
+            } catch (error) {
+                console.log(`Link ${i}: Could not read properties:`, error.message || error);
             }
         }
         
@@ -84,8 +84,8 @@ test.describe('Debug Authenticated State', () => {
                 } else {
                     console.log(`❌ Not found: ${selector}`);
                 }
-            } catch (e) {
-                console.log(`❌ Error checking: ${selector} - ${(e as Error).message}`);
+            } catch (error) {
+                console.log(`❌ Error checking: ${selector} - ${(error as Error).message}`);
             }
         }
         

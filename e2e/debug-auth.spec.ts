@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 import { createAuthHelpers } from './utils/auth-helpers';
 
 test.describe('Debug Authentication', () => {
@@ -79,8 +79,9 @@ test.describe('Debug Authentication', () => {
                     const errorText = await errorElement.textContent();
                     console.log(`Found error with selector "${selector}": "${errorText}"`);
                 }
-            } catch {
-                // Continue to next selector
+            } catch (error) {
+                // Continue to next selector - some selectors may not exist
+                console.log(`Selector "${selector}" not found:`, error.message || error);
             }
         }
         
@@ -109,8 +110,9 @@ test.describe('Debug Authentication', () => {
                     const text = await element.textContent();
                     console.log(`Found user element with selector "${selector}": "${text}"`);
                 }
-            } catch {
-                // Continue to next selector
+            } catch (error) {
+                // Continue to next selector - some selectors may not exist
+                console.log(`Selector "${selector}" not found:`, error.message || error);
             }
         }
         
