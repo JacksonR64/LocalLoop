@@ -25,7 +25,9 @@ import {
     ChevronRight,
     DollarSign,
     Users,
-    Calendar
+    Calendar,
+    ChevronDown,
+    ChevronUp
 } from 'lucide-react'
 
 interface OrderData {
@@ -139,6 +141,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     const [refundDialogOpen, setRefundDialogOpen] = useState(false)
     const [selectedOrder, setSelectedOrder] = useState<TransformedOrderForRefund | null>(null)
     const [activeTab, setActiveTab] = useState('orders')
+    const [showPastEvents, setShowPastEvents] = useState(false)
 
     const fetchOrders = useCallback(async () => {
         if (!user) return
@@ -214,7 +217,56 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     }
 
     const isEventUpcoming = (startTime: string) => {
-        return new Date(startTime) > new Date()
+        const eventDate = new Date(startTime)
+        const oneDayAfterEvent = new Date(eventDate)
+        oneDayAfterEvent.setDate(eventDate.getDate() + 1)
+        return new Date() < oneDayAfterEvent
+    }
+
+    const getEventTimingBadge = (startTime: string) => {
+        const eventDate = new Date(startTime)
+        const now = new Date()
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        const tomorrow = new Date(today)
+        tomorrow.setDate(today.getDate() + 1)
+        const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate())
+        
+        const oneDayAfterEvent = new Date(eventDate)
+        oneDayAfterEvent.setDate(eventDate.getDate() + 1)
+        
+        // Check if event is past (1 day after event date)
+        if (now >= oneDayAfterEvent) {
+            return (
+                <Badge variant="secondary" className="bg-muted text-muted-foreground border-border">
+                    Past Event
+                </Badge>
+            )
+        }
+        
+        // Check if event is today
+        if (eventDay.getTime() === today.getTime()) {
+            return (
+                <Badge variant="default" className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900 dark:text-blue-100 dark:border-blue-700">
+                    Today
+                </Badge>
+            )
+        }
+        
+        // Check if event is tomorrow
+        if (eventDay.getTime() === tomorrow.getTime()) {
+            return (
+                <Badge variant="default" className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-100 dark:border-green-700">
+                    Tomorrow
+                </Badge>
+            )
+        }
+        
+        // Default to upcoming
+        return (
+            <Badge variant="default" className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900 dark:text-blue-100 dark:border-blue-700">
+                Upcoming
+            </Badge>
+        )
     }
 
     const getOrderStatusBadge = (order: OrderData) => {
@@ -595,7 +647,8 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                             </div>
                         ) : (
                             <div className="space-y-6">
-                                {rsvps.map((rsvp) => {
+                                {/* Upcoming Events */}
+                                {rsvps.filter(rsvp => isEventUpcoming(rsvp.events.start_time)).map((rsvp) => {
                                     const isUpcoming = isEventUpcoming(rsvp.events.start_time)
 
                                     return (
@@ -616,13 +669,11 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                                             {getRSVPStatusBadge(rsvp)}
                                                         </div>
                                                     </div>
-                                                    <div className="text-left sm:text-right">
+                                                    <div className="text-left sm:text-right flex flex-col items-start sm:items-end gap-2">
                                                         <div className="text-lg font-semibold text-green-600">
                                                             FREE
                                                         </div>
-                                                        <div className="text-sm text-muted-foreground">
-                                                            {isUpcoming ? 'Upcoming' : 'Past Event'}
-                                                        </div>
+                                                        {getEventTimingBadge(rsvp.events.start_time)}
                                                     </div>
                                                 </div>
                                             </div>
@@ -686,6 +737,105 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                         </div>
                                     )
                                 })}
+
+                                {/* Past Events - Collapsible Section */}
+                                {rsvps.filter(rsvp => !isEventUpcoming(rsvp.events.start_time)).length > 0 && (
+                                    <div className="mt-8">
+                                        <button
+                                            onClick={() => setShowPastEvents(!showPastEvents)}
+                                            className="flex items-center justify-between w-full p-4 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <h3 className="text-lg font-semibold text-foreground">Past Events</h3>
+                                                <Badge variant="secondary" className="bg-muted text-muted-foreground border-border">
+                                                    {rsvps.filter(rsvp => !isEventUpcoming(rsvp.events.start_time)).length}
+                                                </Badge>
+                                            </div>
+                                            {showPastEvents ? (
+                                                <ChevronUp className="w-5 h-5 text-muted-foreground" />
+                                            ) : (
+                                                <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                                            )}
+                                        </button>
+
+                                        {showPastEvents && (
+                                            <div className="mt-4 space-y-4">
+                                                {rsvps.filter(rsvp => !isEventUpcoming(rsvp.events.start_time)).map((rsvp) => {
+                                                    const isUpcoming = isEventUpcoming(rsvp.events.start_time)
+
+                                                    return (
+                                                        <div key={rsvp.id} className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+                                                            {/* RSVP Header */}
+                                                            <div className="bg-muted px-4 sm:px-6 py-4 border-b border-border">
+                                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <h3 className="text-lg font-semibold text-foreground truncate">
+                                                                                {rsvp.events.title}
+                                                                            </h3>
+                                                                            <p className="text-sm text-muted-foreground">
+                                                                                RSVP #{rsvp.id.slice(-8)} • {formatDateTime(rsvp.created_at)}
+                                                                            </p>
+                                                                        </div>
+                                                                        <div className="flex-shrink-0">
+                                                                            {getRSVPStatusBadge(rsvp)}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="text-left sm:text-right flex flex-col items-start sm:items-end gap-2">
+                                                                        <div className="text-lg font-semibold text-green-600">
+                                                                            FREE
+                                                                        </div>
+                                                                        {getEventTimingBadge(rsvp.events.start_time)}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Event Details */}
+                                                            <div className="px-4 sm:px-6 py-4">
+                                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
+                                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                                        <CalendarDays className="w-4 h-4 flex-shrink-0" />
+                                                                        <span className="truncate">{formatDateTime(rsvp.events.start_time)}</span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                                        <MapPin className="w-4 h-4 flex-shrink-0" />
+                                                                        {rsvp.events.location && (
+                                                                            <span className="truncate">{rsvp.events.location}</span>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Notes */}
+                                                                {rsvp.notes && (
+                                                                    <div className="space-y-2">
+                                                                        <h4 className="text-sm font-medium text-foreground">Notes</h4>
+                                                                        <div className="p-3 bg-muted rounded-lg">
+                                                                            <p className="text-sm text-muted-foreground">{rsvp.notes}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Actions */}
+                                                            <div className="bg-muted px-4 sm:px-6 py-4 border-t border-border">
+                                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                                                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+                                                                        <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
+                                                                            <Link href={`/events/${rsvp.event_id}`}>
+                                                                                <ExternalLink className="w-4 h-4 mr-2" />
+                                                                                View Event
+                                                                            </Link>
+                                                                        </Button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </TabsContent>
