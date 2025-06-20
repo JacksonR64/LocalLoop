@@ -1,4 +1,6 @@
 import { Page, expect } from '@playwright/test';
+// Import centralized test credentials
+import { TEST_ACCOUNTS, GOOGLE_TEST_ACCOUNT, TEST_EVENT_IDS, TEST_FORM_DATA } from '../config/test-credentials';
 
 export class TestHelpers {
     constructor(private page: Page) { }
@@ -339,16 +341,33 @@ export const testEvents = {
     createEventPath: '/staff/events/create',
     demoEventPath: '/demo', // If demo events exist
 
-    // Fallback hardcoded IDs (these would need to be seeded in test database)
-    validEventId: '00000000-0000-0000-0000-000000000001',
-    paidEventId: '00000000-0000-0000-0000-000000000003',
-    invalidEventId: '99999999-9999-9999-9999-999999999999'
+    // Centralized test event IDs
+    validEventId: TEST_EVENT_IDS.freeEvent,
+    freeEventId: TEST_EVENT_IDS.freeEvent,
+    paidEventId: TEST_EVENT_IDS.paidEvent,
+    pastEventId: TEST_EVENT_IDS.pastEvent,
+    invalidEventId: '99999999-9999-9999-9999-999999999999',
+    
+    // Test form data
+    formData: TEST_FORM_DATA
 };
 
 export const testUsers = {
-    // Test user credentials/data
-    testEmail: 'test@example.com',
-    testName: 'Test User',
-    staffEmail: 'staff@example.com',
-    staffName: 'Staff User'
+    // Standard test user
+    user: TEST_ACCOUNTS.user,
+    
+    // Staff user
+    staff: TEST_ACCOUNTS.staff,
+    
+    // Admin user  
+    admin: TEST_ACCOUNTS.admin,
+    
+    // Google OAuth user
+    google: GOOGLE_TEST_ACCOUNT,
+    
+    // Legacy properties for backward compatibility
+    testEmail: TEST_ACCOUNTS.user.email,
+    testName: TEST_ACCOUNTS.user.displayName,
+    staffEmail: TEST_ACCOUNTS.staff.email,
+    staffName: TEST_ACCOUNTS.staff.displayName
 }; 

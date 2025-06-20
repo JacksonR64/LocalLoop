@@ -87,17 +87,25 @@ export const testData = {
   // Sample event IDs that should exist in the system
   sampleEventIds: ['1', '2', '3'],
   
-  // Test user data for registration flows
+  // Test user data for registration flows - using centralized test accounts
   testUsers: [
     {
-      email: 'test1@example.com',
-      name: 'Test User 1',
-      phone: '+1234567890'
+      email: 'test1@localloopevents.xyz',
+      name: 'Test User',
+      phone: '+447400123456',
+      password: 'zunTom-9wizri-refdes'
     },
     {
-      email: 'test2@example.com', 
-      name: 'Test User 2',
-      phone: '+1234567891'
+      email: 'teststaff1@localloopevents.xyz', 
+      name: 'Test Staff',
+      phone: '+447400123457',
+      password: 'bobvip-koDvud-wupva0'
+    },
+    {
+      email: 'testadmin1@localloopevents.xyz',
+      name: 'Test Admin', 
+      phone: '+447400123458',
+      password: 'nonhyx-1nopta-mYhnum'
     }
   ],
   

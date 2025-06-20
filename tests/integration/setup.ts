@@ -19,15 +19,33 @@ export const testSupabase = createClient(supabaseUrl, supabaseServiceKey, {
     }
 })
 
+// Import centralized test credentials
+import { TEST_ACCOUNTS, TEST_EVENT_IDS } from '../../e2e/config/test-credentials';
+
 // Test user data for consistent testing
 export const TEST_USER = {
     id: '00000000-0000-0000-0000-000000000001',
-    email: 'test@example.com',
-    name: 'Test User'
+    email: TEST_ACCOUNTS.user.email,
+    name: TEST_ACCOUNTS.user.displayName,
+    password: TEST_ACCOUNTS.user.password
+}
+
+export const TEST_STAFF = {
+    id: '00000000-0000-0000-0000-000000000002', 
+    email: TEST_ACCOUNTS.staff.email,
+    name: TEST_ACCOUNTS.staff.displayName,
+    password: TEST_ACCOUNTS.staff.password
+}
+
+export const TEST_ADMIN = {
+    id: '00000000-0000-0000-0000-000000000003',
+    email: TEST_ACCOUNTS.admin.email,
+    name: TEST_ACCOUNTS.admin.displayName, 
+    password: TEST_ACCOUNTS.admin.password
 }
 
 export const TEST_EVENT = {
-    id: '00000000-0000-0000-0000-000000000001',
+    id: TEST_EVENT_IDS.freeEvent,
     title: 'Test Event',
     description: 'A test event for integration testing',
     event_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now

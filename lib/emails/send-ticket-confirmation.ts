@@ -17,9 +17,11 @@ function getResendInstance(): Resend {
 
 // ✨ EMAIL OVERRIDE CONFIGURATION
 // Use dedicated environment variable for email override control
+import { getDevEmailOverride } from '../../e2e/config/test-credentials';
+
 const shouldOverrideEmails = process.env.OVERRIDE_EMAILS_TO_DEV === 'true';
 const isLocalDevelopment = process.env.NODE_ENV === 'development' && process.env.VERCEL_ENV !== 'production';
-const devOverrideEmail = 'jackson_rhoden@outlook.com'; // Your verified email
+const devOverrideEmail = getDevEmailOverride(); // Centralized test email
 
 // Helper function to get the actual recipient email
 function getRecipientEmail(originalEmail: string): string {

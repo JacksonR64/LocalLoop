@@ -10,7 +10,7 @@ console.log('🎫 Testing Ticket Confirmation Email...');
 
 // Override for dev mode (same as in email-service.ts)
 const isDevelopment = true;
-const devOverrideEmail = 'jackson_rhoden@outlook.com';
+const devOverrideEmail = 'test1@localloopevents.xyz'; // Updated to use centralized test email
 
 function getRecipientEmail(originalEmail) {
     if (isDevelopment && originalEmail !== devOverrideEmail) {
@@ -22,7 +22,7 @@ function getRecipientEmail(originalEmail) {
 
 async function sendTestTicketConfirmation() {
     try {
-        const customerEmail = 'jacksonrhoden64@googlemail.com'; // Your original email
+        const customerEmail = 'TestLocalLoop@gmail.com'; // Updated to use centralized Google test email
         const actualRecipient = getRecipientEmail(customerEmail);
         
         const response = await fetch('https://api.resend.com/emails', {
@@ -86,7 +86,7 @@ async function sendTestTicketConfirmation() {
         console.log('✅ Ticket confirmation email sent successfully!');
         console.log(`📧 Email ID: ${result.id}`);
         console.log(`📬 Sent to: ${actualRecipient}`);
-        console.log('🔍 Check your inbox at jackson_rhoden@outlook.com');
+        console.log('🔍 Check your inbox at test1@localloopevents.xyz');
         
     } catch (error) {
         console.error('❌ Failed to send ticket confirmation email:', error.message);
