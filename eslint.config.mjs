@@ -12,6 +12,11 @@ const compat = new FlatCompat({
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
+    ignores: [
+      "scripts/**/*.js", // Ignore Node.js script files that use require()
+    ],
+  },
+  {
     rules: {
       // Temporarily disable problematic rules for CI
       "@typescript-eslint/no-explicit-any": "warn",
