@@ -76,18 +76,18 @@ export function Navigation({
                         {/* Desktop Navigation */}
                         <nav className="hidden md:flex items-center gap-6" data-test-id="desktop-navigation">
                             {(isStaff || isAdmin) && (
+                                <Link href="/staff" className="text-muted-foreground hover:text-foreground transition-colors">
+                                    Staff
+                                </Link>
+                            )}
+
+                            {(isStaff || isAdmin) && (
                                 <Link
                                     href="/create-event"
                                     className="text-muted-foreground hover:text-foreground transition-colors"
                                     data-test-id="create-event-link"
                                 >
                                     Create Event
-                                </Link>
-                            )}
-
-                            {(isStaff || isAdmin) && (
-                                <Link href="/staff" className="text-muted-foreground hover:text-foreground transition-colors">
-                                    Staff
                                 </Link>
                             )}
 
@@ -107,7 +107,6 @@ export function Navigation({
                             </button>
 
                             <ThemeToggle />
-
 
                             {/* Auth state conditional rendering - Optimistic UI */}
                             {user ? (
@@ -164,21 +163,21 @@ export function Navigation({
                         <nav className="flex flex-col space-y-4">
                             {(isStaff || isAdmin) && (
                                 <Link
-                                    href="/create-event"
-                                    className="text-muted-foreground hover:text-foreground transition-colors py-2"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                    Create Event
-                                </Link>
-                            )}
-
-                            {(isStaff || isAdmin) && (
-                                <Link
                                     href="/staff"
                                     className="text-muted-foreground hover:text-foreground transition-colors py-2"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     Staff
+                                </Link>
+                            )}
+
+                            {(isStaff || isAdmin) && (
+                                <Link
+                                    href="/create-event"
+                                    className="text-muted-foreground hover:text-foreground transition-colors py-2"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    Create Event
                                 </Link>
                             )}
 
