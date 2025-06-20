@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Footer } from '@/components/ui/Footer'
 import { formatPrice } from '@/lib/utils/ticket-utils'
+import { isEventUpcoming, getEventTimingBadge, formatEventDateTime } from '@/lib/utils/event-timing'
 import RefundDialog from './RefundDialog'
 import {
     CalendarDays,
@@ -142,6 +143,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     const [selectedOrder, setSelectedOrder] = useState<TransformedOrderForRefund | null>(null)
     const [activeTab, setActiveTab] = useState('orders')
     const [showPastEvents, setShowPastEvents] = useState(false)
+    const [showPastOrders, setShowPastOrders] = useState(false)
 
     const fetchOrders = useCallback(async () => {
         if (!user) return
@@ -216,58 +218,6 @@ export default function UserDashboard({ user }: UserDashboardProps) {
         return dateStr
     }
 
-    const isEventUpcoming = (startTime: string) => {
-        const eventDate = new Date(startTime)
-        const oneDayAfterEvent = new Date(eventDate)
-        oneDayAfterEvent.setDate(eventDate.getDate() + 1)
-        return new Date() < oneDayAfterEvent
-    }
-
-    const getEventTimingBadge = (startTime: string) => {
-        const eventDate = new Date(startTime)
-        const now = new Date()
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-        const tomorrow = new Date(today)
-        tomorrow.setDate(today.getDate() + 1)
-        const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate())
-        
-        const oneDayAfterEvent = new Date(eventDate)
-        oneDayAfterEvent.setDate(eventDate.getDate() + 1)
-        
-        // Check if event is past (1 day after event date)
-        if (now >= oneDayAfterEvent) {
-            return (
-                <Badge variant="secondary" className="bg-muted text-muted-foreground border-border">
-                    Past Event
-                </Badge>
-            )
-        }
-        
-        // Check if event is today
-        if (eventDay.getTime() === today.getTime()) {
-            return (
-                <Badge variant="default" className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900 dark:text-blue-100 dark:border-blue-700">
-                    Today
-                </Badge>
-            )
-        }
-        
-        // Check if event is tomorrow
-        if (eventDay.getTime() === tomorrow.getTime()) {
-            return (
-                <Badge variant="default" className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-100 dark:border-green-700">
-                    Tomorrow
-                </Badge>
-            )
-        }
-        
-        // Default to upcoming
-        return (
-            <Badge variant="default" className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900 dark:text-blue-100 dark:border-blue-700">
-                Upcoming
-            </Badge>
-        )
-    }
 
     const getOrderStatusBadge = (order: OrderData) => {
         if (order.refunded_at && order.refund_amount > 0) {
@@ -497,7 +447,8 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                             </div>
                         ) : (
                             <div className="space-y-6">
-                                {orders.map((order) => {
+                                {/* Upcoming Orders */}
+                                {orders.filter(order => isEventUpcoming(order.events.start_time)).map((order) => {
                                     const refundInfo = getRefundEligibilityInfo(order)
 
                                     return (
@@ -545,39 +496,50 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                                         )}
                                                     </div>
                                                     <div className="flex items-center gap-2 text-sm col-span-1 sm:col-span-2 lg:col-span-1">
-                                                        {refundInfo.icon}
-                                                        <span className={
-                                                            refundInfo.variant === 'success' ? 'text-green-600' :
-                                                                refundInfo.variant === 'warning' ? 'text-orange-600' :
-                                                                    'text-red-600'
-                                                        }>
-                                                            {refundInfo.text}
-                                                        </span>
+                                                        {getEventTimingBadge(order.events.start_time)}
                                                     </div>
+                                                </div>
+                                                
+                                                {/* Refund Info */}
+                                                <div className="flex items-center gap-2 text-sm mb-4">
+                                                    {refundInfo.icon}
+                                                    <span className={
+                                                        refundInfo.variant === 'success' ? 'text-green-600' :
+                                                            refundInfo.variant === 'warning' ? 'text-orange-600' :
+                                                                'text-red-600'
+                                                    }>
+                                                        {refundInfo.text}
+                                                    </span>
                                                 </div>
 
                                                 {/* Tickets */}
                                                 <div className="space-y-2">
                                                     <h4 className="text-sm font-medium text-foreground">Tickets</h4>
                                                     {order.tickets.map((ticket) => (
-                                                        <div key={ticket.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-muted rounded-lg">
-                                                            <div className="flex items-center gap-3 min-w-0 flex-1">
-                                                                <Ticket className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                                                                <div className="min-w-0 flex-1">
-                                                                    <div className="font-medium text-foreground truncate">
-                                                                        {ticket.quantity}x {ticket.ticket_types.name}
-                                                                    </div>
-                                                                    <div className="text-sm text-muted-foreground truncate">
-                                                                        Confirmation: {ticket.confirmation_code}
+                                                        <div key={ticket.id} className="flex flex-col gap-3 p-3 bg-muted rounded-lg">
+                                                            <div className="flex items-start justify-between gap-3">
+                                                                <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                                    <div className="min-w-0 flex-1">
+                                                                        <div className="font-medium text-foreground">
+                                                                            {ticket.quantity}x {ticket.ticket_types.name}
+                                                                        </div>
+                                                                        <div className="text-sm text-muted-foreground mt-1">
+                                                                            Confirmation: {ticket.confirmation_code}
+                                                                        </div>
+                                                                        <div className="text-sm text-muted-foreground mt-1">
+                                                                            Purchased: {formatEventDateTime(order.created_at, true)}
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                            <div className="text-left sm:text-right flex-shrink-0">
-                                                                <div className="font-medium text-foreground">
-                                                                    {formatPrice(ticket.total_price)}
-                                                                </div>
-                                                                <div className="text-sm text-muted-foreground">
-                                                                    {formatPrice(ticket.unit_price)} each
+                                                                <div className="text-right flex-shrink-0">
+                                                                    <div className="font-medium text-foreground">
+                                                                        {formatPrice(ticket.total_price)}
+                                                                    </div>
+                                                                    {ticket.quantity > 1 && (
+                                                                        <div className="text-sm text-muted-foreground">
+                                                                            {formatPrice(ticket.unit_price)} each
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -590,8 +552,8 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
                                                         <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
-                                                            <Link href={`/events/${order.events.slug}`}>
-                                                                <ExternalLink className="w-4 h-4 mr-2" />
+                                                            <Link href={`/events/${order.events.slug}`} className="flex items-center">
+                                                                <ExternalLink className="w-4 h-4 mr-2 flex-shrink-0" />
                                                                 View Event
                                                             </Link>
                                                         </Button>
@@ -618,6 +580,153 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                         </div>
                                     )
                                 })}
+
+                                {/* Past Orders - Collapsible Section */}
+                                {orders.filter(order => !isEventUpcoming(order.events.start_time)).length > 0 && (
+                                    <div className="mt-8">
+                                        <button
+                                            onClick={() => setShowPastOrders(!showPastOrders)}
+                                            className="flex items-center justify-between w-full p-4 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <h3 className="text-lg font-semibold text-foreground">Past Orders</h3>
+                                                <Badge variant="secondary" className="bg-muted text-muted-foreground border-border">
+                                                    {orders.filter(order => !isEventUpcoming(order.events.start_time)).length}
+                                                </Badge>
+                                            </div>
+                                            {showPastOrders ? (
+                                                <ChevronUp className="w-5 h-5 text-muted-foreground" />
+                                            ) : (
+                                                <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                                            )}
+                                        </button>
+
+                                        {showPastOrders && (
+                                            <div className="mt-4 space-y-4">
+                                                {orders.filter(order => !isEventUpcoming(order.events.start_time)).map((order) => {
+                                                    const refundInfo = getRefundEligibilityInfo(order)
+
+                                                    return (
+                                                        <div key={order.id} className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+                                                            {/* Order Header */}
+                                                            <div className="bg-muted px-4 sm:px-6 py-4 border-b border-border">
+                                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <h3 className="text-lg font-semibold text-foreground truncate">
+                                                                                {order.events.title}
+                                                                            </h3>
+                                                                            <p className="text-sm text-muted-foreground">
+                                                                                Order #{order.id.slice(-8)} • {formatDateTime(order.created_at)}
+                                                                            </p>
+                                                                        </div>
+                                                                        <div className="flex-shrink-0">
+                                                                            {getOrderStatusBadge(order)}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="text-left sm:text-right">
+                                                                        <div className="text-lg font-semibold text-foreground">
+                                                                            {formatPrice(order.net_amount)}
+                                                                        </div>
+                                                                        {order.refund_amount > 0 && (
+                                                                            <div className="text-sm text-green-600">
+                                                                                -{formatPrice(order.refund_amount)} refunded
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Event Details */}
+                                                            <div className="px-4 sm:px-6 py-4">
+                                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4">
+                                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                                        <CalendarDays className="w-4 h-4 flex-shrink-0" />
+                                                                        <span className="truncate">{formatDateTime(order.events.start_time)}</span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                                        <MapPin className="w-4 h-4 flex-shrink-0" />
+                                                                        {order.events.location && (
+                                                                            <span className="truncate">{order.events.location}</span>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2 text-sm col-span-1 sm:col-span-2 lg:col-span-1">
+                                                                        {getEventTimingBadge(order.events.start_time)}
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Tickets */}
+                                                                <div className="space-y-2">
+                                                                    <h4 className="text-sm font-medium text-foreground">Tickets</h4>
+                                                                    {order.tickets.map((ticket) => (
+                                                                        <div key={ticket.id} className="flex flex-col gap-3 p-3 bg-muted rounded-lg">
+                                                                            <div className="flex items-start justify-between gap-3">
+                                                                                <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                                                    <div className="min-w-0 flex-1">
+                                                                                        <div className="font-medium text-foreground">
+                                                                                            {ticket.quantity}x {ticket.ticket_types.name}
+                                                                                        </div>
+                                                                                        <div className="text-sm text-muted-foreground mt-1">
+                                                                                            Confirmation: {ticket.confirmation_code}
+                                                                                        </div>
+                                                                                        <div className="text-sm text-muted-foreground mt-1">
+                                                                                            Purchased: {formatEventDateTime(order.created_at, true)}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div className="text-right flex-shrink-0">
+                                                                                    <div className="font-medium text-foreground">
+                                                                                        {formatPrice(ticket.total_price)}
+                                                                                    </div>
+                                                                                    {ticket.quantity > 1 && (
+                                                                                        <div className="text-sm text-muted-foreground">
+                                                                                            {formatPrice(ticket.unit_price)} each
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Actions */}
+                                                            <div className="bg-muted px-4 sm:px-6 py-4 border-t border-border">
+                                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                                                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+                                                                        <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
+                                                                            <Link href={`/events/${order.events.slug}`} className="flex items-center">
+                                                                                <ExternalLink className="w-4 h-4 mr-2 flex-shrink-0" />
+                                                                                View Event
+                                                                            </Link>
+                                                                        </Button>
+                                                                        <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                                                                            <Download className="w-4 h-4 mr-2" />
+                                                                            <span className="hidden sm:inline">Download </span>Receipt
+                                                                        </Button>
+                                                                    </div>
+
+                                                                    {refundInfo.eligible && (
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            size="sm"
+                                                                            onClick={() => handleRefundClick(order)}
+                                                                            className="text-red-600 border-red-200 hover:bg-red-50 w-full sm:w-auto"
+                                                                        >
+                                                                            <DollarSign className="w-4 h-4 mr-2" />
+                                                                            Request Refund
+                                                                            <ChevronRight className="w-4 h-4 ml-1" />
+                                                                        </Button>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </TabsContent>
@@ -709,8 +818,8 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
                                                         <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
-                                                            <Link href={`/events/${rsvp.event_id}`}>
-                                                                <ExternalLink className="w-4 h-4 mr-2" />
+                                                            <Link href={`/events/${rsvp.event_id}`} className="flex items-center">
+                                                                <ExternalLink className="w-4 h-4 mr-2 flex-shrink-0" />
                                                                 View Event
                                                             </Link>
                                                         </Button>
@@ -821,8 +930,8 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                                                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
                                                                         <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
-                                                                            <Link href={`/events/${rsvp.event_id}`}>
-                                                                                <ExternalLink className="w-4 h-4 mr-2" />
+                                                                            <Link href={`/events/${rsvp.event_id}`} className="flex items-center">
+                                                                                <ExternalLink className="w-4 h-4 mr-2 flex-shrink-0" />
                                                                                 View Event
                                                                             </Link>
                                                                         </Button>
