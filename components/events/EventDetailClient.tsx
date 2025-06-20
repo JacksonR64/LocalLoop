@@ -174,7 +174,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                         {/* Map */}
                         {event.location && (
                             <Card data-test-id="event-map-card">
-                                <CardContent className="p-6">
+                                <CardContent>
                                     <h2 className="text-xl font-semibold mb-4 text-foreground" data-test-id="location-title">Location</h2>
                                     <div data-test-id="event-map">
                                         <EventMap location={event.location || 'Location TBD'} eventTitle={event.title} />
@@ -185,7 +185,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
 
                         {/* Google Calendar Integration */}
                         <Card data-test-id="calendar-integration-card">
-                            <CardContent className="p-6">
+                            <CardContent>
                                 <h2 className="text-xl font-semibold mb-4 text-foreground" data-test-id="calendar-title">Add to Calendar</h2>
                                 <div data-test-id="google-calendar-integration">
                                     <GoogleCalendarConnectWithStatus
@@ -285,9 +285,9 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
 
                             {/* Event Stats */}
                             <Card data-test-id="event-stats-card">
-                                <CardContent className="p-6">
+                                <CardContent>
                                     <h3 className="text-lg font-semibold mb-4 text-foreground" data-test-id="event-stats-title">Event Details</h3>
-                                    <div className="space-y-3" data-test-id="event-stats-list">
+                                    <div className="bg-muted p-4 rounded-lg space-y-3" data-test-id="event-stats-list">
                                         <div className="flex justify-between" data-test-id="event-category">
                                             <span className="text-muted-foreground">Category:</span>
                                             <span className="text-foreground capitalize">{event.category}</span>

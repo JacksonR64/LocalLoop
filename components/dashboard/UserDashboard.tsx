@@ -387,330 +387,332 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     }
 
     return (
-        <div className="max-w-4xl mx-auto p-6">
-            {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-foreground mb-2">My Dashboard</h1>
-                <p className="text-muted-foreground">
-                    Welcome back! Here are your tickets, orders, and event RSVPs.
-                </p>
-            </div>
+        <>
+            <div className="max-w-4xl mx-auto p-6">
+                {/* Header */}
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold text-foreground mb-2">My Dashboard</h1>
+                    <p className="text-muted-foreground">
+                        Welcome back! Here are your tickets, orders, and event RSVPs.
+                    </p>
+                </div>
 
-            {/* Tabs */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="orders" className="flex items-center gap-2">
-                        <Ticket className="w-4 h-4" />
-                        Tickets & Orders
-                        {orders.length > 0 && (
-                            <Badge variant="secondary" className="ml-1 text-xs">
-                                {orders.length}
-                            </Badge>
-                        )}
-                    </TabsTrigger>
-                    <TabsTrigger value="rsvps" className="flex items-center gap-2">
-                        <Users className="w-4 h-4" />
-                        RSVPs
-                        {rsvps.length > 0 && (
-                            <Badge variant="secondary" className="ml-1 text-xs">
-                                {rsvps.length}
-                            </Badge>
-                        )}
-                    </TabsTrigger>
-                </TabsList>
+                {/* Tabs */}
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="orders" className="flex items-center gap-2">
+                            <Ticket className="w-4 h-4" />
+                            Tickets & Orders
+                            {orders.length > 0 && (
+                                <Badge variant="secondary" className="ml-1 text-xs">
+                                    {orders.length}
+                                </Badge>
+                            )}
+                        </TabsTrigger>
+                        <TabsTrigger value="rsvps" className="flex items-center gap-2">
+                            <Users className="w-4 h-4" />
+                            RSVPs
+                            {rsvps.length > 0 && (
+                                <Badge variant="secondary" className="ml-1 text-xs">
+                                    {rsvps.length}
+                                </Badge>
+                            )}
+                        </TabsTrigger>
+                    </TabsList>
 
-                {/* Orders Tab */}
-                <TabsContent value="orders" className="mt-6">
-                    {loading ? (
-                        <div className="flex items-center justify-center py-12">
-                            <RefreshCw className="w-6 h-6 animate-spin mr-2" />
-                            <span className="text-gray-600">Loading your orders...</span>
-                        </div>
-                    ) : error ? (
-                        <Alert variant="destructive">
-                            <AlertTriangle className="h-4 w-4" />
-                            <AlertDescription>{error}</AlertDescription>
-                        </Alert>
-                    ) : orders.length === 0 ? (
-                        <div className="text-center py-12">
-                            <Ticket className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">No orders yet</h3>
-                            <p className="text-gray-600 mb-6">
-                                When you purchase tickets, they&apos;ll appear here.
-                            </p>
-                            <Button asChild>
-                                <Link href="/">Browse Events</Link>
-                            </Button>
-                        </div>
-                    ) : (
-                        <div className="space-y-6">
-                            {orders.map((order) => {
-                                const refundInfo = getRefundEligibilityInfo(order)
+                    {/* Orders Tab */}
+                    <TabsContent value="orders" className="mt-6">
+                        {loading ? (
+                            <div className="flex items-center justify-center py-12">
+                                <RefreshCw className="w-6 h-6 animate-spin mr-2" />
+                                <span className="text-gray-600">Loading your orders...</span>
+                            </div>
+                        ) : error ? (
+                            <Alert variant="destructive">
+                                <AlertTriangle className="h-4 w-4" />
+                                <AlertDescription>{error}</AlertDescription>
+                            </Alert>
+                        ) : orders.length === 0 ? (
+                            <div className="text-center py-12">
+                                <Ticket className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                                <h3 className="text-lg font-medium text-gray-900 mb-2">No orders yet</h3>
+                                <p className="text-gray-600 mb-6">
+                                    When you purchase tickets, they&apos;ll appear here.
+                                </p>
+                                <Button asChild>
+                                    <Link href="/">Browse Events</Link>
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="space-y-6">
+                                {orders.map((order) => {
+                                    const refundInfo = getRefundEligibilityInfo(order)
 
-                                return (
-                                    <div key={order.id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-                                        {/* Order Header */}
-                                        <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-4">
-                                                    <div>
-                                                        <h3 className="text-lg font-semibold text-gray-900">
-                                                            {order.events.title}
-                                                        </h3>
-                                                        <p className="text-sm text-gray-600">
-                                                            Order #{order.id.slice(-8)} • {formatDateTime(order.created_at)}
-                                                        </p>
-                                                    </div>
-                                                    {getOrderStatusBadge(order)}
-                                                </div>
-                                                <div className="text-right">
-                                                    <div className="text-lg font-semibold text-gray-900">
-                                                        {formatPrice(order.net_amount)}
-                                                    </div>
-                                                    {order.refund_amount > 0 && (
-                                                        <div className="text-sm text-green-600">
-                                                            -{formatPrice(order.refund_amount)} refunded
+                                    return (
+                                        <div key={order.id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                                            {/* Order Header */}
+                                            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-4">
+                                                        <div>
+                                                            <h3 className="text-lg font-semibold text-gray-900">
+                                                                {order.events.title}
+                                                            </h3>
+                                                            <p className="text-sm text-gray-600">
+                                                                Order #{order.id.slice(-8)} • {formatDateTime(order.created_at)}
+                                                            </p>
                                                         </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Event Details */}
-                                        <div className="px-6 py-4">
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                    <CalendarDays className="w-4 h-4" />
-                                                    <span>{formatDateTime(order.events.start_time)}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                    <MapPin className="w-4 h-4" />
-                                                    {order.events.location && (
-                                                        <span>{order.events.location}</span>
-                                                    )}
-                                                </div>
-                                                <div className="flex items-center gap-2 text-sm">
-                                                    {refundInfo.icon}
-                                                    <span className={
-                                                        refundInfo.variant === 'success' ? 'text-green-600' :
-                                                            refundInfo.variant === 'warning' ? 'text-orange-600' :
-                                                                'text-red-600'
-                                                    }>
-                                                        {refundInfo.text}
-                                                    </span>
+                                                        {getOrderStatusBadge(order)}
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <div className="text-lg font-semibold text-gray-900">
+                                                            {formatPrice(order.net_amount)}
+                                                        </div>
+                                                        {order.refund_amount > 0 && (
+                                                            <div className="text-sm text-green-600">
+                                                                -{formatPrice(order.refund_amount)} refunded
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            {/* Tickets */}
-                                            <div className="space-y-2">
-                                                <h4 className="text-sm font-medium text-gray-700">Tickets</h4>
-                                                {order.tickets.map((ticket) => (
-                                                    <div key={ticket.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                                        <div className="flex items-center gap-3">
-                                                            <Ticket className="w-4 h-4 text-gray-500" />
-                                                            <div>
+                                            {/* Event Details */}
+                                            <div className="px-6 py-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                        <CalendarDays className="w-4 h-4" />
+                                                        <span>{formatDateTime(order.events.start_time)}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                        <MapPin className="w-4 h-4" />
+                                                        {order.events.location && (
+                                                            <span>{order.events.location}</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-sm">
+                                                        {refundInfo.icon}
+                                                        <span className={
+                                                            refundInfo.variant === 'success' ? 'text-green-600' :
+                                                                refundInfo.variant === 'warning' ? 'text-orange-600' :
+                                                                    'text-red-600'
+                                                        }>
+                                                            {refundInfo.text}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Tickets */}
+                                                <div className="space-y-2">
+                                                    <h4 className="text-sm font-medium text-gray-700">Tickets</h4>
+                                                    {order.tickets.map((ticket) => (
+                                                        <div key={ticket.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                                            <div className="flex items-center gap-3">
+                                                                <Ticket className="w-4 h-4 text-gray-500" />
+                                                                <div>
+                                                                    <div className="font-medium text-gray-900">
+                                                                        {ticket.quantity}x {ticket.ticket_types.name}
+                                                                    </div>
+                                                                    <div className="text-sm text-gray-600">
+                                                                        Confirmation: {ticket.confirmation_code}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div className="text-right">
                                                                 <div className="font-medium text-gray-900">
-                                                                    {ticket.quantity}x {ticket.ticket_types.name}
+                                                                    {formatPrice(ticket.total_price)}
                                                                 </div>
                                                                 <div className="text-sm text-gray-600">
-                                                                    Confirmation: {ticket.confirmation_code}
+                                                                    {formatPrice(ticket.unit_price)} each
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div className="text-right">
-                                                            <div className="font-medium text-gray-900">
-                                                                {formatPrice(ticket.total_price)}
-                                                            </div>
-                                                            <div className="text-sm text-gray-600">
-                                                                {formatPrice(ticket.unit_price)} each
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        {/* Actions */}
-                                        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <Button variant="outline" size="sm" asChild>
-                                                        <Link href={`/events/${order.events.slug}`}>
-                                                            <ExternalLink className="w-4 h-4 mr-2" />
-                                                            View Event
-                                                        </Link>
-                                                    </Button>
-                                                    <Button variant="outline" size="sm">
-                                                        <Download className="w-4 h-4 mr-2" />
-                                                        Download Receipt
-                                                    </Button>
-                                                </div>
-
-                                                {refundInfo.eligible && (
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleRefundClick(order)}
-                                                        className="text-red-600 border-red-200 hover:bg-red-50"
-                                                    >
-                                                        <DollarSign className="w-4 h-4 mr-2" />
-                                                        Request Refund
-                                                        <ChevronRight className="w-4 h-4 ml-1" />
-                                                    </Button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    )}
-                </TabsContent>
-
-                {/* RSVPs Tab */}
-                <TabsContent value="rsvps" className="mt-6">
-                    {rsvpLoading ? (
-                        <div className="flex items-center justify-center py-12">
-                            <RefreshCw className="w-6 h-6 animate-spin mr-2" />
-                            <span className="text-gray-600">Loading your RSVPs...</span>
-                        </div>
-                    ) : rsvpError ? (
-                        <Alert variant="destructive">
-                            <AlertTriangle className="h-4 w-4" />
-                            <AlertDescription>{rsvpError}</AlertDescription>
-                        </Alert>
-                    ) : rsvps.length === 0 ? (
-                        <div className="text-center py-12">
-                            <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">No RSVPs yet</h3>
-                            <p className="text-gray-600 mb-6">
-                                When you RSVP to free events, they&apos;ll appear here.
-                            </p>
-                            <Button asChild>
-                                <Link href="/">Browse Events</Link>
-                            </Button>
-                        </div>
-                    ) : (
-                        <div className="space-y-6">
-                            {rsvps.map((rsvp) => {
-                                const isUpcoming = isEventUpcoming(rsvp.events.start_time)
-
-                                return (
-                                    <div key={rsvp.id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-                                        {/* RSVP Header */}
-                                        <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-4">
-                                                    <div>
-                                                        <h3 className="text-lg font-semibold text-gray-900">
-                                                            {rsvp.events.title}
-                                                        </h3>
-                                                        <p className="text-sm text-gray-600">
-                                                            RSVP #{rsvp.id.slice(-8)} • {formatDateTime(rsvp.created_at)}
-                                                        </p>
-                                                    </div>
-                                                    {getRSVPStatusBadge(rsvp)}
-                                                </div>
-                                                <div className="text-right">
-                                                    <div className="text-lg font-semibold text-green-600">
-                                                        FREE
-                                                    </div>
-                                                    <div className="text-sm text-gray-600">
-                                                        {isUpcoming ? 'Upcoming' : 'Past Event'}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Event Details */}
-                                        <div className="px-6 py-4">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                    <CalendarDays className="w-4 h-4" />
-                                                    <span>{formatDateTime(rsvp.events.start_time)}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                    <MapPin className="w-4 h-4" />
-                                                    {rsvp.events.location && (
-                                                        <span>{rsvp.events.location}</span>
-                                                    )}
+                                                    ))}
                                                 </div>
                                             </div>
 
-                                            {/* Notes */}
-                                            {rsvp.notes && (
-                                                <div className="space-y-2">
-                                                    <h4 className="text-sm font-medium text-gray-700">Notes</h4>
-                                                    <div className="p-3 bg-gray-50 rounded-lg">
-                                                        <p className="text-sm text-gray-600">{rsvp.notes}</p>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Actions */}
-                                        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <Button variant="outline" size="sm" asChild>
-                                                        <Link href={`/events/${rsvp.event_id}`}>
-                                                            <ExternalLink className="w-4 h-4 mr-2" />
-                                                            View Event
-                                                        </Link>
-                                                    </Button>
-                                                    {isUpcoming && (
+                                            {/* Actions */}
+                                            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <Button variant="outline" size="sm" asChild>
+                                                            <Link href={`/events/${order.events.slug}`}>
+                                                                <ExternalLink className="w-4 h-4 mr-2" />
+                                                                View Event
+                                                            </Link>
+                                                        </Button>
                                                         <Button variant="outline" size="sm">
-                                                            <Calendar className="w-4 h-4 mr-2" />
-                                                            Add to Calendar
+                                                            <Download className="w-4 h-4 mr-2" />
+                                                            Download Receipt
+                                                        </Button>
+                                                    </div>
+
+                                                    {refundInfo.eligible && (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => handleRefundClick(order)}
+                                                            className="text-red-600 border-red-200 hover:bg-red-50"
+                                                        >
+                                                            <DollarSign className="w-4 h-4 mr-2" />
+                                                            Request Refund
+                                                            <ChevronRight className="w-4 h-4 ml-1" />
                                                         </Button>
                                                     )}
                                                 </div>
-
-                                                {isUpcoming && rsvp.status === 'confirmed' && (
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        className="text-red-600 border-red-200 hover:bg-red-50"
-                                                    >
-                                                        <XCircle className="w-4 h-4 mr-2" />
-                                                        Cancel RSVP
-                                                    </Button>
-                                                )}
                                             </div>
                                         </div>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    )}
-                </TabsContent>
-            </Tabs>
+                                    )
+                                })}
+                            </div>
+                        )}
+                    </TabsContent>
 
-            {/* Refresh Button */}
-            <div className="mt-8 text-center">
-                <Button
-                    onClick={() => {
-                        fetchOrders()
-                        fetchRSVPs()
-                    }}
-                    variant="outline"
-                    disabled={refreshing || loading || rsvpLoading}
-                >
-                    <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-                    Refresh Data
-                </Button>
+                    {/* RSVPs Tab */}
+                    <TabsContent value="rsvps" className="mt-6">
+                        {rsvpLoading ? (
+                            <div className="flex items-center justify-center py-12">
+                                <RefreshCw className="w-6 h-6 animate-spin mr-2" />
+                                <span className="text-gray-600">Loading your RSVPs...</span>
+                            </div>
+                        ) : rsvpError ? (
+                            <Alert variant="destructive">
+                                <AlertTriangle className="h-4 w-4" />
+                                <AlertDescription>{rsvpError}</AlertDescription>
+                            </Alert>
+                        ) : rsvps.length === 0 ? (
+                            <div className="text-center py-12">
+                                <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                                <h3 className="text-lg font-medium text-gray-900 mb-2">No RSVPs yet</h3>
+                                <p className="text-gray-600 mb-6">
+                                    When you RSVP to free events, they&apos;ll appear here.
+                                </p>
+                                <Button asChild>
+                                    <Link href="/">Browse Events</Link>
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="space-y-6">
+                                {rsvps.map((rsvp) => {
+                                    const isUpcoming = isEventUpcoming(rsvp.events.start_time)
+
+                                    return (
+                                        <div key={rsvp.id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                                            {/* RSVP Header */}
+                                            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-4">
+                                                        <div>
+                                                            <h3 className="text-lg font-semibold text-gray-900">
+                                                                {rsvp.events.title}
+                                                            </h3>
+                                                            <p className="text-sm text-gray-600">
+                                                                RSVP #{rsvp.id.slice(-8)} • {formatDateTime(rsvp.created_at)}
+                                                            </p>
+                                                        </div>
+                                                        {getRSVPStatusBadge(rsvp)}
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <div className="text-lg font-semibold text-green-600">
+                                                            FREE
+                                                        </div>
+                                                        <div className="text-sm text-gray-600">
+                                                            {isUpcoming ? 'Upcoming' : 'Past Event'}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Event Details */}
+                                            <div className="px-6 py-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                        <CalendarDays className="w-4 h-4" />
+                                                        <span>{formatDateTime(rsvp.events.start_time)}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                        <MapPin className="w-4 h-4" />
+                                                        {rsvp.events.location && (
+                                                            <span>{rsvp.events.location}</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Notes */}
+                                                {rsvp.notes && (
+                                                    <div className="space-y-2">
+                                                        <h4 className="text-sm font-medium text-gray-700">Notes</h4>
+                                                        <div className="p-3 bg-gray-50 rounded-lg">
+                                                            <p className="text-sm text-gray-600">{rsvp.notes}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Actions */}
+                                            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <Button variant="outline" size="sm" asChild>
+                                                            <Link href={`/events/${rsvp.event_id}`}>
+                                                                <ExternalLink className="w-4 h-4 mr-2" />
+                                                                View Event
+                                                            </Link>
+                                                        </Button>
+                                                        {isUpcoming && (
+                                                            <Button variant="outline" size="sm">
+                                                                <Calendar className="w-4 h-4 mr-2" />
+                                                                Add to Calendar
+                                                            </Button>
+                                                        )}
+                                                    </div>
+
+                                                    {isUpcoming && rsvp.status === 'confirmed' && (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="text-red-600 border-red-200 hover:bg-red-50"
+                                                        >
+                                                            <XCircle className="w-4 h-4 mr-2" />
+                                                            Cancel RSVP
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        )}
+                    </TabsContent>
+                </Tabs>
+
+                {/* Refresh Button */}
+                <div className="mt-8 text-center">
+                    <Button
+                        onClick={() => {
+                            fetchOrders()
+                            fetchRSVPs()
+                        }}
+                        variant="outline"
+                        disabled={refreshing || loading || rsvpLoading}
+                    >
+                        <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                        Refresh Data
+                    </Button>
+                </div>
+
+                {/* Refund Dialog */}
+                <RefundDialog
+                    open={refundDialogOpen}
+                    onOpenChange={setRefundDialogOpen}
+                    order={selectedOrder}
+                    onRefundSuccess={handleRefundSuccess}
+                />
             </div>
-
-            {/* Refund Dialog */}
-            <RefundDialog
-                open={refundDialogOpen}
-                onOpenChange={setRefundDialogOpen}
-                order={selectedOrder}
-                onRefundSuccess={handleRefundSuccess}
-            />
-
-            {/* Footer */}
+            
+            {/* Footer - Outside container for full-width */}
             <Footer />
-        </div>
+        </>
     )
 } 

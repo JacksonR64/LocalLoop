@@ -210,7 +210,7 @@ export default function GoogleCalendarConnect({
     }
 
     return (
-        <div className={`p-4 sm:p-6 border border-border rounded-lg bg-card shadow-sm ${className}`}>
+        <div className={`p-4 border border-border rounded-lg bg-muted shadow-sm ${className}`}>
             {/* Success/Error Messages */}
             {callbackMessage && (
                 <div className={`mb-4 p-3 rounded-md ${callbackMessage.type === 'success'
