@@ -25,9 +25,7 @@ import {
     AlertCircle,
     Save,
     X,
-    Plus,
-    Eye,
-    EyeOff
+    Plus
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -107,7 +105,7 @@ const initialFormData: EventFormData = {
     published: true
 }
 
-export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel, showPreview = false }: EventFormProps) {
+export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel }: EventFormProps) {
     const router = useRouter()
     const [formData, setFormData] = useState<EventFormData>(initialFormData)
     const [loading, setLoading] = useState(false)
