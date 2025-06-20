@@ -34,6 +34,12 @@ type MetricData = PerformanceMetric | APIPerformanceMetric | {
 // POST endpoint for collecting metrics
 export async function POST(request: NextRequest) {
     try {
+        // Check if request has content before parsing
+        const contentLength = request.headers.get('content-length')
+        if (!contentLength || contentLength === '0') {
+            return NextResponse.json({ error: 'Empty request body' }, { status: 400 })
+        }
+        
         const data: MetricData = await request.json()
         const supabase = await createServerSupabaseClient()
 

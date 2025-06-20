@@ -208,13 +208,28 @@ test.describe('Authentication System Tests', () => {
         test('should maintain authentication across page navigations', async ({ page }) => {
             await helpers.auth.loginAsUser();
             expect(await helpers.auth.isAuthenticated()).toBe(true);
+            console.log('✅ Initial login verified');
             
-            // Navigate to different pages
+            // Navigate to different pages with explicit auth checks
+            console.log('📍 Navigating to homepage...');
             await helpers.goToHomepage();
-            expect(await helpers.auth.isAuthenticated()).toBe(true);
             
-            await helpers.goToFirstAvailableEvent();
+            // Add extra wait for auth state to settle after navigation
+            await page.waitForTimeout(2000);
+            await helpers.auth.waitForAuthState(10000);
+            
             expect(await helpers.auth.isAuthenticated()).toBe(true);
+            console.log('✅ Auth maintained after homepage navigation');
+            
+            console.log('📍 Navigating to first available event...');
+            await helpers.goToFirstAvailableEvent();
+            
+            // Add extra wait for auth state after event navigation
+            await page.waitForTimeout(2000);
+            await helpers.auth.waitForAuthState(10000);
+            
+            expect(await helpers.auth.isAuthenticated()).toBe(true);
+            console.log('✅ Auth maintained after event navigation');
             
             console.log('✅ Authentication persistence test passed');
         });
