@@ -168,6 +168,7 @@ export function EventCard({
 function DefaultCard({ event, size, featured, showImage, className, onClick, spotsRemaining, isUpcoming, hasPrice, lowestPrice, isSoon }: Readonly<CardComponentProps>) {
     const cardId = `event-card-${event.id}`
     
+
     return (
         <Card
             size={size}
@@ -220,6 +221,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                                 aria-label="Free event"
                                 data-testid="free-badge"
                             >
+
                                 Free
                             </span>
                         )}
@@ -229,6 +231,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                                 aria-label={`Paid event, ${hasPrice ? `starting at ${formatPrice(lowestPrice)}` : 'pricing available'}`}
                                 data-testid="paid-badge"
                             >
+
                                 {hasPrice ? formatPrice(lowestPrice) : 'Paid'}
                             </span>
                         )}
@@ -238,6 +241,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                                 aria-label="Event starting soon"
                                 data-testid="soon-badge"
                             >
+
                                 Soon
                             </span>
                         )}
@@ -247,6 +251,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                                 aria-label="Past event"
                                 data-testid="past-badge"
                             >
+
                                 Past
                             </span>
                         )}

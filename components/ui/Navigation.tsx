@@ -54,6 +54,7 @@ export function Navigation({
                             <Image 
                                 src="/logo.svg" 
                                 alt="LocalLoop logo" 
+
                                 width={48}
                                 height={48}
                                 className="w-12 h-12" 
@@ -91,6 +92,7 @@ export function Navigation({
 
                             {(isStaff || isAdmin) && (
                                 <Link href="/staff" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="staff-link">
+
                                     Staff
                                 </Link>
                             )}
@@ -178,6 +180,7 @@ export function Navigation({
                         )}
                         
                         <nav className="flex flex-col space-y-4" aria-label="Mobile navigation">
+
 
                             {(isStaff || isAdmin) && (
                                 <Link
