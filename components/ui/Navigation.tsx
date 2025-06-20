@@ -134,7 +134,7 @@ export function Navigation({
                                     className={`bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-all duration-200 ${
                                         authLoading ? 'opacity-75 pointer-events-none' : 'opacity-100'
                                     }`}
-                                    data-test-id="sign-in-link"
+                                    data-testid="sign-in-link"
                                 >
                                     Sign In
                                 </Link>
@@ -236,7 +236,7 @@ export function Navigation({
                                         authLoading ? 'opacity-75 pointer-events-none' : 'opacity-100'
                                     }`}
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    data-test-id="mobile-sign-in-link"
+                                    data-testid="mobile-sign-in-link"
                                 >
                                     Sign In
                                 </Link>

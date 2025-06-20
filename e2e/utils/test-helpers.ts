@@ -1,16 +1,27 @@
 import { Page, expect } from '@playwright/test';
 // Import centralized test credentials
 import { TEST_ACCOUNTS, GOOGLE_TEST_ACCOUNT, TEST_EVENT_IDS, TEST_FORM_DATA } from '../config/test-credentials';
+// Import authentication helpers
+import { AuthHelpers, createAuthHelpers } from './auth-helpers';
 
 export class TestHelpers {
-    constructor(private page: Page) { }
+    public auth: AuthHelpers;
+
+    constructor(private page: Page) {
+        this.auth = createAuthHelpers(page);
+    }
 
     /**
      * Navigate to homepage and verify it loads
      */
     async goToHomepage() {
-        await this.page.goto('/');
+        await this.page.goto('/', { timeout: 15000, waitUntil: 'domcontentloaded' });
+        await this.waitForPageLoad();
         await expect(this.page.locator('body')).toBeVisible();
+        
+        // Wait for auth state to settle after navigation
+        await this.auth.waitForAuthState(8000);
+        
         return this;
     }
 
@@ -18,7 +29,8 @@ export class TestHelpers {
      * Navigate to a specific event page
      */
     async goToEvent(eventId: string) {
-        await this.page.goto(`/events/${eventId}`);
+        await this.page.goto(`/events/${eventId}`, { timeout: 15000, waitUntil: 'domcontentloaded' });
+        await this.waitForPageLoad();
         await expect(this.page.locator('body')).toBeVisible();
         return this;
     }
@@ -27,7 +39,8 @@ export class TestHelpers {
      * Navigate to login page
      */
     async goToLogin() {
-        await this.page.goto('/auth/login');
+        await this.page.goto('/auth/login', { timeout: 15000, waitUntil: 'domcontentloaded' });
+        await this.waitForPageLoad();
         await expect(this.page.locator('body')).toBeVisible();
         return this;
     }
@@ -62,15 +75,7 @@ export class TestHelpers {
      * Check if user is authenticated by looking for profile elements
      */
     async isAuthenticated(): Promise<boolean> {
-        try {
-            // Look for common authenticated user elements
-            await this.page.waitForSelector('[data-test="user-menu"], [data-test="profile-button"], .user-avatar', {
-                timeout: 2000
-            });
-            return true;
-        } catch {
-            return false;
-        }
+        return await this.auth.isAuthenticated();
     }
 
     /**
@@ -302,8 +307,11 @@ export class TestHelpers {
      */
     async goToFirstAvailableEvent() {
         // Navigate to homepage which displays events
-        await this.page.goto('/');
+        await this.page.goto('/', { timeout: 15000, waitUntil: 'domcontentloaded' });
         await this.waitForPageLoad();
+        
+        // Wait for auth state to settle
+        await this.auth.waitForAuthState(5000);
 
         // Look for event cards on homepage using data-test-id
         const eventCards = this.page.locator('[data-test-id="event-card"], button:has-text("View Details")');
@@ -317,6 +325,9 @@ export class TestHelpers {
             await firstEventCard.scrollIntoViewIfNeeded();
             await firstEventCard.click();
             await this.waitForPageLoad();
+            
+            // Wait for auth state after navigation
+            await this.auth.waitForAuthState(5000);
             return this;
         }
 
@@ -325,6 +336,7 @@ export class TestHelpers {
         try {
             await this.page.goto('/events/00000000-0000-0000-0000-000000000001');
             await this.waitForPageLoad();
+            await this.auth.waitForAuthState(5000);
         } catch (error) {
             console.warn('Fallback event ID also failed:', error);
             // Continue anyway to let tests handle gracefully
