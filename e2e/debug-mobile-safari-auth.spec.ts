@@ -75,7 +75,7 @@ test.describe('Debug Mobile Safari Authentication', () => {
         if (currentUrl.includes('/auth/login')) {
             console.log('Still on login page, trying method 2: Form submit');
             try {
-                await page.locator('form').evaluate(form => form.submit());
+                await page.locator('form').evaluate((form: HTMLFormElement) => form.submit());
                 console.log('✅ Form submit succeeded');
             } catch (error) {
                 console.log('❌ Form submit failed:', error);

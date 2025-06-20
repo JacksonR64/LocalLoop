@@ -85,7 +85,7 @@ test.describe('Debug Authenticated State', () => {
                     console.log(`❌ Not found: ${selector}`);
                 }
             } catch (e) {
-                console.log(`❌ Error checking: ${selector} - ${e.message}`);
+                console.log(`❌ Error checking: ${selector} - ${(e as Error).message}`);
             }
         }
         

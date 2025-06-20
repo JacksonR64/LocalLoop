@@ -107,7 +107,7 @@ export function useAuth(): UseAuthReturn {
         } finally {
             setLoading(false)
         }
-    }, [fetchUserProfile])
+    }, [fetchUserProfile, supabase.auth])
 
     const signOut = useCallback(async () => {
         try {
@@ -126,7 +126,7 @@ export function useAuth(): UseAuthReturn {
         } finally {
             setLoading(false)
         }
-    }, [])
+    }, [supabase.auth])
 
     useEffect(() => {
         // Get initial session
@@ -148,7 +148,7 @@ export function useAuth(): UseAuthReturn {
         )
 
         return () => subscription.unsubscribe()
-    }, [refresh, fetchUserProfile])
+    }, [refresh, fetchUserProfile, supabase.auth])
 
     const isAuthenticated = !!user
     const isStaff = user ? ['organizer', 'admin'].includes(user.role) : false

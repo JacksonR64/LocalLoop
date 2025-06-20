@@ -46,7 +46,7 @@ export class AuthHelpers {
         } catch (error) {
             console.log(`Submit button click failed: ${error}, trying alternative approach`);
             // Alternative: use form submission directly (better for Mobile Safari)
-            await this.page.locator('form').first().evaluate(form => form.submit());
+            await this.page.locator('form').first().evaluate((form: HTMLFormElement) => form.submit());
         }
         
         // Additional fallback for Mobile Safari - try pressing Enter in password field
@@ -62,7 +62,7 @@ export class AuthHelpers {
         // Wait for either redirect or auth state change
         try {
             // Try to wait for redirect away from login page
-            await this.page.waitForURL(url => !url.includes('/auth/login'), { timeout: 15000 });
+            await this.page.waitForURL(url => !url.toString().includes('/auth/login'), { timeout: 15000 });
             console.log('✅ Redirected after login');
         } catch {
             // If no redirect, check if we're still on login page but auth state changed
