@@ -5,16 +5,45 @@ import { createAuthHelpers, AuthPatterns } from './utils/auth-helpers';
 test.describe('Authentication System Tests', () => {
     let helpers: TestHelpers;
 
-    test.beforeEach(async ({ page }) => {
+    test.beforeEach(async ({ page, context }) => {
+        // Clear all cookies to ensure clean state
+        await context.clearCookies();
+        await context.clearPermissions();
+        
+        // Navigate to homepage first to establish domain context
+        await page.goto('/', { waitUntil: 'domcontentloaded' });
+        
+        // Now clear browser storage safely
+        await page.evaluate(() => {
+            localStorage.clear();
+            sessionStorage.clear();
+        });
+        
         helpers = new TestHelpers(page);
         
-        // Ensure clean state
+        // Ensure clean auth state
         await helpers.auth.cleanupAuth();
     });
 
-    test.afterEach(async ({ page }) => {
-        // Clean up after each test
+    test.afterEach(async ({ page, context }) => {
+        // Thorough cleanup after each test
         await helpers.auth.cleanupAuth();
+        
+        // Navigate to homepage to establish context for storage clearing
+        try {
+            await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 5000 });
+            
+            // Clear browser storage
+            await page.evaluate(() => {
+                localStorage.clear();
+                sessionStorage.clear();
+            });
+        } catch (error) {
+            console.log('Cleanup navigation failed, skipping storage clear');
+        }
+        
+        // Clear cookies
+        await context.clearCookies();
     });
 
     test.describe('Email Authentication', () => {
