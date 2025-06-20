@@ -142,8 +142,11 @@ test.describe('Cross-Browser Responsive Testing', () => {
 
     test.describe('Touch and Mobile Interactions', () => {
 
-        test('should handle touch interactions on mobile', async ({ page, isMobile }) => {
-            test.skip(!isMobile, 'Mobile-specific test');
+        test('should handle touch interactions on mobile', async ({ page }, testInfo) => {
+            // Skip if not running on a mobile project
+            const isMobileProject = testInfo.project.name?.toLowerCase().includes('mobile') || 
+                                  testInfo.project.name?.toLowerCase().includes('safari');
+            test.skip(!isMobileProject, 'Mobile-specific test - skipping on desktop browsers');
 
             await page.goto('/');
             await page.waitForLoadState('domcontentloaded');
