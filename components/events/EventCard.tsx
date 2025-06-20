@@ -178,7 +178,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
             role="article"
             aria-labelledby={`${cardId}-title`}
             aria-describedby={`${cardId}-description ${cardId}-details`}
-            data-testid={`event-card-${event.id}`}
+            data-test-id={`event-card-${event.id}`}
         >
             {showImage && event.image_url && (
                 <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
@@ -196,7 +196,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                             <span 
                                 className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-medium"
                                 aria-label="Featured event"
-                                data-testid="featured-badge"
+                                data-test-id="featured-badge"
                             >
                                 Featured
                             </span>
@@ -219,7 +219,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                             <span 
                                 className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full"
                                 aria-label="Free event"
-                                data-testid="free-badge"
+                                data-test-id="free-badge"
                             >
 
                                 Free
@@ -229,7 +229,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                             <span 
                                 className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full"
                                 aria-label={`Paid event, ${hasPrice ? `starting at ${formatPrice(lowestPrice)}` : 'pricing available'}`}
-                                data-testid="paid-badge"
+                                data-test-id="paid-badge"
                             >
 
                                 {hasPrice ? formatPrice(lowestPrice) : 'Paid'}
@@ -239,7 +239,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                             <span 
                                 className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full"
                                 aria-label="Event starting soon"
-                                data-testid="soon-badge"
+                                data-test-id="soon-badge"
                             >
 
                                 Soon
@@ -249,7 +249,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                             <span 
                                 className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full"
                                 aria-label="Past event"
-                                data-testid="past-badge"
+                                data-test-id="past-badge"
                             >
 
                                 Past
@@ -299,7 +299,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                 <button 
                     className="text-blue-600 hover:text-blue-800 font-medium text-sm group-hover:underline flex items-center gap-1"
                     aria-label={`View details for ${event.title}`}
-                    data-testid="view-details-button"
+                    data-test-id="view-details-button"
                 >
                     View Details
                     <ExternalLink className="w-3 h-3" aria-hidden="true" />

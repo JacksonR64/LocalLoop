@@ -41,16 +41,16 @@ export function Navigation({
             <a
                 href="#main-content"
                 className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-lg focus:z-[60] focus:outline-none focus:ring-2 focus:ring-ring"
-                data-testid="skip-to-main-content"
+                data-test-id="skip-to-main-content"
             >
                 Skip to main content
             </a>
-            <header className={`bg-card shadow-sm border-b border-border sticky top-0 z-50 ${className}`} data-testid="homepage-header">
+            <header className={`bg-card shadow-sm border-b border-border sticky top-0 z-50 ${className}`} data-test-id="homepage-header">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Left side - Logo and Admin/Staff Badge */}
                     <div className="flex items-center gap-3">
-                        <Link href="/" className="flex items-center gap-2" data-testid="homepage-logo">
+                        <Link href="/" className="flex items-center gap-2" data-test-id="homepage-logo">
                             <Image 
                                 src="/logo.svg" 
                                 alt="LocalLoop logo" 
@@ -59,7 +59,7 @@ export function Navigation({
                                 height={48}
                                 className="w-12 h-12" 
                             />
-                            <span className="text-xl font-bold text-card-foreground" data-testid="homepage-title">LocalLoop</span>
+                            <span className="text-xl font-bold text-card-foreground" data-test-id="homepage-title">LocalLoop</span>
                         </Link>
                         
                         {/* Admin/Staff Badge */}
@@ -71,7 +71,7 @@ export function Navigation({
                                         : 'bg-blue-100 text-blue-700 border border-blue-200'
                                 }`}
                                 aria-label={`Current user role: ${isAdmin ? 'Administrator' : 'Staff member'}`}
-                                data-testid="user-role-badge"
+                                data-test-id="user-role-badge"
                             >
                                 {isAdmin ? (
                                     <Settings className="w-3 h-3" aria-hidden="true" />
@@ -88,11 +88,10 @@ export function Navigation({
                     {/* Right side - Full Navigation (always shown) */}
                     <>
                         {/* Desktop Navigation */}
-                        <nav className="hidden md:flex items-center gap-6" aria-label="Primary navigation" data-testid="desktop-navigation">
+                        <nav className="hidden md:flex items-center gap-6" aria-label="Primary navigation" data-test-id="desktop-navigation">
 
                             {(isStaff || isAdmin) && (
-                                <Link href="/staff" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="staff-link">
-
+                                <Link href="/staff" className="text-muted-foreground hover:text-foreground transition-colors" data-test-id="staff-link">
                                     Staff
                                 </Link>
                             )}
@@ -101,7 +100,7 @@ export function Navigation({
                                 <Link
                                     href="/create-event"
                                     className="text-muted-foreground hover:text-foreground transition-colors"
-                                    data-testid="create-event-link"
+                                    data-test-id="create-event-link"
                                 >
                                     Create Event
                                 </Link>
@@ -110,7 +109,7 @@ export function Navigation({
                             <Link
                                 href="/my-events"
                                 className="text-muted-foreground hover:text-foreground transition-colors"
-                                data-testid="my-events-link"
+                                data-test-id="my-events-link"
                             >
                                 My Events
                             </Link>
@@ -118,7 +117,7 @@ export function Navigation({
                             <button
                                 onClick={handleBrowseEvents}
                                 className="text-muted-foreground hover:text-foreground transition-colors"
-                                data-testid="browse-events-button"
+                                data-test-id="browse-events-button"
                             >
                                 Browse Events
                             </button>
@@ -135,7 +134,7 @@ export function Navigation({
                                     className={`bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-all duration-200 ${
                                         authLoading ? 'opacity-75 pointer-events-none' : 'opacity-100'
                                     }`}
-                                    data-testid="sign-in-link"
+                                    data-test-id="sign-in-link"
                                 >
                                     Sign In
                                 </Link>
@@ -147,7 +146,7 @@ export function Navigation({
                             className="md:hidden p-2 rounded-lg hover:bg-accent transition-colors"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             aria-label="Toggle mobile menu"
-                            data-testid="mobile-menu-button"
+                            data-test-id="mobile-menu-button"
                         >
                             {isMobileMenuOpen ? (
                                 <X className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
@@ -160,7 +159,7 @@ export function Navigation({
 
                 {/* Mobile Navigation */}
                 {isMobileMenuOpen && (
-                    <div className="md:hidden border-t border-border py-4" data-testid="mobile-navigation">
+                    <div className="md:hidden border-t border-border py-4" data-test-id="mobile-navigation">
                         {/* Mobile Admin/Staff Badge */}
                         {user && (isAdmin || isStaff) && (
                             <div className="mb-4 flex justify-center">
@@ -187,7 +186,7 @@ export function Navigation({
                                     href="/staff"
                                     className="text-muted-foreground hover:text-foreground transition-colors py-2"
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    data-testid="mobile-staff-link"
+                                    data-test-id="mobile-staff-link"
                                 >
                                     Staff
                                 </Link>
@@ -198,7 +197,7 @@ export function Navigation({
                                     href="/create-event"
                                     className="text-muted-foreground hover:text-foreground transition-colors py-2"
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    data-testid="mobile-create-event-link"
+                                    data-test-id="mobile-create-event-link"
                                 >
                                     Create Event
                                 </Link>
@@ -208,7 +207,7 @@ export function Navigation({
                                 href="/my-events"
                                 className="text-muted-foreground hover:text-foreground transition-colors py-2"
                                 onClick={() => setIsMobileMenuOpen(false)}
-                                data-testid="mobile-my-events-link"
+                                data-test-id="mobile-my-events-link"
                             >
                                 My Events
                             </Link>
@@ -219,7 +218,7 @@ export function Navigation({
                                     setIsMobileMenuOpen(false)
                                 }}
                                 className="text-muted-foreground hover:text-foreground transition-colors py-2 text-left"
-                                data-testid="mobile-browse-events-button"
+                                data-test-id="mobile-browse-events-button"
                             >
                                 Browse Events
                             </button>
@@ -237,7 +236,7 @@ export function Navigation({
                                         authLoading ? 'opacity-75 pointer-events-none' : 'opacity-100'
                                     }`}
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    data-testid="mobile-sign-in-link"
+                                    data-test-id="mobile-sign-in-link"
                                 >
                                     Sign In
                                 </Link>
