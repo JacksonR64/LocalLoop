@@ -422,7 +422,7 @@ export default function EventForm({ eventId, isEdit = false, onSuccess, onCancel
                                     <p className={cn(
                                         "text-sm",
                                         formData.title.length > 60 ? "text-orange-600 font-medium" : "text-muted-foreground"
-
+                                    )}>
                                         {formData.title.length}/60
                                     </p>
                                 </div>
