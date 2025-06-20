@@ -173,7 +173,11 @@ export function ProfileDropdown({ testIdPrefix = "", mobileIconOnly = false, onO
       {/* Dropdown Menu */}
       {isOpen && (
         <div 
-          className="absolute right-0 mt-2 w-56 bg-card rounded-lg shadow-lg border border-border py-2 z-50"
+          className={`${
+            mobileIconOnly 
+              ? 'fixed top-16 left-0 right-0 bg-card border-t border-border py-4 z-50' // Full width mobile like burger menu
+              : 'absolute right-0 mt-2 bg-card rounded-lg shadow-lg border border-border py-2 z-50 w-56' // Fixed width on desktop
+          }`}
           data-testid="profile-dropdown-menu"
           role="menu"
           aria-label="Profile menu"

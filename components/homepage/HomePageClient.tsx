@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation';
 import { LoadingSpinner } from '@/components/ui';
 import { EventCard, type EventData } from '@/components/events';
 import { EventFilters } from '@/components/filters/EventFilters';
+import { CompactSearchBar } from '@/components/search/CompactSearchBar';
 import { usePagination } from '@/lib/hooks/usePagination';
 import { useInfiniteScroll } from '@/lib/hooks/useInfiniteScroll';
+import { useSearch } from '@/lib/search-context';
 import { Footer } from '@/components/ui/Footer';
 
 interface HomePageClientProps {
@@ -17,13 +19,70 @@ interface HomePageClientProps {
 
 export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: HomePageClientProps) {
   const router = useRouter();
+  const { isSearchOpen } = useSearch();
   const [filteredEvents, setFilteredEvents] = React.useState(upcomingEvents);
   const [showPastEvents, setShowPastEvents] = React.useState(false);
+  const [searchResults, setSearchResults] = React.useState<EventData[]>([]);
+  const [hasActiveFilters, setHasActiveFilters] = React.useState(false);
+
 
   // Memoize the filtered events setter to prevent infinite re-renders
   const handleFilteredEventsChange = React.useCallback((events: EventData[]) => {
     setFilteredEvents(events);
+    
+    // Check if filters are active by comparing filtered events with original upcoming events
+    // Use Set-based comparison to check if the exact same events are present
+    const filteredEventIds = new Set(events.map(e => e.id));
+    const originalEventIds = new Set(upcomingEvents.map(e => e.id));
+    
+    const filtersActive = events.length !== upcomingEvents.length || 
+                         !Array.from(filteredEventIds).every(id => originalEventIds.has(id)) ||
+                         !Array.from(originalEventIds).every(id => filteredEventIds.has(id));
+    
+    setHasActiveFilters(filtersActive);
+    
+    // Set search results when filters are active
+    if (filtersActive) {
+      setSearchResults(events);
+    } else {
+      setSearchResults([]);
+    }
+  }, [upcomingEvents]);
+
+  // Add a simpler handler that gets filter state directly from EventFilters
+  const handleFiltersStateChange = React.useCallback((filtersActive: boolean, filteredEvents: EventData[]) => {
+    setFilteredEvents(filteredEvents);
+    setHasActiveFilters(filtersActive);
+    
+    if (filtersActive) {
+      setSearchResults(filteredEvents);
+    } else {
+      setSearchResults([]);
+    }
   }, []);
+
+  // Clear all filters and reset to default state
+  const handleClearFilters = React.useCallback(() => {
+    setSearchResults([]);
+    setHasActiveFilters(false);
+    setFilteredEvents(upcomingEvents);
+    // Scroll to top to show the original hero section
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [upcomingEvents]);
+
+  // Scroll to search results or upcoming events section when Enter is pressed in search
+  const handleSearchEnter = React.useCallback(() => {
+    const targetSection = hasActiveFilters ? 
+      document.getElementById('search-results-section') || document.getElementById('no-search-results-section') :
+      document.getElementById('upcoming-events');
+    
+    if (targetSection) {
+      targetSection.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  }, [hasActiveFilters]);
 
   // Pagination for upcoming events
   const {
@@ -73,12 +132,17 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
       event.category && event.category.toLowerCase() === category.toLowerCase()
     );
     handleFilteredEventsChange(categoryFiltered);
+    setHasActiveFilters(true);
+    setSearchResults(categoryFiltered);
 
-    // Scroll to upcoming events section
-    const upcomingSection = document.getElementById('upcoming-events');
-    if (upcomingSection) {
-      upcomingSection.scrollIntoView({ behavior: 'smooth' });
-    }
+    // Scroll to search results section when filters are active
+    setTimeout(() => {
+      const searchSection = document.getElementById('search-results-section') || 
+                          document.getElementById('no-search-results-section');
+      if (searchSection) {
+        searchSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   // View all events handler
@@ -92,67 +156,110 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-[var(--primary)] to-purple-700 text-white py-20" data-test-id="hero-section">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6" data-test-id="hero-title">
-            Discover Local Events
-          </h1>
-          <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto" data-test-id="hero-description">
-            Connect with your community through amazing local events. From workshops to social gatherings, find your next adventure.
-          </p>
-          {/* EventFilters Integration */}
-          <div className="max-w-3xl mx-auto mb-6 sm:mb-8" data-test-id="event-filters-container">
-            <EventFilters
-              events={upcomingEvents}
-              onFilteredEventsChange={handleFilteredEventsChange}
-              showSearch={true}
-              showActiveFilters={true}
-              layout="horizontal"
-            />
+      {/* Hero Section - always visible */}
+        <section className="bg-gradient-to-br from-[var(--primary)] to-purple-700 text-white py-20" data-test-id="hero-section">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6" data-test-id="hero-title">
+              Discover Local Events
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto" data-test-id="hero-description">
+              Connect with your community through amazing local events. From workshops to social gatherings, find your next adventure.
+            </p>
+            {/* EventFilters Integration */}
+            <div className="max-w-3xl mx-auto mb-6 sm:mb-8" data-test-id="event-filters-container">
+              <EventFilters
+                events={upcomingEvents}
+                onFilteredEventsChange={handleFilteredEventsChange}
+                onFiltersStateChange={handleFiltersStateChange}
+                showSearch={true}
+                showActiveFilters={true}
+                layout="horizontal"
+                onSearchEnter={handleSearchEnter}
+              />
+            </div>
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-3 text-sm px-4" data-test-id="category-pills">
+              <button
+                onClick={() => handleCategoryFilter('workshop')}
+                className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
+                data-test-id="category-pill-workshop"
+              >
+                Workshop
+              </button>
+              <button
+                onClick={() => handleCategoryFilter('community')}
+                className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
+                data-test-id="category-pill-community"
+              >
+                Community
+              </button>
+              <button
+                onClick={() => handleCategoryFilter('arts')}
+                className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
+                data-test-id="category-pill-arts"
+              >
+                Arts
+              </button>
+              <button
+                onClick={() => handleCategoryFilter('business')}
+                className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
+                data-test-id="category-pill-business"
+              >
+                Business
+              </button>
+              <button
+                onClick={() => handleCategoryFilter('family')}
+                className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
+                data-test-id="category-pill-family"
+              >
+                Family
+              </button>
+            </div>
           </div>
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 text-sm px-4" data-test-id="category-pills">
-            <button
-              onClick={() => handleCategoryFilter('workshop')}
-              className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
-              data-test-id="category-pill-workshop"
-            >
-              Workshop
-            </button>
-            <button
-              onClick={() => handleCategoryFilter('community')}
-              className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
-              data-test-id="category-pill-community"
-            >
-              Community
-            </button>
-            <button
-              onClick={() => handleCategoryFilter('arts')}
-              className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
-              data-test-id="category-pill-arts"
-            >
-              Arts
-            </button>
-            <button
-              onClick={() => handleCategoryFilter('business')}
-              className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
-              data-test-id="category-pill-business"
-            >
-              Business
-            </button>
-            <button
-              onClick={() => handleCategoryFilter('family')}
-              className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
-              data-test-id="category-pill-family"
-            >
-              Family
-            </button>
-          </div>
-        </div>
-      </section>
+        </section>
+
+      {/* Compact Search Bar - appears when search is toggled open */}
+      {isSearchOpen && (
+        <CompactSearchBar
+          events={upcomingEvents}
+          onFilteredEventsChange={handleFilteredEventsChange}
+          onFiltersStateChange={handleFiltersStateChange}
+          onClearFilters={handleClearFilters}
+        />
+      )}
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12" data-test-id="main-content">
+      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 ${isSearchOpen ? 'pt-24' : ''}`} data-test-id="main-content">
+        {/* Search Results */}
+        {hasActiveFilters && searchResults.length > 0 && (
+          <section id="search-results-section" className="mb-12 sm:mb-16" data-test-id="search-results-section">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6" data-test-id="search-results-title">
+              Search Results ({searchResults.length})
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" data-test-id="search-results-grid">
+              {searchResults.map((event) => (
+                <div key={event.id} data-test-id={`search-result-${event.id}`}>
+                  <EventCard
+                    event={event}
+                    size="md"
+                    featured={event.featured}
+                    onClick={() => handleEventClick(event.id)}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* No Search Results */}
+        {hasActiveFilters && searchResults.length === 0 && (
+          <section id="no-search-results-section" className="mb-12 sm:mb-16 text-center" data-test-id="no-search-results-section">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4">No Results Found</h2>
+            <p className="text-muted-foreground mb-6">
+              No events match your search or filter criteria. Try adjusting your search or clearing filters.
+            </p>
+          </section>
+        )}
+
         {/* Featured Events */}
         {featuredEvents.length > 0 && (
           <section className="mb-12 sm:mb-16" data-test-id="featured-events-section">

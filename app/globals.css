@@ -109,6 +109,7 @@ body {
       transparent,
       rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
   overflow-x: hidden;
+  touch-action: manipulation; /* Prevents double-tap zoom while allowing pinch zoom */
 }
 
 /* Custom scrollbar for better UX */

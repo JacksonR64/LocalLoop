@@ -6,3 +6,8 @@
   - Track project insights, development notes, and important contextual information here
   - Memories can be added incrementally to capture project knowledge
   - Designed to be a living document that grows with the project's development
+
+## Development Workflow
+
+- When starting or restarting dev server, use iTerm MCP (usually already open and running)
+  - If not already open, open and start the MCP terminal

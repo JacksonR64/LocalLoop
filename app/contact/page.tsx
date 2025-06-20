@@ -27,7 +27,12 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-foreground">Email</h3>
-                                        <p className="text-muted-foreground">{EMAIL_ADDRESSES.CONTACT}</p>
+                                        <a 
+                                            href={`mailto:${EMAIL_ADDRESSES.CONTACT}`}
+                                            className="text-muted-foreground hover:text-blue-600 transition-colors"
+                                        >
+                                            {EMAIL_ADDRESSES.CONTACT}
+                                        </a>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">
@@ -35,8 +40,8 @@ export default function ContactPage() {
                                         <MessageCircle className="w-6 h-6 text-green-600" />
                                     </div>
                                     <div>
-                                        <h3 className="font-semibold text-foreground">Live Chat</h3>
-                                        <p className="text-muted-foreground">Available Monday-Friday, 9AM-5PM</p>
+                                        <h3 className="font-semibold text-foreground">Coming Soon</h3>
+                                        <p className="text-muted-foreground">Live chat support will be available soon</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">
@@ -45,7 +50,12 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-foreground">Phone</h3>
-                                        <p className="text-muted-foreground">+1 (555) 123-4567</p>
+                                        <a 
+                                            href="tel:+15551234567"
+                                            className="text-muted-foreground hover:text-purple-600 transition-colors"
+                                        >
+                                            +1 (555) 123-4567
+                                        </a>
                                     </div>
                                 </div>
                             </div>

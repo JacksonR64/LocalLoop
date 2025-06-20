@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
+import { SearchProvider } from "@/lib/search-context";
 import { PerformanceMonitor } from "@/components/analytics/PerformanceMonitor";
 import { ThemeProvider } from 'next-themes';
 import { Navigation } from '@/components/ui/Navigation';
@@ -79,7 +80,7 @@ export const metadata: Metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 5,
+  maximumScale: 2,
   userScalable: true,
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
@@ -111,8 +112,10 @@ export default function RootLayout({
           enableSystem
         >
           <AuthProvider>
-            <Navigation />
-            {children}
+            <SearchProvider>
+              <Navigation />
+              {children}
+            </SearchProvider>
           </AuthProvider>
         </ThemeProvider>
         <PerformanceMonitor pageName="app" />

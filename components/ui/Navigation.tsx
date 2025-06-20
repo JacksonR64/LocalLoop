@@ -4,8 +4,9 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { Menu, X, Shield, Settings } from 'lucide-react'
+import { Menu, X, Shield, Settings, Search } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
+import { useSearch } from '@/lib/search-context'
 import { useAuth as useAuthHook } from '@/lib/hooks/useAuth'
 import { ProfileDropdown } from '@/components/auth/ProfileDropdown'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
@@ -20,6 +21,7 @@ export function Navigation({
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const { user, loading: authLoading } = useAuth()
     const { isStaff, isAdmin } = useAuthHook()
+    const { isSearchOpen, toggleSearch } = useSearch()
     const router = useRouter()
 
     // Handle navigation click for browse events
@@ -120,6 +122,20 @@ export function Navigation({
                                 data-test-id="browse-events-button"
                             >
                                 Browse Events
+                            </button>
+
+                            {/* Search Toggle Button */}
+                            <button
+                                onClick={toggleSearch}
+                                className={`p-2 rounded-lg transition-colors ${
+                                    isSearchOpen 
+                                        ? 'bg-primary text-primary-foreground' 
+                                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                                }`}
+                                aria-label={isSearchOpen ? 'Close search' : 'Open search'}
+                                data-test-id="search-toggle-button"
+                            >
+                                <Search className="w-5 h-5" />
                             </button>
 
                             <ThemeToggle />
@@ -227,6 +243,23 @@ export function Navigation({
                                 data-test-id="mobile-browse-events-button"
                             >
                                 Browse Events
+                            </button>
+
+                            {/* Mobile Search Toggle Button */}
+                            <button
+                                onClick={() => {
+                                    toggleSearch()
+                                    setIsMobileMenuOpen(false)
+                                }}
+                                className={`flex items-center gap-2 transition-colors py-2 text-left ${
+                                    isSearchOpen 
+                                        ? 'text-primary font-medium' 
+                                        : 'text-muted-foreground hover:text-foreground'
+                                }`}
+                                data-test-id="mobile-search-toggle-button"
+                            >
+                                <Search className="w-5 h-5" />
+                                {isSearchOpen ? 'Close Search' : 'Search Events'}
                             </button>
                         </nav>
                     </div>
