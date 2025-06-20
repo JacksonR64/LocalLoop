@@ -6,8 +6,20 @@ import { useAuth } from '@/lib/auth-context'
 import { useAuth as useAuthHook } from '@/lib/hooks/useAuth'
 import Link from 'next/link'
 
-export function ProfileDropdown() {
+interface ProfileDropdownProps {
+  testIdPrefix?: string;
+  mobileIconOnly?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
+}
+
+export function ProfileDropdown({ testIdPrefix = "", mobileIconOnly = false, onOpenChange }: ProfileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
+  
+  // Helper function to update open state and notify parent
+  const updateOpenState = (newIsOpen: boolean) => {
+    setIsOpen(newIsOpen)
+    onOpenChange?.(newIsOpen)
+  }
   const [calendarConnected, setCalendarConnected] = useState(false)
   const [calendarLoading, setCalendarLoading] = useState(false)
   const [calendarCheckLoading, setCalendarCheckLoading] = useState(true)
@@ -105,19 +117,13 @@ export function ProfileDropdown() {
   // Handle sign out
   const handleSignOut = async () => {
     try {
-      console.log('🚪 ProfileDropdown: Starting sign out...')
-      setIsOpen(false)
-
+      updateOpenState(false)
       // Use the main auth context signOut method
       await signOut()
-
-      console.log('✅ ProfileDropdown: Sign out completed')
     } catch (error) {
-      console.error('❌ ProfileDropdown: Error signing out:', error)
-
+      console.error('Error signing out:', error)
       // Even if signOut fails, force a page reload to clear state
       if (typeof window !== 'undefined') {
-        console.log('🔄 ProfileDropdown: Forcing page reload to clear auth state')
         window.location.href = '/'
       }
     }
@@ -134,13 +140,13 @@ export function ProfileDropdown() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
+        updateOpenState(false)
       }
     }
 
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  }, [updateOpenState])
 
   if (!user) return null
 
@@ -148,22 +154,35 @@ export function ProfileDropdown() {
     <div className="relative" ref={dropdownRef}>
       {/* Profile Button */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 bg-muted hover:bg-accent px-3 py-2 rounded-lg transition-colors"
+        onClick={() => updateOpenState(!isOpen)}
+        className={`flex items-center ${mobileIconOnly ? 'gap-0 p-2' : 'gap-2 px-3 py-2'} bg-muted hover:bg-accent rounded-lg transition-colors`}
+        data-testid={`${testIdPrefix}profile-dropdown-button`}
+        aria-label={`Profile menu for ${getUserDisplayName()}`}
+        aria-expanded={isOpen}
+        aria-haspopup="true"
       >
-        <User className="w-4 h-4 text-muted-foreground" />
-        <span className="text-sm font-medium text-foreground">{getUserDisplayName()}</span>
-        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <User className={`${mobileIconOnly ? 'w-5 h-5' : 'w-4 h-4'} text-muted-foreground`} />
+        {!mobileIconOnly && (
+          <span className="text-sm font-medium text-foreground" data-testid="profile-display-name">{getUserDisplayName()}</span>
+        )}
+        {!mobileIconOnly && (
+          <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        )}
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-card rounded-lg shadow-lg border border-border py-2 z-50">
-          <div className="px-4 py-2 border-b border-border">
-            <p className="text-sm font-medium text-foreground truncate">{getUserDisplayName()}</p>
-            <p className="text-xs text-muted-foreground truncate" title={user.email}>{user.email}</p>
+        <div 
+          className="absolute right-0 mt-2 w-56 bg-card rounded-lg shadow-lg border border-border py-2 z-50"
+          data-testid="profile-dropdown-menu"
+          role="menu"
+          aria-label="Profile menu"
+        >
+          <div className="px-4 py-2 border-b border-border" data-testid="profile-info-section">
+            <p className="text-sm font-medium text-foreground truncate" data-testid="profile-name">{getUserDisplayName()}</p>
+            <p className="text-xs text-muted-foreground truncate" title={user.email} data-testid="profile-email">{user.email}</p>
             {userProfile?.role && (
-              <p className="text-xs text-primary capitalize font-medium mt-1">
+              <p className="text-xs text-primary capitalize font-medium mt-1" data-testid="profile-role">
                 {userProfile.role}
               </p>
             )}
@@ -172,8 +191,10 @@ export function ProfileDropdown() {
           {/* My Events Link */}
           <Link
             href="/my-events"
-            onClick={() => setIsOpen(false)}
+            onClick={() => updateOpenState(false)}
             className="w-full flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+            data-testid="profile-my-events-link"
+            role="menuitem"
           >
             <Calendar className="w-4 h-4" />
             My Events
@@ -183,8 +204,10 @@ export function ProfileDropdown() {
           {isStaff && (
             <Link
               href="/staff"
-              onClick={() => setIsOpen(false)}
+              onClick={() => updateOpenState(false)}
               className="w-full flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+              data-testid="profile-staff-dashboard-link"
+              role="menuitem"
             >
               {isAdmin ? <Settings className="w-4 h-4" /> : <BarChart3 className="w-4 h-4" />}
               {isAdmin ? 'Admin Dashboard' : 'Staff Dashboard'}
@@ -194,7 +217,7 @@ export function ProfileDropdown() {
           <div className="border-t border-border my-1" />
 
           {/* Google Calendar Connection */}
-          <div className="px-4 py-2">
+          <div className="px-4 py-2" data-testid="google-calendar-section">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-muted-foreground" />
@@ -202,27 +225,29 @@ export function ProfileDropdown() {
               </div>
               
               {calendarCheckLoading ? (
-                <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
+                <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" data-testid="calendar-status-loading" />
               ) : (
                 <div className="flex items-center gap-2">
                   {calendarConnected ? (
                     <>
-                      <CheckCircle className="w-3 h-3 text-green-600" />
+                      <CheckCircle className="w-3 h-3 text-green-600" data-testid="calendar-connected-icon" />
                       <button
                         onClick={handleCalendarDisconnect}
                         disabled={calendarLoading}
                         className="text-xs text-red-600 hover:text-red-700 disabled:opacity-50"
+                        data-testid="calendar-disconnect-button"
                       >
                         {calendarLoading ? 'Disconnecting...' : 'Disconnect'}
                       </button>
                     </>
                   ) : (
                     <>
-                      <AlertCircle className="w-3 h-3 text-amber-500" />
+                      <AlertCircle className="w-3 h-3 text-amber-500" data-testid="calendar-disconnected-icon" />
                       <button
                         onClick={handleCalendarConnect}
                         disabled={calendarLoading}
                         className="text-xs text-blue-600 hover:text-blue-700 disabled:opacity-50"
+                        data-testid="calendar-connect-button"
                       >
                         {calendarLoading ? 'Connecting...' : 'Connect'}
                       </button>
@@ -238,6 +263,9 @@ export function ProfileDropdown() {
           <button
             onClick={handleSignOut}
             className="w-full flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+            data-testid="profile-sign-out-button"
+            role="menuitem"
+            aria-label="Sign out of your account"
           >
             <LogOut className="w-4 h-4" />
             Sign Out

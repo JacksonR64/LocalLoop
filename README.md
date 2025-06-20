@@ -4,7 +4,7 @@
 > **Connect Communities Through Events** 🌟  
 > Complete event management solution with Google Calendar integration, Stripe payments, and real-time analytics.
 
-🚀 **[Live Application](https://local-loop-qa.vercel.app)** | 📱 **Mobile-First Design** | 🔒 **Production Ready**
+🚀 **[Live Application](https://localloopevents.xyz)** | 📱 **Mobile-First Design** | 🔒 **Production Ready**
 
 ---
 
@@ -79,7 +79,7 @@
 ## 🚀 **Getting Started**
 
 ### **For Event Organizers**
-1. **Visit**: [https://local-loop-qa.vercel.app](https://local-loop-qa.vercel.app)
+1. **Visit**: [https://localloopevents.xyz](https://localloopevents.xyz)
 2. **Sign in** with your Google account
 3. **Create your first event** using the intuitive event creation flow
 4. **Manage attendees** through the comprehensive staff dashboard
@@ -90,6 +90,62 @@
 2. **RSVP or purchase tickets** with secure payment processing
 3. **Add events to your calendar** with one-click Google Calendar integration
 4. **Receive automated reminders** and updates about your events
+
+---
+
+## 🧪 **Testing & Demo Environment**
+
+### **Live Testing Environment**
+Experience the full functionality of LocalLoop with our comprehensive testing setup:
+
+**🌐 Live Site**: [https://localloopevents.xyz](https://localloopevents.xyz)  
+**📧 Custom Domain**: Full email functionality with `@localloopevents.xyz` domain
+
+### **Quick Test Access**
+
+#### **Standard User Account**
+- **Email**: `test1@localloopevents.xyz`
+- **Password**: `zunTom-9wizri-refdes`
+- **Features**: Complete user experience including RSVP, calendar integration, and event browsing
+
+#### **Staff Account**
+- **Email**: `teststaff1@localloopevents.xyz`
+- **Password**: `bobvip-koDvud-wupva0`
+- **Features**: Event management and staff dashboard access
+
+### **📋 Complete Testing Documentation**
+For comprehensive testing including Google OAuth accounts, Stripe payment testing, admin credentials, and detailed testing checklists:
+
+**📄 [Client Testing Guide](docs/CLIENT_TESTING_GUIDE.md)** - Complete testing documentation with all credentials and testing procedures
+
+*This comprehensive guide includes:*
+- 🔑 **All Test Account Credentials** - Including Google OAuth demo account
+- 💳 **Stripe Payment Testing** - Test card numbers and payment flow validation  
+- 🎭 **Demo Events** - Specific events configured for testing
+- ✅ **Complete Testing Checklist** - Every feature and functionality to validate
+- 🔒 **Security & Technical Validation** - Performance, accessibility, and security testing
+
+### **Key Testing Capabilities**
+1. **✅ Complete User Workflows** - Registration, RSVP, and event management
+2. **✅ Google Calendar Integration** - Two-way sync with live Google Calendar testing  
+3. **✅ Payment Processing** - Stripe integration with comprehensive test scenarios
+4. **✅ Email Notifications** - Live email delivery and verification
+5. **✅ Mobile & Cross-Browser** - Responsive design across all devices
+6. **✅ Accessibility Compliance** - WCAG standards with improved aria labels
+7. **✅ Production-Grade Performance** - Optimized loading and error handling
+
+### **Recent Improvements Addressing Feedback**
+- **🎯 Streamlined Event Listings** - Fixed "Upcoming Events" to show only future events
+- **♿ Enhanced Accessibility** - Corrected aria labels and improved keyboard navigation
+- **🎨 Reduced UI Clutter** - Cleaner information hierarchy and visual polish
+- **📱 Mobile Optimization** - Touch-friendly interface with improved navigation
+
+### **MVP Foundation & Development Roadmap**
+This release represents a **stable and comprehensive MVP** designed to:
+- ✅ **Demonstrate All Required Functionality** - Every client requirement fully implemented
+- 🔧 **Provide Production-Ready Foundation** - Stable base for CI integration and enhancements
+- 🚀 **Enable Creative Development** - Architecture prepared for advanced features
+- 📅 **Support Timeline** - Ready for enhanced UI/UX and creative features starting June 28, 2025
 
 ---
 
@@ -413,7 +469,7 @@ This comprehensive guide covers:
 ### **Production Deployment**
 The application is automatically deployed to Vercel on every push to the `main` branch.
 
-**Live URL**: [https://local-loop-qa.vercel.app](https://local-loop-qa.vercel.app)
+**Live URL**: [https://localloopevents.xyz](https://localloopevents.xyz)
 
 ### **Manual Deployment**
 ```bash
@@ -468,7 +524,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**🎪 Ready to transform your local community events? [Get started now!](https://local-loop-qa.vercel.app)**
+**🎪 Ready to transform your local community events? [Get started now!](https://localloopevents.xyz)**
 
 
 

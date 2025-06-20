@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { test, expect, devices } from '@playwright/test';
 
 // Configure device at the top level to avoid worker issues

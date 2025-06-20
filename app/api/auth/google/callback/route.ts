@@ -22,8 +22,6 @@ import { EMAIL_ADDRESSES } from '@/lib/config/email-addresses'
  * - Encrypts tokens before storage
  */
 export async function GET(request: NextRequest) {
-    console.log('[DEBUG] OAuth callback route started')
-
     try {
         // Rate limiting for OAuth callback
         const { oauthRateLimiter } = await import('@/lib/validation')
@@ -42,8 +40,6 @@ export async function GET(request: NextRequest) {
         const code = searchParams.get('code')
         const state = searchParams.get('state')
         const error = searchParams.get('error')
-
-        console.log('[DEBUG] OAuth parameters:', { code: !!code, state: !!state, error })
 
         // Handle OAuth authorization denied
         if (error) {

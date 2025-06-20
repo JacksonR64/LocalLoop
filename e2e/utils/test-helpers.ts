@@ -1,14 +1,27 @@
 import { Page, expect } from '@playwright/test';
+// Import centralized test credentials
+import { TEST_ACCOUNTS, GOOGLE_TEST_ACCOUNT, TEST_EVENT_IDS, TEST_FORM_DATA } from '../config/test-credentials';
+// Import authentication helpers
+import { AuthHelpers, createAuthHelpers } from './auth-helpers';
 
 export class TestHelpers {
-    constructor(private page: Page) { }
+    public auth: AuthHelpers;
+
+    constructor(private page: Page) {
+        this.auth = createAuthHelpers(page);
+    }
 
     /**
      * Navigate to homepage and verify it loads
      */
     async goToHomepage() {
-        await this.page.goto('/');
+        await this.page.goto('/', { timeout: 10000, waitUntil: 'domcontentloaded' });
+        await this.waitForPageLoad();
         await expect(this.page.locator('body')).toBeVisible();
+        
+        // Wait for auth state to settle after navigation
+        await this.auth.waitForAuthState(5000);
+        
         return this;
     }
 
@@ -16,7 +29,8 @@ export class TestHelpers {
      * Navigate to a specific event page
      */
     async goToEvent(eventId: string) {
-        await this.page.goto(`/events/${eventId}`);
+        await this.page.goto(`/events/${eventId}`, { timeout: 10000, waitUntil: 'domcontentloaded' });
+        await this.waitForPageLoad();
         await expect(this.page.locator('body')).toBeVisible();
         return this;
     }
@@ -25,7 +39,8 @@ export class TestHelpers {
      * Navigate to login page
      */
     async goToLogin() {
-        await this.page.goto('/auth/login');
+        await this.page.goto('/auth/login', { timeout: 10000, waitUntil: 'domcontentloaded' });
+        await this.waitForPageLoad();
         await expect(this.page.locator('body')).toBeVisible();
         return this;
     }
@@ -43,15 +58,16 @@ export class TestHelpers {
      * Wait for page to fully load (including network requests)
      * Uses a more resilient approach than networkidle
      */
-    async waitForPageLoad(timeout: number = 10000) {
+    async waitForPageLoad(timeout: number = 8000) {
         try {
             // Try networkidle first with shorter timeout
-            await this.page.waitForLoadState('networkidle', { timeout: 5000 });
-        } catch {
+            await this.page.waitForLoadState('networkidle', { timeout: 3000 });
+        } catch (error) {
             // Fallback to domcontentloaded if networkidle fails
+            console.log('Network idle wait failed, using domcontentloaded:', error instanceof Error ? error.message : String(error));
             await this.page.waitForLoadState('domcontentloaded', { timeout });
             // Add small delay to let any lazy loading complete
-            await this.page.waitForTimeout(1000);
+            await this.page.waitForTimeout(500);
         }
         return this;
     }
@@ -60,15 +76,7 @@ export class TestHelpers {
      * Check if user is authenticated by looking for profile elements
      */
     async isAuthenticated(): Promise<boolean> {
-        try {
-            // Look for common authenticated user elements
-            await this.page.waitForSelector('[data-test="user-menu"], [data-test="profile-button"], .user-avatar', {
-                timeout: 2000
-            });
-            return true;
-        } catch {
-            return false;
-        }
+        return await this.auth.isAuthenticated();
     }
 
     /**
@@ -76,6 +84,7 @@ export class TestHelpers {
      */
     async mockGoogleLogin(email: string = 'test@example.com', name: string = 'Test User') {
         // This would typically involve mocking the OAuth flow
+        console.log(`Mocking Google login for ${name} (${email})`);
         // For now, we'll simulate the post-login state
         await this.page.goto('/auth/login');
 
@@ -94,9 +103,9 @@ export class TestHelpers {
     async fillRSVPForm(attendeeCount: number = 1, attendeeNames: string[] = ['Test Attendee']) {
         // Wait for RSVP form to be visible - but don't fail if it doesn't exist
         try {
-            await expect(this.page.locator('[data-test-id="rsvp-form"]')).toBeVisible({ timeout: 5000 });
-        } catch {
-            console.warn('RSVP form not immediately visible - may require authentication or different event type');
+            await expect(this.page.locator('[data-test-id="rsvp-form"]')).toBeVisible({ timeout: 3000 });
+        } catch (error) {
+            console.warn('RSVP form not immediately visible - may require authentication or different event type:', error instanceof Error ? error.message : String(error));
             return this;
         }
 
@@ -128,13 +137,13 @@ export class TestHelpers {
         const submitButton = this.page.locator('[data-test-id="rsvp-submit-button"]');
 
         try {
-            await expect(submitButton).toBeVisible({ timeout: 5000 });
+            await expect(submitButton).toBeVisible({ timeout: 3000 });
             await submitButton.click();
 
             // Wait for submission to complete with fallback
             await this.waitForPageLoad();
-        } catch {
-            console.warn('RSVP submit button not found or clickable - may not be available');
+        } catch (error) {
+            console.warn('RSVP submit button not found or clickable - may not be available:', error instanceof Error ? error.message : String(error));
         }
 
         return this;
@@ -171,13 +180,13 @@ export class TestHelpers {
         const checkoutButton = this.page.locator('[data-test-id="proceed-to-checkout-button"]');
 
         try {
-            await expect(checkoutButton).toBeVisible({ timeout: 5000 });
+            await expect(checkoutButton).toBeVisible({ timeout: 3000 });
             await checkoutButton.click();
 
             // Wait for redirect to checkout or Stripe
             await this.waitForPageLoad();
-        } catch {
-            console.warn('Checkout button not found - may require tickets to be selected first');
+        } catch (error) {
+            console.warn('Checkout button not found - may require tickets to be selected first:', error instanceof Error ? error.message : String(error));
         }
 
         return this;
@@ -200,11 +209,12 @@ export class TestHelpers {
         let found = false;
         for (const selector of successSelectors) {
             try {
-                await expect(this.page.locator(selector)).toBeVisible({ timeout: 5000 });
+                await expect(this.page.locator(selector)).toBeVisible({ timeout: 3000 });
                 found = true;
                 break;
-            } catch {
+            } catch (error) {
                 // Continue to next selector
+                console.log(`Selector ${selector} not found:`, error instanceof Error ? error.message : String(error));
             }
         }
 
@@ -231,11 +241,12 @@ export class TestHelpers {
         let found = false;
         for (const selector of errorSelectors) {
             try {
-                await expect(this.page.locator(selector)).toBeVisible({ timeout: 5000 });
+                await expect(this.page.locator(selector)).toBeVisible({ timeout: 3000 });
                 found = true;
                 break;
-            } catch {
+            } catch (error) {
                 // Continue to next selector
+                console.log(`Selector ${selector} not found:`, error instanceof Error ? error.message : String(error));
             }
         }
 
@@ -262,11 +273,12 @@ export class TestHelpers {
         let found = false;
         for (const selector of calendarSelectors) {
             try {
-                await expect(this.page.locator(selector)).toBeVisible({ timeout: 5000 });
+                await expect(this.page.locator(selector)).toBeVisible({ timeout: 3000 });
                 found = true;
                 break;
-            } catch {
+            } catch (error) {
                 // Continue to next selector
+                console.log(`Selector ${selector} not found:`, error instanceof Error ? error.message : String(error));
             }
         }
 
@@ -300,8 +312,11 @@ export class TestHelpers {
      */
     async goToFirstAvailableEvent() {
         // Navigate to homepage which displays events
-        await this.page.goto('/');
+        await this.page.goto('/', { timeout: 10000, waitUntil: 'domcontentloaded' });
         await this.waitForPageLoad();
+        
+        // Wait for auth state to settle
+        await this.auth.waitForAuthState(3000);
 
         // Look for event cards on homepage using data-test-id
         const eventCards = this.page.locator('[data-test-id="event-card"], button:has-text("View Details")');
@@ -315,6 +330,9 @@ export class TestHelpers {
             await firstEventCard.scrollIntoViewIfNeeded();
             await firstEventCard.click();
             await this.waitForPageLoad();
+            
+            // Wait for auth state after navigation
+            await this.auth.waitForAuthState(3000);
             return this;
         }
 
@@ -323,6 +341,7 @@ export class TestHelpers {
         try {
             await this.page.goto('/events/00000000-0000-0000-0000-000000000001');
             await this.waitForPageLoad();
+            await this.auth.waitForAuthState(3000);
         } catch (error) {
             console.warn('Fallback event ID also failed:', error);
             // Continue anyway to let tests handle gracefully
@@ -339,16 +358,33 @@ export const testEvents = {
     createEventPath: '/staff/events/create',
     demoEventPath: '/demo', // If demo events exist
 
-    // Fallback hardcoded IDs (these would need to be seeded in test database)
-    validEventId: '00000000-0000-0000-0000-000000000001',
-    paidEventId: '00000000-0000-0000-0000-000000000003',
-    invalidEventId: '99999999-9999-9999-9999-999999999999'
+    // Centralized test event IDs
+    validEventId: TEST_EVENT_IDS.freeEvent,
+    freeEventId: TEST_EVENT_IDS.freeEvent,
+    paidEventId: TEST_EVENT_IDS.paidEvent,
+    pastEventId: TEST_EVENT_IDS.pastEvent,
+    invalidEventId: '99999999-9999-9999-9999-999999999999',
+    
+    // Test form data
+    formData: TEST_FORM_DATA
 };
 
 export const testUsers = {
-    // Test user credentials/data
-    testEmail: 'test@example.com',
-    testName: 'Test User',
-    staffEmail: 'staff@example.com',
-    staffName: 'Staff User'
+    // Standard test user
+    user: TEST_ACCOUNTS.user,
+    
+    // Staff user
+    staff: TEST_ACCOUNTS.staff,
+    
+    // Admin user  
+    admin: TEST_ACCOUNTS.admin,
+    
+    // Google OAuth user
+    google: GOOGLE_TEST_ACCOUNT,
+    
+    // Legacy properties for backward compatibility
+    testEmail: TEST_ACCOUNTS.user.email,
+    testName: TEST_ACCOUNTS.user.displayName,
+    staffEmail: TEST_ACCOUNTS.staff.email,
+    staffName: TEST_ACCOUNTS.staff.displayName
 }; 

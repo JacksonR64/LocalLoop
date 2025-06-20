@@ -20,7 +20,7 @@ async function testResend() {
       },
       body: JSON.stringify({
         from: RESEND_FROM_EMAIL,
-        to: ['jackson_rhoden@outlook.com'],
+        to: ['test1@localloopevents.xyz'], // Updated to use centralized test email
         subject: 'LocalLoop Test Email',
         html: '<h1>Test Email</h1><p>If you receive this, Resend is working!</p>',
       }),

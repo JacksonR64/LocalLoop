@@ -36,7 +36,7 @@ export default defineConfig({
     reporter: process.env.CI ? [['github'], ['html']] : 'html',
 
     /* Global timeout for each test */
-    timeout: 120000, // 2 minutes per test
+    timeout: 45000, // 45 seconds per test
 
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
     use: {
@@ -46,9 +46,9 @@ export default defineConfig({
         /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
         trace: 'on-first-retry',
 
-        /* Much longer timeouts for stability */
-        actionTimeout: 45000,      // 45s for actions
-        navigationTimeout: 120000, // 2 minutes for navigation
+        /* Balanced timeouts for CI stability */
+        actionTimeout: 20000,      // 20s for actions
+        navigationTimeout: 45000,  // 45s for navigation
     },
 
     /* Optimized browser coverage for CI - Big 3 browsers + Mobile Safari */
@@ -57,8 +57,8 @@ export default defineConfig({
             name: 'CI Chromium',
             use: {
                 ...devices['Desktop Chrome'],
-                actionTimeout: 45000,  // Increased for stability
-                navigationTimeout: 120000, // Increased for stability
+                actionTimeout: 20000,  // Balanced for CI
+                navigationTimeout: 45000,  // Balanced for CI
             },
             testMatch: ['**/example.spec.ts'],
             testIgnore: ['**/*rsvp*', '**/*ticket*', '**/*auth*', '**/*payment*'],
@@ -67,8 +67,8 @@ export default defineConfig({
             name: 'CI WebKit',
             use: {
                 ...devices['Desktop Safari'],
-                actionTimeout: 45000,  // Increased for stability
-                navigationTimeout: 120000, // Increased for stability
+                actionTimeout: 20000,  // Balanced for CI
+                navigationTimeout: 45000,  // Balanced for CI
             },
             testMatch: ['**/example.spec.ts'],
             testIgnore: ['**/*rsvp*', '**/*ticket*', '**/*auth*', '**/*payment*'],
@@ -77,8 +77,8 @@ export default defineConfig({
             name: 'CI Firefox',
             use: {
                 ...devices['Desktop Firefox'],
-                actionTimeout: 45000,  // Increased for stability
-                navigationTimeout: 120000, // Increased for stability
+                actionTimeout: 20000,  // Balanced for CI
+                navigationTimeout: 45000,  // Balanced for CI
             },
             testMatch: ['**/example.spec.ts'],
             testIgnore: ['**/*rsvp*', '**/*ticket*', '**/*auth*', '**/*payment*'],
@@ -87,8 +87,8 @@ export default defineConfig({
             name: 'CI Mobile Safari',
             use: {
                 ...devices['iPhone 12'],
-                actionTimeout: 45000,  // Increased for stability
-                navigationTimeout: 120000, // Increased for stability
+                actionTimeout: 20000,  // Balanced for CI
+                navigationTimeout: 45000,  // Balanced for CI
             },
             testMatch: ['**/example.spec.ts'],
             testIgnore: ['**/*rsvp*', '**/*ticket*', '**/*auth*', '**/*payment*'],
@@ -100,7 +100,7 @@ export default defineConfig({
         command: 'npm run dev',  // Use dev server for faster startup and reliability
         url: 'http://localhost:3000',
         reuseExistingServer: !process.env.CI,
-        timeout: 120000, // 2 minutes should be sufficient for dev server
+        timeout: 90000, // 90 seconds for dev server startup
         stdout: 'pipe',
         stderr: 'pipe',
     },

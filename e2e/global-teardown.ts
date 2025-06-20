@@ -7,6 +7,7 @@ async function globalTeardown(config: FullConfig) {
         // Clean up test data if any was created
         // This is where you would remove test users, events, etc.
         console.log('🗑️  Cleaning up test data...');
+        console.log(`Test config workers: ${config.workers}, projects: ${config.projects.length}`);
 
         // Clean up any temporary files or state
         console.log('📁 Cleaning up temporary files...');

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { TestHelpers, testEvents, testUsers } from './utils/test-helpers';
+import { TestHelpers } from './utils/test-helpers';
 
 test.describe('RSVP User Flow', () => {
     let helpers: TestHelpers;
@@ -49,13 +49,14 @@ test.describe('RSVP User Flow', () => {
             try {
                 await helpers.verifySuccessMessage();
                 console.log('RSVP completed successfully');
-            } catch {
+            } catch (error) {
                 // If success message not found, check for error
+                console.log('RSVP success message not found:', error instanceof Error ? error.message : String(error));
                 try {
                     await helpers.verifyErrorMessage();
                     console.log('RSVP showed expected error (likely auth required)');
-                } catch {
-                    console.log('RSVP submission completed without clear success/error indication');
+                } catch (errorInner) {
+                    console.log('RSVP submission completed without clear success/error indication:', errorInner instanceof Error ? errorInner.message : String(errorInner));
                 }
             }
         }
@@ -117,8 +118,8 @@ test.describe('RSVP User Flow', () => {
             try {
                 await helpers.submitRSVP();
                 console.log('Guest RSVP form submitted');
-            } catch {
-                console.log('Guest RSVP requires additional validation or has other requirements');
+            } catch (error) {
+                console.log('Guest RSVP requires additional validation or has other requirements:', error instanceof Error ? error.message : String(error));
             }
         } else {
             console.log('Guest RSVP not supported or not visible without authentication');

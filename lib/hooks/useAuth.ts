@@ -42,10 +42,10 @@ export function useAuth(): UseAuthReturn {
                 .single()
 
             if (error) {
-                console.error('Error fetching user profile:', error)
                 // Don't treat missing user as a hard error - they might not be in the users table yet
                 if (error.code === 'PGRST116') {
                     // No rows returned - user doesn't exist in users table yet
+                    // Return default user object without logging error to prevent console spam
                     return {
                         id: authUser.id,
                         email: authUser.email || '',
@@ -54,6 +54,7 @@ export function useAuth(): UseAuthReturn {
                         google_calendar_connected: false
                     }
                 }
+                console.error('Error fetching user profile:', error)
                 setError('Failed to load user profile')
                 return null
             }
@@ -106,7 +107,7 @@ export function useAuth(): UseAuthReturn {
         } finally {
             setLoading(false)
         }
-    }, [fetchUserProfile])
+    }, [fetchUserProfile, supabase.auth])
 
     const signOut = useCallback(async () => {
         try {
@@ -125,7 +126,7 @@ export function useAuth(): UseAuthReturn {
         } finally {
             setLoading(false)
         }
-    }, [])
+    }, [supabase.auth])
 
     useEffect(() => {
         // Get initial session
@@ -147,7 +148,7 @@ export function useAuth(): UseAuthReturn {
         )
 
         return () => subscription.unsubscribe()
-    }, [refresh, fetchUserProfile])
+    }, [refresh, fetchUserProfile, supabase.auth])
 
     const isAuthenticated = !!user
     const isStaff = user ? ['organizer', 'admin'].includes(user.role) : false

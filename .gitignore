@@ -71,7 +71,7 @@ Thumbs.db
 memory-bank/
 .taskmasterconfig
 tasks/
-docs/
+.github/docs/
 reports/
 reports-temp/
 

@@ -22,9 +22,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npx playwright test tests/specific-test.spec.ts` - Run specific E2E test
 
 ### Testing Credentials
-- **Email/Password**: `jackson_rhoden@outlook.com` / `numfIt-8rorpo-fumwym`
-- **Google OAuth**: `jacksonrhoden64@googlemail.com`
-- **Test Events**: `/events/75c8904e-671f-426c-916d-4e275806e277`
+**Standard Login Accounts:**
+- **User**: `test1@localloopevents.xyz` / `zunTom-9wizri-refdes`
+- **Staff**: `teststaff1@localloopevents.xyz` / `bobvip-koDvud-wupva0` (currently user level, needs upgrade)
+- **Admin**: `testadmin1@localloopevents.xyz` / `nonhyx-1nopta-mYhnum` (currently user level, needs upgrade)
+
+**Google OAuth Account:**
+- **Email**: `TestLocalLoop@Gmail.com` / `zowvok-8zurBu-xovgaj`
+
+**Test Events:**
+- **Free Event**: `/events/75c8904e-671f-426c-916d-4e275806e277`
+
+**Note**: All accounts currently have regular user privileges. Staff and admin accounts need role upgrades in the database.
 
 ## Architecture Overview
 

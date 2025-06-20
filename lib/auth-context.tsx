@@ -34,39 +34,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
 
   useEffect(() => {
-    console.log('🔥 AuthProvider useEffect started')
-
     // Reduced timeout to ensure loading state is resolved quickly for optimistic UI
     const timeoutId = setTimeout(() => {
       if (loading) {
-        console.warn('⏰ Auth initialization timeout - resolving loading state')
         setLoading(false)
       }
     }, 1000) // Reduced timeout for faster optimistic UI response
 
     // Get initial session immediately
     const getInitialSession = async () => {
-      console.log('🔍 Getting initial session...')
       try {
         const { data: { session }, error } = await supabase.auth.getSession()
 
-        console.log('📊 Initial session result:', {
-          hasSession: !!session,
-          hasError: !!error,
-          error: error?.message,
-          user: session?.user?.email
-        })
-
         if (error) {
-          console.error('❌ Error getting initial session:', error)
+          console.error('Error getting initial session:', error)
         }
 
         setSession(session)
         setUser(session?.user ?? null)
         setLoading(false)
-        console.log('✅ Initial session loaded successfully')
       } catch (error) {
-        console.error('💥 Unexpected error getting initial session:', error)
+        console.error('Unexpected error getting initial session:', error)
         setSession(null)
         setUser(null)
         setLoading(false)
@@ -79,24 +67,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔄 Auth state change:', { event, hasSession: !!session })
         try {
           setSession(session)
           setUser(session?.user ?? null)
           setLoading(false)
         } catch (error) {
-          console.error('❌ Error in auth state change:', error)
+          console.error('Error in auth state change:', error)
           setLoading(false)
         }
       }
     )
 
     return () => {
-      console.log('🧹 AuthProvider cleanup')
       clearTimeout(timeoutId)
       subscription.unsubscribe()
     }
-  }, [supabase.auth])
+  }, [supabase.auth, loading])
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
