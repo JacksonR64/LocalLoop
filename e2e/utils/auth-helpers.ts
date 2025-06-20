@@ -26,27 +26,37 @@ export class AuthHelpers {
         // Wait for login form to be visible
         await expect(this.page.locator('form')).toBeVisible({ timeout: 10000 });
 
-        // Fill email field - updated selectors to match actual form
-        const emailInput = this.page.locator('input[type="email"]');
+        // Fill email field using rock-solid data-testid selector
+        const emailInput = this.page.locator('[data-testid="email-input"]');
         await expect(emailInput).toBeVisible({ timeout: 5000 });
         await emailInput.fill(email);
 
-        // Fill password field - updated selectors to match actual form
-        const passwordInput = this.page.locator('input[type="password"]');
+        // Fill password field using rock-solid data-testid selector
+        const passwordInput = this.page.locator('[data-testid="password-input"]');
         await expect(passwordInput).toBeVisible({ timeout: 5000 });
         await passwordInput.fill(password);
 
-        // Submit the form - updated selectors to match actual form
-        const submitButton = this.page.locator('button[type="submit"]:has-text("Sign in")');
+        // Submit the form using rock-solid data-testid selector
+        const submitButton = this.page.locator('[data-testid="login-submit-button"]');
         await expect(submitButton).toBeVisible({ timeout: 5000 });
         
-        // Submit form with improved error handling
+        // Submit form with improved error handling for Mobile Safari
         try {
             await submitButton.click({ timeout: 8000 });
         } catch (error) {
             console.log(`Submit button click failed: ${error}, trying alternative approach`);
-            // Alternative: use form submission
+            // Alternative: use form submission directly (better for Mobile Safari)
             await this.page.locator('form').first().evaluate(form => form.submit());
+        }
+        
+        // Additional fallback for Mobile Safari - try pressing Enter in password field
+        if (await this.page.locator('input[type="password"]').isVisible()) {
+            try {
+                await this.page.locator('input[type="password"]').press('Enter');
+                console.log('Tried Enter key submission as fallback');
+            } catch {
+                // Continue if Enter press fails
+            }
         }
         
         // Wait for either redirect or auth state change
@@ -256,11 +266,22 @@ export class AuthHelpers {
 
     /**
      * Check if user is currently authenticated
+     * Handles both desktop and mobile viewports
      */
     async isAuthenticated(): Promise<boolean> {
         try {
+            // Check viewport size to determine if we're on mobile
+            const viewportSize = this.page.viewportSize();
+            const isMobile = viewportSize && viewportSize.width < 768; // md breakpoint
+            
             // Primary method: Check if Sign In link IS present (indicates logged out)
-            const signInLink = this.page.locator('[data-testid="sign-in-link"]');
+            // With new mobile nav, sign in link is always visible in top bar
+            let signInSelector = '[data-testid="sign-in-link"]';
+            if (isMobile) {
+                signInSelector = '[data-testid="mobile-sign-in-link"]';
+            }
+            
+            const signInLink = this.page.locator(signInSelector);
             const hasSignInLink = await signInLink.isVisible({ timeout: 3000 });
             
             if (hasSignInLink) {
@@ -269,13 +290,15 @@ export class AuthHelpers {
             }
             
             // Secondary check: Look for authenticated user elements using rock-solid data-testid
+            // With new mobile nav, ProfileDropdown is always visible in top bar (no need to open menu)
             const userElements = [
                 // ProfileDropdown button - most reliable indicator
-                '[data-testid="profile-dropdown-button"]',
+                isMobile ? '[data-testid="mobile-profile-dropdown-button"]' : '[data-testid="desktop-profile-dropdown-button"]',
                 // User role badge for staff/admin  
                 '[data-testid="user-role-badge"]',
                 // Navigation elements only available to authenticated users
                 '[data-testid="my-events-link"]',
+                '[data-testid="mobile-my-events-link"]', // Mobile variant
                 '[data-testid="profile-display-name"]'
             ];
 

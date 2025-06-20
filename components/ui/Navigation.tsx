@@ -85,7 +85,7 @@ export function Navigation({
                         )}
                     </div>
 
-                    {/* Right side - Full Navigation (always shown) */}
+                    {/* Right side - Navigation */}
                     <>
                         {/* Desktop Navigation */}
                         <nav className="hidden md:flex items-center gap-6" aria-label="Primary navigation" data-test-id="desktop-navigation">
@@ -124,10 +124,9 @@ export function Navigation({
 
                             <ThemeToggle />
 
-
                             {/* Auth state conditional rendering - Optimistic UI */}
                             {user ? (
-                                <ProfileDropdown />
+                                <ProfileDropdown testIdPrefix="desktop-" />
                             ) : (
                                 <Link
                                     href="/auth/login"
@@ -141,46 +140,47 @@ export function Navigation({
                             )}
                         </nav>
 
-                        {/* Mobile Menu Button */}
-                        <button
-                            className="md:hidden p-2 rounded-lg hover:bg-accent transition-colors"
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            aria-label="Toggle mobile menu"
-                            data-test-id="mobile-menu-button"
-                        >
-                            {isMobileMenuOpen ? (
-                                <X className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
+                        {/* Mobile - Profile and Menu Button */}
+                        <div className="md:hidden flex items-center gap-3">
+                            {/* Theme Toggle for mobile */}
+                            <ThemeToggle />
+                            
+                            {/* Always visible auth state in mobile top bar */}
+                            {user ? (
+                                <ProfileDropdown testIdPrefix="mobile-" />
                             ) : (
-                                <Menu className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
+                                <Link
+                                    href="/auth/login"
+                                    className={`bg-primary text-primary-foreground px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-all duration-200 text-sm ${
+                                        authLoading ? 'opacity-75 pointer-events-none' : 'opacity-100'
+                                    }`}
+                                    data-testid="mobile-sign-in-link"
+                                >
+                                    Sign In
+                                </Link>
                             )}
-                        </button>
+
+                            {/* Mobile Menu Button */}
+                            <button
+                                className="p-2 rounded-lg hover:bg-accent transition-colors"
+                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                                aria-label="Toggle mobile menu"
+                                data-test-id="mobile-menu-button"
+                            >
+                                {isMobileMenuOpen ? (
+                                    <X className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
+                                ) : (
+                                    <Menu className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
+                                )}
+                            </button>
+                        </div>
                     </>
                 </div>
 
                 {/* Mobile Navigation */}
                 {isMobileMenuOpen && (
                     <div className="md:hidden border-t border-border py-4" data-test-id="mobile-navigation">
-                        {/* Mobile Admin/Staff Badge */}
-                        {user && (isAdmin || isStaff) && (
-                            <div className="mb-4 flex justify-center">
-                                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${
-                                    isAdmin 
-                                        ? 'bg-red-100 text-red-700 border border-red-200' 
-                                        : 'bg-blue-100 text-blue-700 border border-blue-200'
-                                }`}>
-                                    {isAdmin ? (
-                                        <Settings className="w-4 h-4" />
-                                    ) : (
-                                        <Shield className="w-4 h-4" />
-                                    )}
-                                    <span>{isAdmin ? 'Admin' : 'Staff'}</span>
-                                </div>
-                            </div>
-                        )}
-                        
                         <nav className="flex flex-col space-y-4" aria-label="Mobile navigation">
-
-
                             {(isStaff || isAdmin) && (
                                 <Link
                                     href="/staff"
@@ -222,25 +222,6 @@ export function Navigation({
                             >
                                 Browse Events
                             </button>
-
-                            <ThemeToggle />
-
-
-                            {/* Auth state conditional rendering for mobile - Optimistic UI */}
-                            {user ? (
-                                <ProfileDropdown />
-                            ) : (
-                                <Link
-                                    href="/auth/login"
-                                    className={`bg-primary text-primary-foreground px-4 py-3 rounded-lg hover:bg-primary/90 transition-all duration-200 text-left ${
-                                        authLoading ? 'opacity-75 pointer-events-none' : 'opacity-100'
-                                    }`}
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                    data-testid="mobile-sign-in-link"
-                                >
-                                    Sign In
-                                </Link>
-                            )}
                         </nav>
                     </div>
                 )}

@@ -141,6 +141,7 @@ export default function LoginPage() {
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="block w-full px-4 py-3 border border-border placeholder-muted-foreground text-foreground bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-base"
                                 placeholder="Email address"
+                                data-testid="email-input"
                             />
                         </div>
                         <div>
@@ -151,6 +152,7 @@ export default function LoginPage() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="block w-full px-4 py-3 border border-border placeholder-muted-foreground text-foreground bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-base"
                                 placeholder="Password"
+                                data-testid="password-input"
                             />
                         </div>
                     </div>
@@ -166,6 +168,7 @@ export default function LoginPage() {
                             type="submit"
                             disabled={loading}
                             className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 min-h-[44px]"
+                            data-testid="login-submit-button"
                         >
                             {loading ? 'Signing in...' : 'Sign in'}
                         </button>

@@ -19,9 +19,10 @@ export async function updateSession(request: NextRequest) {
           supabaseResponse = NextResponse.next({
             request,
           })
-          cookiesToSet.forEach(({ name, value, options }) =>
+          // Simplified fix from GitHub issue #36: just use response.cookies.set with original options
+          cookiesToSet.forEach(({ name, value, options }) => {
             supabaseResponse.cookies.set(name, value, options)
-          )
+          })
         },
       },
     }
@@ -57,15 +58,11 @@ export async function updateSession(request: NextRequest) {
     
     // If there are auth errors or invalid session, clear stale cookies
     if (!isAuthValid && (sessionError || userError)) {
-      const errorMsg = sessionError?.message || userError?.message
-      console.warn('Middleware auth validation failed:', errorMsg)
-      
       const cookiesToClear = request.cookies.getAll().filter(cookie => 
         cookie.name.includes('sb-') || cookie.name.includes('supabase')
       )
       
       if (cookiesToClear.length > 0) {
-        console.log('Clearing stale auth cookies:', cookiesToClear.map(c => c.name))
         supabaseResponse = NextResponse.next({ request })
         cookiesToClear.forEach(cookie => {
           supabaseResponse.cookies.set(cookie.name, '', {

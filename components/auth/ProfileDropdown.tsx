@@ -6,7 +6,11 @@ import { useAuth } from '@/lib/auth-context'
 import { useAuth as useAuthHook } from '@/lib/hooks/useAuth'
 import Link from 'next/link'
 
-export function ProfileDropdown() {
+interface ProfileDropdownProps {
+  testIdPrefix?: string;
+}
+
+export function ProfileDropdown({ testIdPrefix = "" }: ProfileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [calendarConnected, setCalendarConnected] = useState(false)
   const [calendarLoading, setCalendarLoading] = useState(false)
@@ -105,19 +109,13 @@ export function ProfileDropdown() {
   // Handle sign out
   const handleSignOut = async () => {
     try {
-      console.log('🚪 ProfileDropdown: Starting sign out...')
       setIsOpen(false)
-
       // Use the main auth context signOut method
       await signOut()
-
-      console.log('✅ ProfileDropdown: Sign out completed')
     } catch (error) {
-      console.error('❌ ProfileDropdown: Error signing out:', error)
-
+      console.error('Error signing out:', error)
       // Even if signOut fails, force a page reload to clear state
       if (typeof window !== 'undefined') {
-        console.log('🔄 ProfileDropdown: Forcing page reload to clear auth state')
         window.location.href = '/'
       }
     }
@@ -150,7 +148,7 @@ export function ProfileDropdown() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 bg-muted hover:bg-accent px-3 py-2 rounded-lg transition-colors"
-        data-testid="profile-dropdown-button"
+        data-testid={`${testIdPrefix}profile-dropdown-button`}
         aria-label={`Profile menu for ${getUserDisplayName()}`}
         aria-expanded={isOpen}
         aria-haspopup="true"
