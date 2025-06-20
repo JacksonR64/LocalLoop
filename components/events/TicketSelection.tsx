@@ -112,26 +112,38 @@ export default function TicketSelection({
         const updatedSelections = Object.entries(newQuantities)
             .filter(([, qty]) => qty > 0)
             .map(([ticketId, qty]) => {
-                const ticket = ticketTypes.find(t => t.id === ticketId)!
+                const ticket = ticketTypes.find(t => t.id === ticketId)
+                if (!ticket) {
+                    console.error(`Ticket type not found for ID: ${ticketId}`)
+                    return null
+                }
+                
+                // Ensure price is a valid number
+                const ticketPrice = ticket.price ?? 0
+                
                 return {
                     ticket_type_id: ticketId,
                     ticket_type: {
                         id: ticket.id,
                         name: ticket.name,
-                        price: ticket.price
+                        price: ticketPrice
                     },
                     quantity: qty,
-                    unit_price: ticket.price,
-                    total_price: ticket.price * qty
+                    unit_price: ticketPrice,
+                    total_price: ticketPrice * qty
                 }
             })
+            .filter((selection): selection is TicketSelection => selection !== null)
 
         onTicketsChange(updatedSelections)
     }
 
     // Calculate totals with safety checks
-    const totalQuantity = Object.values(quantities).reduce((sum, qty) => sum + qty, 0)
-    const totalPrice = (selectedTickets || []).reduce((sum, ticket) => sum + ticket.total_price, 0)
+    const totalQuantity = Object.values(quantities).reduce((sum, qty) => sum + (qty || 0), 0)
+    const totalPrice = (selectedTickets || []).reduce((sum, ticket) => {
+        const price = ticket?.total_price ?? 0
+        return sum + (isNaN(price) ? 0 : price)
+    }, 0)
 
     if (loading) {
         return (
@@ -275,7 +287,7 @@ export default function TicketSelection({
                                             <div className="flex justify-between items-center pt-2 border-t border-border" data-test-id="ticket-subtotal">
                                                 <span className="text-sm text-muted-foreground">Subtotal:</span>
                                                 <span className="font-semibold text-foreground" data-test-id="subtotal-amount">
-                                                    {formatPrice(ticket.price * quantity)}
+                                                    {formatPrice((ticket.price ?? 0) * quantity)}
                                                 </span>
                                             </div>
                                         )}

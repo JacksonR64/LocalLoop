@@ -96,6 +96,12 @@ describe('Ticket Utils', () => {
             expect(formatPrice(1)).toBe('$0.01')
             expect(formatPrice(99)).toBe('$0.99')
         })
+
+        it('should handle invalid values', () => {
+            expect(formatPrice(NaN)).toBe('Free')
+            expect(formatPrice(null as any)).toBe('Free')
+            expect(formatPrice(undefined as any)).toBe('Free')
+        })
     })
 
     describe('convertToStripeAmount', () => {

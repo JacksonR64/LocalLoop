@@ -158,19 +158,19 @@ export async function POST(request: NextRequest) {
 
         console.log('[DEBUG] ✅ Event timing is valid, calculating totals...')
 
-        // Calculate total amount
-        let total = 0
+        // Calculate subtotal (ticket prices only)
+        let subtotal = 0
         for (const item of ticketItems) {
             const ticketType = (ticketTypes as TicketType[]).find((tt: TicketType) => tt.id === item.ticket_type_id)
             if (!ticketType) {
                 return NextResponse.json({ error: `Invalid ticket type: ${item.ticket_type_id}` }, { status: 400 })
             }
-            total += ticketType.price * item.quantity
+            subtotal += ticketType.price * item.quantity
         }
 
-        // Add processing fee (3% + $0.30)
-        const processingFee = Math.round(total * 0.03 + 30)
-        total += processingFee
+        // Calculate processing fee (3% + $0.30)
+        const processingFee = Math.round(subtotal * 0.03 + 30)
+        const total = subtotal + processingFee
 
         // Initialize Stripe
         const stripe = getStripeInstance()
@@ -261,6 +261,8 @@ export async function POST(request: NextRequest) {
             client_secret: paymentIntent.client_secret,
             payment_intent_id: paymentIntent.id,
             amount: total,
+            subtotal: subtotal,
+            fees: processingFee,
             currency: 'usd',
             event: {
                 id: eventData.id,
@@ -274,14 +276,13 @@ export async function POST(request: NextRequest) {
                 const ticketType = (ticketTypes as TicketType[]).find((tt: TicketType) => tt.id === item.ticket_type_id)
                 return {
                     ticket_type_id: item.ticket_type_id,
+                    ticket_type_name: ticketType?.name || 'Ticket',
                     quantity: item.quantity,
                     unit_price: ticketType?.price || 0,
-                    total_price: (ticketType?.price || 0) * item.quantity,
-                    name: ticketType?.name || 'Ticket'
+                    total_price: (ticketType?.price || 0) * item.quantity
                 }
             }),
-            customer_info,
-            total_amount: total
+            customer_info
         })
 
     } catch (error) {

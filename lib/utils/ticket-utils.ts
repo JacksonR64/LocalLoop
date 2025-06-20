@@ -14,6 +14,11 @@ import type {
  * @returns Formatted price string
  */
 export const formatPrice: FormatPriceFunction = (amountInCents: number, currency = 'USD'): string => {
+    // Handle invalid values
+    if (amountInCents == null || isNaN(amountInCents)) {
+        return 'Free';
+    }
+
     const amount = amountInCents / 100;
 
     if (amountInCents === 0) {
