@@ -15,12 +15,12 @@ export class TestHelpers {
      * Navigate to homepage and verify it loads
      */
     async goToHomepage() {
-        await this.page.goto('/', { timeout: 15000, waitUntil: 'domcontentloaded' });
+        await this.page.goto('/', { timeout: 10000, waitUntil: 'domcontentloaded' });
         await this.waitForPageLoad();
         await expect(this.page.locator('body')).toBeVisible();
         
         // Wait for auth state to settle after navigation
-        await this.auth.waitForAuthState(8000);
+        await this.auth.waitForAuthState(5000);
         
         return this;
     }
@@ -29,7 +29,7 @@ export class TestHelpers {
      * Navigate to a specific event page
      */
     async goToEvent(eventId: string) {
-        await this.page.goto(`/events/${eventId}`, { timeout: 15000, waitUntil: 'domcontentloaded' });
+        await this.page.goto(`/events/${eventId}`, { timeout: 10000, waitUntil: 'domcontentloaded' });
         await this.waitForPageLoad();
         await expect(this.page.locator('body')).toBeVisible();
         return this;
@@ -39,7 +39,7 @@ export class TestHelpers {
      * Navigate to login page
      */
     async goToLogin() {
-        await this.page.goto('/auth/login', { timeout: 15000, waitUntil: 'domcontentloaded' });
+        await this.page.goto('/auth/login', { timeout: 10000, waitUntil: 'domcontentloaded' });
         await this.waitForPageLoad();
         await expect(this.page.locator('body')).toBeVisible();
         return this;
@@ -58,15 +58,15 @@ export class TestHelpers {
      * Wait for page to fully load (including network requests)
      * Uses a more resilient approach than networkidle
      */
-    async waitForPageLoad(timeout: number = 10000) {
+    async waitForPageLoad(timeout: number = 8000) {
         try {
             // Try networkidle first with shorter timeout
-            await this.page.waitForLoadState('networkidle', { timeout: 5000 });
+            await this.page.waitForLoadState('networkidle', { timeout: 3000 });
         } catch {
             // Fallback to domcontentloaded if networkidle fails
             await this.page.waitForLoadState('domcontentloaded', { timeout });
             // Add small delay to let any lazy loading complete
-            await this.page.waitForTimeout(1000);
+            await this.page.waitForTimeout(500);
         }
         return this;
     }
@@ -101,7 +101,7 @@ export class TestHelpers {
     async fillRSVPForm(attendeeCount: number = 1, attendeeNames: string[] = ['Test Attendee']) {
         // Wait for RSVP form to be visible - but don't fail if it doesn't exist
         try {
-            await expect(this.page.locator('[data-test-id="rsvp-form"]')).toBeVisible({ timeout: 5000 });
+            await expect(this.page.locator('[data-test-id="rsvp-form"]')).toBeVisible({ timeout: 3000 });
         } catch {
             console.warn('RSVP form not immediately visible - may require authentication or different event type');
             return this;
@@ -135,7 +135,7 @@ export class TestHelpers {
         const submitButton = this.page.locator('[data-test-id="rsvp-submit-button"]');
 
         try {
-            await expect(submitButton).toBeVisible({ timeout: 5000 });
+            await expect(submitButton).toBeVisible({ timeout: 3000 });
             await submitButton.click();
 
             // Wait for submission to complete with fallback
@@ -178,7 +178,7 @@ export class TestHelpers {
         const checkoutButton = this.page.locator('[data-test-id="proceed-to-checkout-button"]');
 
         try {
-            await expect(checkoutButton).toBeVisible({ timeout: 5000 });
+            await expect(checkoutButton).toBeVisible({ timeout: 3000 });
             await checkoutButton.click();
 
             // Wait for redirect to checkout or Stripe
@@ -207,7 +207,7 @@ export class TestHelpers {
         let found = false;
         for (const selector of successSelectors) {
             try {
-                await expect(this.page.locator(selector)).toBeVisible({ timeout: 5000 });
+                await expect(this.page.locator(selector)).toBeVisible({ timeout: 3000 });
                 found = true;
                 break;
             } catch {
@@ -238,7 +238,7 @@ export class TestHelpers {
         let found = false;
         for (const selector of errorSelectors) {
             try {
-                await expect(this.page.locator(selector)).toBeVisible({ timeout: 5000 });
+                await expect(this.page.locator(selector)).toBeVisible({ timeout: 3000 });
                 found = true;
                 break;
             } catch {
@@ -269,7 +269,7 @@ export class TestHelpers {
         let found = false;
         for (const selector of calendarSelectors) {
             try {
-                await expect(this.page.locator(selector)).toBeVisible({ timeout: 5000 });
+                await expect(this.page.locator(selector)).toBeVisible({ timeout: 3000 });
                 found = true;
                 break;
             } catch {
@@ -307,11 +307,11 @@ export class TestHelpers {
      */
     async goToFirstAvailableEvent() {
         // Navigate to homepage which displays events
-        await this.page.goto('/', { timeout: 15000, waitUntil: 'domcontentloaded' });
+        await this.page.goto('/', { timeout: 10000, waitUntil: 'domcontentloaded' });
         await this.waitForPageLoad();
         
         // Wait for auth state to settle
-        await this.auth.waitForAuthState(5000);
+        await this.auth.waitForAuthState(3000);
 
         // Look for event cards on homepage using data-test-id
         const eventCards = this.page.locator('[data-test-id="event-card"], button:has-text("View Details")');
@@ -327,7 +327,7 @@ export class TestHelpers {
             await this.waitForPageLoad();
             
             // Wait for auth state after navigation
-            await this.auth.waitForAuthState(5000);
+            await this.auth.waitForAuthState(3000);
             return this;
         }
 
@@ -336,7 +336,7 @@ export class TestHelpers {
         try {
             await this.page.goto('/events/00000000-0000-0000-0000-000000000001');
             await this.waitForPageLoad();
-            await this.auth.waitForAuthState(5000);
+            await this.auth.waitForAuthState(3000);
         } catch (error) {
             console.warn('Fallback event ID also failed:', error);
             // Continue anyway to let tests handle gracefully

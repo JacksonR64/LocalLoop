@@ -141,13 +141,19 @@ export function Navigation({
                         </nav>
 
                         {/* Mobile - Profile and Menu Button */}
-                        <div className="md:hidden flex items-center gap-3">
+                        <div className="md:hidden flex items-center gap-2">
                             {/* Theme Toggle for mobile */}
                             <ThemeToggle />
                             
                             {/* Always visible auth state in mobile top bar */}
                             {user ? (
-                                <ProfileDropdown testIdPrefix="mobile-" />
+                                <ProfileDropdown 
+                                    testIdPrefix="mobile-" 
+                                    mobileIconOnly={true}
+                                    onOpenChange={(isOpen) => {
+                                        if (isOpen) setIsMobileMenuOpen(false)
+                                    }}
+                                />
                             ) : (
                                 <Link
                                     href="/auth/login"
@@ -160,9 +166,9 @@ export function Navigation({
                                 </Link>
                             )}
 
-                            {/* Mobile Menu Button */}
+                            {/* Mobile Menu Button with symmetrical padding */}
                             <button
-                                className="p-2 rounded-lg hover:bg-accent transition-colors"
+                                className="p-2 rounded-lg hover:bg-accent transition-colors mr-1"
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                                 aria-label="Toggle mobile menu"
                                 data-test-id="mobile-menu-button"

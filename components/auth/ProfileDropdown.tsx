@@ -8,10 +8,18 @@ import Link from 'next/link'
 
 interface ProfileDropdownProps {
   testIdPrefix?: string;
+  mobileIconOnly?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
 }
 
-export function ProfileDropdown({ testIdPrefix = "" }: ProfileDropdownProps) {
+export function ProfileDropdown({ testIdPrefix = "", mobileIconOnly = false, onOpenChange }: ProfileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
+  
+  // Helper function to update open state and notify parent
+  const updateOpenState = (newIsOpen: boolean) => {
+    setIsOpen(newIsOpen)
+    onOpenChange?.(newIsOpen)
+  }
   const [calendarConnected, setCalendarConnected] = useState(false)
   const [calendarLoading, setCalendarLoading] = useState(false)
   const [calendarCheckLoading, setCalendarCheckLoading] = useState(true)
@@ -109,7 +117,7 @@ export function ProfileDropdown({ testIdPrefix = "" }: ProfileDropdownProps) {
   // Handle sign out
   const handleSignOut = async () => {
     try {
-      setIsOpen(false)
+      updateOpenState(false)
       // Use the main auth context signOut method
       await signOut()
     } catch (error) {
@@ -132,13 +140,13 @@ export function ProfileDropdown({ testIdPrefix = "" }: ProfileDropdownProps) {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
+        updateOpenState(false)
       }
     }
 
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  }, [updateOpenState])
 
   if (!user) return null
 
@@ -146,16 +154,20 @@ export function ProfileDropdown({ testIdPrefix = "" }: ProfileDropdownProps) {
     <div className="relative" ref={dropdownRef}>
       {/* Profile Button */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 bg-muted hover:bg-accent px-3 py-2 rounded-lg transition-colors"
+        onClick={() => updateOpenState(!isOpen)}
+        className={`flex items-center ${mobileIconOnly ? 'gap-0 p-2' : 'gap-2 px-3 py-2'} bg-muted hover:bg-accent rounded-lg transition-colors`}
         data-testid={`${testIdPrefix}profile-dropdown-button`}
         aria-label={`Profile menu for ${getUserDisplayName()}`}
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        <User className="w-4 h-4 text-muted-foreground" />
-        <span className="text-sm font-medium text-foreground" data-testid="profile-display-name">{getUserDisplayName()}</span>
-        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <User className={`${mobileIconOnly ? 'w-5 h-5' : 'w-4 h-4'} text-muted-foreground`} />
+        {!mobileIconOnly && (
+          <span className="text-sm font-medium text-foreground" data-testid="profile-display-name">{getUserDisplayName()}</span>
+        )}
+        {!mobileIconOnly && (
+          <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        )}
       </button>
 
       {/* Dropdown Menu */}
@@ -179,7 +191,7 @@ export function ProfileDropdown({ testIdPrefix = "" }: ProfileDropdownProps) {
           {/* My Events Link */}
           <Link
             href="/my-events"
-            onClick={() => setIsOpen(false)}
+            onClick={() => updateOpenState(false)}
             className="w-full flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors"
             data-testid="profile-my-events-link"
             role="menuitem"
@@ -192,7 +204,7 @@ export function ProfileDropdown({ testIdPrefix = "" }: ProfileDropdownProps) {
           {isStaff && (
             <Link
               href="/staff"
-              onClick={() => setIsOpen(false)}
+              onClick={() => updateOpenState(false)}
               className="w-full flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors"
               data-testid="profile-staff-dashboard-link"
               role="menuitem"

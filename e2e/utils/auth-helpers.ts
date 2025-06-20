@@ -15,34 +15,34 @@ export class AuthHelpers {
         console.log(`Attempting email login for: ${email}`);
         
         // Navigate to login page
-        await this.page.goto('/auth/login', { timeout: 15000, waitUntil: 'domcontentloaded' });
+        await this.page.goto('/auth/login', { timeout: 10000, waitUntil: 'domcontentloaded' });
         try {
-            await this.page.waitForLoadState('networkidle', { timeout: 5000 });
+            await this.page.waitForLoadState('networkidle', { timeout: 3000 });
         } catch {
             // If networkidle fails, just wait for domcontentloaded
             await this.page.waitForLoadState('domcontentloaded');
         }
 
         // Wait for login form to be visible
-        await expect(this.page.locator('form')).toBeVisible({ timeout: 10000 });
+        await expect(this.page.locator('form')).toBeVisible({ timeout: 5000 });
 
         // Fill email field using rock-solid data-testid selector
         const emailInput = this.page.locator('[data-testid="email-input"]');
-        await expect(emailInput).toBeVisible({ timeout: 5000 });
+        await expect(emailInput).toBeVisible({ timeout: 3000 });
         await emailInput.fill(email);
 
         // Fill password field using rock-solid data-testid selector
         const passwordInput = this.page.locator('[data-testid="password-input"]');
-        await expect(passwordInput).toBeVisible({ timeout: 5000 });
+        await expect(passwordInput).toBeVisible({ timeout: 3000 });
         await passwordInput.fill(password);
 
         // Submit the form using rock-solid data-testid selector
         const submitButton = this.page.locator('[data-testid="login-submit-button"]');
-        await expect(submitButton).toBeVisible({ timeout: 5000 });
+        await expect(submitButton).toBeVisible({ timeout: 3000 });
         
         // Submit form with improved error handling for Mobile Safari
         try {
-            await submitButton.click({ timeout: 8000 });
+            await submitButton.click({ timeout: 5000 });
         } catch (error) {
             console.log(`Submit button click failed: ${error}, trying alternative approach`);
             // Alternative: use form submission directly (better for Mobile Safari)
@@ -62,17 +62,17 @@ export class AuthHelpers {
         // Wait for either redirect or auth state change
         try {
             // Try to wait for redirect away from login page
-            await this.page.waitForURL(url => !url.toString().includes('/auth/login'), { timeout: 15000 });
+            await this.page.waitForURL(url => !url.toString().includes('/auth/login'), { timeout: 10000 });
             console.log('✅ Redirected after login');
         } catch {
             // If no redirect, check if we're still on login page but auth state changed
             console.log('No redirect detected, checking auth state...');
             // Wait longer for auth to process
-            await this.page.waitForTimeout(3000);
+            await this.page.waitForTimeout(2000);
         }
         
         // Wait for auth state to settle and verify
-        await this.waitForAuthState(10000);
+        await this.waitForAuthState(8000);
 
         // Verify authentication was successful
         await this.verifyAuthenticated();
@@ -108,9 +108,9 @@ export class AuthHelpers {
         console.log(`Attempting Google OAuth login for: ${GOOGLE_TEST_ACCOUNT.email}`);
         
         // Navigate to login page
-        await this.page.goto('/auth/login', { timeout: 15000, waitUntil: 'domcontentloaded' });
+        await this.page.goto('/auth/login', { timeout: 10000, waitUntil: 'domcontentloaded' });
         try {
-            await this.page.waitForLoadState('networkidle', { timeout: 5000 });
+            await this.page.waitForLoadState('networkidle', { timeout: 3000 });
         } catch {
             // If networkidle fails, just wait for domcontentloaded
             await this.page.waitForLoadState('domcontentloaded');
@@ -121,12 +121,12 @@ export class AuthHelpers {
             'button:has-text("Google"), button:has-text("Continue with Google"), a:has-text("Google")'
         );
 
-        if (await googleButton.isVisible({ timeout: 5000 })) {
+        if (await googleButton.isVisible({ timeout: 3000 })) {
             await googleButton.click();
             
             // In a real test, this would redirect to Google OAuth
             // For now, we simulate successful OAuth completion
-            await this.page.waitForLoadState('networkidle', { timeout: 15000 });
+            await this.page.waitForLoadState('networkidle', { timeout: 8000 });
             
             // Verify we're back from OAuth flow
             await this.verifyAuthenticated();
@@ -161,8 +161,15 @@ export class AuthHelpers {
         let loggedOut = false;
         
         try {
-            // Use rock-solid data-testid selector for profile button
-            const profileButton = this.page.locator('[data-testid="profile-dropdown-button"]');
+            // Check viewport size to determine if we're on mobile
+            const viewportSize = this.page.viewportSize();
+            const isMobile = viewportSize && viewportSize.width < 768; // md breakpoint
+            
+            // Use correct data-testid selector for profile button based on viewport
+            const profileButtonSelector = isMobile 
+                ? '[data-testid="mobile-profile-dropdown-button"]' 
+                : '[data-testid="desktop-profile-dropdown-button"]';
+            const profileButton = this.page.locator(profileButtonSelector);
             
             if (await profileButton.isVisible({ timeout: 3000 })) {
                 const buttonText = await profileButton.textContent();
@@ -247,17 +254,19 @@ export class AuthHelpers {
         
         // Wait for auth state to propagate and UI to update
         console.log('Waiting for auth state to update...');
-        await this.page.waitForTimeout(3000);
+        await this.page.waitForTimeout(2000);
         
         // Force a navigation to ensure auth state is refreshed
-        await this.page.goto(this.page.url(), { timeout: 15000, waitUntil: 'domcontentloaded' });
+        await this.page.goto(this.page.url(), { timeout: 10000, waitUntil: 'domcontentloaded' });
         try {
-            await this.page.waitForLoadState('networkidle', { timeout: 3000 });
+            await this.page.waitForLoadState('networkidle', { timeout: 2000 });
         } catch {
             // If networkidle fails, just wait for domcontentloaded - this prevents timeouts
             await this.page.waitForLoadState('domcontentloaded');
-            await this.page.waitForTimeout(1000); // Small delay to let auth state settle
         }
+        
+        // Wait for auth state to fully resolve after logout
+        await this.waitForAuthState(5000);
         
         // Verify we're logged out
         await this.verifyLoggedOut();
@@ -382,7 +391,7 @@ export class AuthHelpers {
      * Wait for authentication state to be resolved
      * Enhanced for post-refresh scenarios
      */
-    async waitForAuthState(timeout: number = 15000): Promise<void> {
+    async waitForAuthState(timeout: number = 8000): Promise<void> {
         const startTime = Date.now();
         
         // First, wait for page to be fully loaded after refresh

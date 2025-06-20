@@ -33,7 +33,7 @@ export default defineConfig({
 
         /* Enhanced for visual testing */
         ignoreHTTPSErrors: true,
-        actionTimeout: 10000,
+        actionTimeout: 15000,
         navigationTimeout: 30000,
     },
 
@@ -76,17 +76,17 @@ export default defineConfig({
         command: 'npm run dev',
         url: 'http://localhost:3000',
         reuseExistingServer: true, // Always reuse existing server (CI workflow starts it manually)
-        timeout: 120 * 1000,
+        timeout: 60 * 1000,
         stdout: 'pipe',
         stderr: 'pipe',
     },
 
     /* Test timeout */
-    timeout: 60 * 1000, // 60 seconds for cross-browser testing
+    timeout: 30 * 1000, // 30 seconds per test
 
     /* Expect timeout */
     expect: {
-        timeout: 10 * 1000, // 10 seconds for assertions
+        timeout: 5 * 1000, // 5 seconds for assertions
         // Enable visual comparisons
         toHaveScreenshot: { threshold: 0.2 },
         toMatchSnapshot: { threshold: 0.2 },
