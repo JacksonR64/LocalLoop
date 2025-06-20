@@ -139,7 +139,6 @@ export function Navigation({
                             </button>
 
                             <ThemeToggle />
-
                             {/* Auth state conditional rendering - Optimistic UI */}
                             {user ? (
                                 <ProfileDropdown testIdPrefix="desktop-" />
@@ -244,7 +243,6 @@ export function Navigation({
                             >
                                 Browse Events
                             </button>
-
                             {/* Mobile Search Toggle Button */}
                             <button
                                 onClick={() => {

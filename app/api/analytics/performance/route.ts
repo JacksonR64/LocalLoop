@@ -62,7 +62,6 @@ export async function POST(request: NextRequest) {
         if (!('timestamp' in data) || typeof data.timestamp !== 'number') {
             return NextResponse.json({ error: 'Missing or invalid timestamp' }, { status: 400 })
         }
-        
         const supabase = await createServerSupabaseClient()
 
         // Get user info if available
