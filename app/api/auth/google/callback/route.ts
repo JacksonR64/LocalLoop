@@ -25,6 +25,19 @@ export async function GET(request: NextRequest) {
     console.log('[DEBUG] OAuth callback route started')
 
     try {
+        // Rate limiting for OAuth callback
+        const { oauthRateLimiter } = await import('@/lib/validation')
+        const clientIp = request.headers.get('x-forwarded-for') || 
+                        request.headers.get('x-real-ip') || 
+                        'unknown'
+        
+        if (!oauthRateLimiter.isAllowed(clientIp)) {
+            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+            const redirectUrl = new URL('/auth/google/callback', baseUrl)
+            redirectUrl.searchParams.set('error', 'rate_limit')
+            redirectUrl.searchParams.set('message', 'Too many requests. Please try again later.')
+            return NextResponse.redirect(redirectUrl)
+        }
         const { searchParams } = new URL(request.url)
         const code = searchParams.get('code')
         const state = searchParams.get('state')
@@ -74,12 +87,16 @@ export async function GET(request: NextRequest) {
 
         console.log('[DEBUG] Supabase client created successfully')
 
-        // Validate user ID format (basic security check)
-        if (!userId || typeof userId !== 'string' || userId.length < 10) {
-            console.error('[ERROR] Invalid user ID in OAuth state:', userId)
+        // Validate user ID format with comprehensive security checks
+        try {
+            const { validateUserId, validateAuthCode } = await import('@/lib/validation')
+            validateUserId(userId)
+            validateAuthCode(code)
+        } catch (validationError) {
+            console.error('[ERROR] Validation failed:', validationError)
             const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
             const redirectUrl = new URL('/auth/login', baseUrl)
-            redirectUrl.searchParams.set('message', 'Invalid user session')
+            redirectUrl.searchParams.set('message', 'Invalid request parameters')
             return NextResponse.redirect(redirectUrl)
         }
 
@@ -217,15 +234,16 @@ async function ensureUserRecord(userId: string) {
 
         console.log(`[DEBUG] Creating user record in public.users for ${userId}`)
 
-        // Get user email from auth.users table using RLS-safe query
-        const { data: authUser } = await supabase
-            .from('auth.users')
-            .select('email, raw_user_meta_data')
-            .eq('id', userId)
-            .single()
+        // Get user email safely using auth.getUser() instead of direct auth schema access
+        const { data: { user: authUser }, error: getUserError } = await supabase.auth.getUser()
+        
+        if (getUserError || !authUser) {
+            console.error('[ERROR] Failed to get user data for user record creation:', getUserError)
+            // Use fallback values if auth user data is unavailable
+        }
 
         const userEmail = authUser?.email || EMAIL_ADDRESSES.generateUserEmail(userId)
-        const userName = authUser?.raw_user_meta_data?.full_name || authUser?.raw_user_meta_data?.name || 'User'
+        const userName = authUser?.user_metadata?.full_name || authUser?.user_metadata?.name || 'User'
 
         console.log(`[DEBUG] Retrieved user data: email=${userEmail}, name=${userName}`)
 

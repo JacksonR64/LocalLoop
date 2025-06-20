@@ -128,14 +128,16 @@ export class GoogleCalendarAuth {
             // Encrypt tokens using AES-256-GCM for security
             const encryptedTokens = this.encryptTokens(tokens)
 
-            // Security audit log
-            console.log('Storing Google Calendar tokens for user', {
-                userId,
-                tokenTypes: Object.keys(tokens),
-                hasRefreshToken: !!tokens.refresh_token,
-                expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date).toISOString() : null,
-                timestamp: new Date().toISOString()
-            })
+            // Security audit log (safe for production)
+            if (process.env.NODE_ENV === 'development') {
+                console.log('Storing Google Calendar tokens for user', {
+                    userId: userId.slice(0, 8) + '...',
+                    tokenTypes: Object.keys(tokens),
+                    hasRefreshToken: !!tokens.refresh_token,
+                    expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date).toISOString() : null,
+                    timestamp: new Date().toISOString()
+                })
+            }
 
             const supabaseServer = await createServerSupabaseClient()
 
@@ -155,10 +157,12 @@ export class GoogleCalendarAuth {
                 throw new Error('Failed to store Google Calendar tokens')
             }
 
-            console.log('Successfully stored encrypted Google Calendar tokens', {
-                userId,
-                storedAt: new Date().toISOString()
-            })
+            if (process.env.NODE_ENV === 'development') {
+                console.log('Successfully stored encrypted Google Calendar tokens', {
+                    userId: userId.slice(0, 8) + '...',
+                    storedAt: new Date().toISOString()
+                })
+            }
 
         } catch (error) {
             console.error('Error in storeUserTokens:', error)
@@ -185,12 +189,14 @@ export class GoogleCalendarAuth {
                 return null
             }
 
-            // Security audit log - token access
-            console.log('Accessing Google Calendar tokens for user', {
-                userId,
-                accessedAt: new Date().toISOString(),
-                hasStoredToken: !!data.google_calendar_token
-            })
+            // Security audit log - token access (safe for production)
+            if (process.env.NODE_ENV === 'development') {
+                console.log('Accessing Google Calendar tokens for user', {
+                    userId: userId.slice(0, 8) + '...',
+                    accessedAt: new Date().toISOString(),
+                    hasStoredToken: !!data.google_calendar_token
+                })
+            }
 
             console.log('[DEBUG] getUserTokens - Starting token decryption')
             // Decrypt tokens using AES-256-GCM
@@ -217,12 +223,19 @@ export class GoogleCalendarAuth {
         try {
             const algorithm = 'aes-256-gcm'
 
-            // Use environment encryption key or generate one for development
-            const encryptionKey = process.env.GOOGLE_CALENDAR_ENCRYPTION_KEY ||
-                'default-dev-key-32-characters!!!' // In production, this MUST be set
+            // SECURITY: Encryption key MUST be set in production
+            const encryptionKey = process.env.GOOGLE_CALENDAR_ENCRYPTION_KEY
+            if (!encryptionKey) {
+                if (process.env.NODE_ENV === 'production') {
+                    throw new Error('GOOGLE_CALENDAR_ENCRYPTION_KEY must be set in production environment')
+                }
+                // Only use fallback in development
+                console.warn('WARNING: Using development encryption key. Set GOOGLE_CALENDAR_ENCRYPTION_KEY in production.')
+            }
 
+            const finalKey = encryptionKey || 'dev-fallback-key-must-be-32-chars'
             // Ensure key is exactly 32 bytes for AES-256
-            const key = crypto.scryptSync(encryptionKey, 'salt', 32)
+            const key = crypto.scryptSync(finalKey, 'encryption-salt-localloop', 32)
 
             // Generate random IV for each encryption
             const iv = crypto.randomBytes(16)
@@ -257,12 +270,17 @@ export class GoogleCalendarAuth {
         try {
             const algorithm = 'aes-256-gcm'
 
-            // Use environment encryption key or generate one for development
-            const encryptionKey = process.env.GOOGLE_CALENDAR_ENCRYPTION_KEY ||
-                'default-dev-key-32-characters!!!' // In production, this MUST be set
+            // SECURITY: Encryption key MUST be set in production
+            const encryptionKey = process.env.GOOGLE_CALENDAR_ENCRYPTION_KEY
+            if (!encryptionKey) {
+                if (process.env.NODE_ENV === 'production') {
+                    throw new Error('GOOGLE_CALENDAR_ENCRYPTION_KEY must be set in production environment')
+                }
+            }
 
-            // Ensure key is exactly 32 bytes for AES-256
-            const key = crypto.scryptSync(encryptionKey, 'salt', 32)
+            const finalKey = encryptionKey || 'dev-fallback-key-must-be-32-chars'
+            // Ensure key is exactly 32 bytes for AES-256 (must match encryption)
+            const key = crypto.scryptSync(finalKey, 'encryption-salt-localloop', 32)
 
             // Parse encrypted data
             const data = JSON.parse(Buffer.from(encryptedData, 'base64').toString())

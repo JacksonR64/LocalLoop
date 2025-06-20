@@ -18,6 +18,19 @@ import { createGoogleCalendarService } from '@/lib/google-calendar'
  */
 export async function GET(request: NextRequest) {
     try {
+        // Rate limiting for OAuth endpoints
+        const { oauthRateLimiter } = await import('@/lib/validation')
+        const clientIp = request.headers.get('x-forwarded-for') || 
+                        request.headers.get('x-real-ip') || 
+                        'unknown'
+        
+        if (!oauthRateLimiter.isAllowed(clientIp)) {
+            return NextResponse.json(
+                { error: 'Too many OAuth requests. Please try again later.' },
+                { status: 429 }
+            )
+        }
+
         // Create Supabase client for server-side auth
         const supabase = await createServerSupabaseClient()
 
@@ -45,8 +58,10 @@ export async function GET(request: NextRequest) {
         // Generate OAuth authorization URL
         const authUrl = googleCalendarService.getAuthUrl(state)
 
-        // Log OAuth initiation for debugging (remove in production)
-        console.log(`OAuth initiated for user ${user.id}, action: ${action}, returnUrl: ${returnUrl}`)
+        // Log OAuth initiation for debugging (development only)
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`OAuth initiated for user ${user.id.slice(0, 8)}..., action: ${action}`)
+        }
 
         // Redirect user to Google OAuth consent screen
         return NextResponse.redirect(authUrl)
