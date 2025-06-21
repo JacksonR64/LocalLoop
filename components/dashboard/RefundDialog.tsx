@@ -69,6 +69,7 @@ export default function RefundDialog({
     const [step, setStep] = useState<'review' | 'confirm' | 'processing' | 'success'>('review')
     const [refundReason, setRefundReason] = useState('')
     const [isProcessing, setIsProcessing] = useState(false)
+    const [errorMessage, setErrorMessage] = useState('')
 
     if (!order) return null
 
@@ -97,7 +98,15 @@ export default function RefundDialog({
             })
 
             if (!response.ok) {
-                throw new Error('Refund failed')
+                let errorMessage = `Refund failed (${response.status})`
+                try {
+                    const errorData = await response.json()
+                    console.error('Refund API error:', errorData)
+                    errorMessage = errorData.error || errorMessage
+                } catch (jsonError) {
+                    console.error('Failed to parse error response:', jsonError)
+                }
+                throw new Error(errorMessage)
             }
 
             // Show success and close dialog
@@ -110,7 +119,7 @@ export default function RefundDialog({
 
         } catch (error) {
             console.error('Refund error:', error)
-            // Reset to review step on error
+            setErrorMessage(error instanceof Error ? error.message : 'Refund failed')
             setStep('review')
             setIsProcessing(false)
         }
@@ -120,17 +129,18 @@ export default function RefundDialog({
         setStep('review')
         setRefundReason('')
         setIsProcessing(false)
+        setErrorMessage('')
     }
 
     // Success state
     if (step === 'success') {
         return (
             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="sm:max-w-md" data-testid="refund-success-dialog">
                     <div className="text-center py-6">
                         <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-foreground mb-2">Refund Processed</h3>
-                        <p className="text-muted-foreground">Your refund has been submitted and will appear in your account within 5-10 business days.</p>
+                        <h3 className="text-lg font-semibold text-foreground mb-2" data-testid="refund-success-title">Refund Processed</h3>
+                        <p className="text-muted-foreground" data-testid="refund-success-message">Your refund has been submitted and will appear in your account within 5-10 business days.</p>
                     </div>
                 </DialogContent>
             </Dialog>
@@ -154,6 +164,19 @@ export default function RefundDialog({
                 </DialogHeader>
 
                 <div className="py-4 space-y-6">
+                    {/* Error Message */}
+                    {errorMessage && (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4" data-testid="refund-error-message">
+                            <div className="flex items-start gap-2">
+                                <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                                <div className="text-sm">
+                                    <div className="font-medium text-red-800 mb-1">Refund Failed</div>
+                                    <div className="text-red-700" data-testid="refund-error-text">{errorMessage}</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Event Details */}
                     <div className="bg-muted rounded-lg p-4">
                         <h4 className="font-medium text-foreground mb-2">{order.event.title}</h4>
@@ -255,6 +278,7 @@ export default function RefundDialog({
                                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 rows={3}
                                 maxLength={500}
+                                data-testid="refund-reason-textarea"
                             />
                             <div className="text-xs text-gray-500 mt-1">
                                 {refundReason.length}/500 characters
@@ -284,12 +308,17 @@ export default function RefundDialog({
                             <Button
                                 variant="outline"
                                 onClick={() => onOpenChange(false)}
+                                data-testid="refund-cancel-button"
                             >
                                 Cancel
                             </Button>
                             <Button
-                                onClick={() => setStep('confirm')}
+                                onClick={() => {
+                                    setErrorMessage('')
+                                    setStep('confirm')
+                                }}
                                 className="bg-blue-600 hover:bg-blue-700"
+                                data-testid="refund-continue-button"
                             >
                                 Continue
                             </Button>
@@ -302,6 +331,7 @@ export default function RefundDialog({
                                 variant="outline"
                                 onClick={() => setStep('review')}
                                 disabled={isProcessing}
+                                data-testid="refund-back-button"
                             >
                                 Back
                             </Button>
@@ -309,6 +339,7 @@ export default function RefundDialog({
                                 onClick={handleRefundSubmit}
                                 disabled={isProcessing}
                                 className="bg-red-600 hover:bg-red-700"
+                                data-testid="refund-confirm-button"
                             >
                                 {isProcessing ? (
                                     <>

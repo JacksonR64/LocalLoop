@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Calendar, MapPin, Users, Clock, Tag, ExternalLink, ImageIcon } from 'lucide-react';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui';
 import { formatDateTime, formatPrice, truncateText, getEventCardDescription, formatLocationForCard } from '@/lib/utils';
+import { getEventTimingInfo, getEventTimingBadge } from '@/lib/utils/event-timing';
 
 // Event interface (simplified from database types)
 export interface EventData {
@@ -125,15 +126,12 @@ export function EventCard({
     onClick
 }: EventCardProps) {
     const spotsRemaining = event.capacity ? event.capacity - event.rsvp_count : null;
-    const isUpcoming = new Date(event.start_time) > new Date();
     const hasPrice = Boolean(event.is_paid && event.ticket_types && event.ticket_types.length > 0);
     const lowestPrice = hasPrice ? Math.min(...event.ticket_types!.map(t => t.price)) : 0;
     
-    // Check if event is soon (within 7 days)
-    const eventDate = new Date(event.start_time);
-    const today = new Date();
-    const daysDifference = Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    const isSoon = isUpcoming && daysDifference <= 7 && daysDifference >= 0;
+    // Use shared timing logic
+    const timingInfo = getEventTimingInfo(event.start_time);
+    const { isUpcoming, isSoon } = timingInfo;
 
     const commonProps: CardComponentProps = {
         event,
@@ -167,13 +165,14 @@ export function EventCard({
 // Default Card Style (same as current homepage implementation)
 function DefaultCard({ event, size, featured, showImage, className, onClick, spotsRemaining, isUpcoming, hasPrice, lowestPrice, isSoon }: Readonly<CardComponentProps>) {
     const cardId = `event-card-${event.id}`
+    const urgencyClass = isSoon ? 'border-orange-200' : ''
     
 
     return (
         <Card
             size={size}
             variant={featured ? 'elevated' : 'default'}
-            className={`hover:shadow-lg transition-shadow cursor-pointer group ${className}`}
+            className={`hover:shadow-lg transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
             onClick={onClick}
             role="article"
             aria-labelledby={`${cardId}-title`}
@@ -221,7 +220,6 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                                 aria-label="Free event"
                                 data-test-id="free-badge"
                             >
-
                                 Free
                             </span>
                         )}
@@ -231,30 +229,10 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                                 aria-label={`Paid event, ${hasPrice ? `starting at ${formatPrice(lowestPrice)}` : 'pricing available'}`}
                                 data-test-id="paid-badge"
                             >
-
                                 {hasPrice ? formatPrice(lowestPrice) : 'Paid'}
                             </span>
                         )}
-                        {isSoon && (
-                            <span 
-                                className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full"
-                                aria-label="Event starting soon"
-                                data-test-id="soon-badge"
-                            >
-
-                                Soon
-                            </span>
-                        )}
-                        {!isUpcoming && (
-                            <span 
-                                className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full"
-                                aria-label="Past event"
-                                data-test-id="past-badge"
-                            >
-
-                                Past
-                            </span>
-                        )}
+                        {getEventTimingBadge(event.start_time)}
                     </div>
                 </div>
                 <CardDescription 
@@ -311,10 +289,11 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
 
 // Preview List Style - Compact horizontal layout for list views
 function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowestPrice, isSoon }: Readonly<CardComponentProps>) {
+    const urgencyClass = isSoon ? 'border-orange-200' : ''
     return (
         <Card
             variant="outlined"
-            className={`hover:shadow-md transition-shadow cursor-pointer group ${className}`}
+            className={`hover:shadow-md transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
             onClick={onClick}
         >
             <div className="flex items-start gap-4 p-4">
@@ -348,16 +327,7 @@ function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowe
                                     {hasPrice ? formatPrice(lowestPrice) : 'Paid'}
                                 </span>
                             )}
-                            {isSoon && (
-                                <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
-                                    Soon
-                                </span>
-                            )}
-                            {!isUpcoming && (
-                                <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                                    Past
-                                </span>
-                            )}
+                            {getEventTimingBadge(event.start_time)}
                         </div>
                     </div>
 
@@ -387,11 +357,12 @@ function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowe
 
 // Full List Style - Detailed view with all information
 function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, hasPrice, lowestPrice, isSoon }: Readonly<CardComponentProps>) {
+    const urgencyClass = isSoon ? 'border-orange-200' : ''
     return (
         <Card
             variant="default"
             size="lg"
-            className={`hover:shadow-lg transition-shadow cursor-pointer group ${className}`}
+            className={`hover:shadow-lg transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
             onClick={onClick}
         >
             {event.image_url && (
@@ -430,16 +401,7 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
                                 {hasPrice ? formatPrice(lowestPrice) : 'Paid Event'}
                             </span>
                         )}
-                        {isSoon && (
-                            <span className="text-sm bg-orange-100 text-orange-800 px-3 py-1 rounded-full font-medium">
-                                Soon
-                            </span>
-                        )}
-                        {!isUpcoming && (
-                            <span className="text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
-                                Past Event
-                            </span>
-                        )}
+                        {getEventTimingBadge(event.start_time)}
                     </div>
                 </div>
                 <CardDescription className="text-base line-clamp-2 min-h-[3rem] leading-relaxed">
@@ -514,11 +476,12 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
 
 // Compact Card Style - Minimal information for dense layouts
 function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcoming, isSoon }: Readonly<CardComponentProps>) {
+    const urgencyClass = isSoon ? 'border-l-orange-600' : 'border-l-blue-600'
     return (
         <Card
             size="sm"
             variant="ghost"
-            className={`hover:bg-muted transition-colors cursor-pointer group border-l-4 border-l-blue-600 ${className}`}
+            className={`hover:bg-muted transition-colors cursor-pointer group border-l-4 ${urgencyClass} ${className}`}
             onClick={onClick}
         >
             <div className="flex items-center justify-between p-3">
@@ -545,11 +508,7 @@ function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcom
                             {hasPrice ? formatPrice(lowestPrice) : 'Paid'}
                         </span>
                     )}
-                    {isSoon && (
-                        <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">
-                            Soon
-                        </span>
-                    )}
+                    {getEventTimingBadge(event.start_time)}
                     <ExternalLink className="w-3 h-3 text-muted-foreground group-hover:text-foreground" />
                 </div>
             </div>
@@ -562,11 +521,12 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpco
     const eventDate = new Date(event.start_time);
     const day = eventDate.getDate();
     const month = eventDate.toLocaleDateString('en-US', { month: 'short' });
+    const urgencyClass = isSoon ? 'border-orange-200' : ''
 
     return (
         <Card
             variant="outlined"
-            className={`hover:shadow-md transition-shadow cursor-pointer group ${className}`}
+            className={`hover:shadow-md transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
             onClick={onClick}
         >
             <div className="flex gap-4 p-4">
@@ -593,11 +553,7 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpco
                                     {hasPrice ? formatPrice(lowestPrice) : 'Paid'}
                                 </span>
                             )}
-                            {isSoon && (
-                                <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
-                                    Soon
-                                </span>
-                            )}
+                            {getEventTimingBadge(event.start_time)}
                         </div>
                     </div>
 

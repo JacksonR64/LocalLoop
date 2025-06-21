@@ -3,8 +3,11 @@
 import { useEffect, useState } from 'react'
 
 export default function OAuthDebugPage() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [debugInfo, setDebugInfo] = useState<any[]>([])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [preOAuthDebug, setPreOAuthDebug] = useState<any>(null)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [postOAuthDebug, setPostOAuthDebug] = useState<any>(null)
 
     useEffect(() => {

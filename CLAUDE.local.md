@@ -11,3 +11,10 @@
 
 - When starting or restarting dev server, use iTerm MCP (usually already open and running)
   - If not already open, open and start the MCP terminal
+- When needing dev server started or restarted, use iterm mcp tool
+  - The dev server is probably already running
+  - Can start a new dev server with webhooks on using `npm run dev:with-stripe`
+
+## Playwright and Automation
+
+- When using Playwright MCP tools, utilize the existing helper function for login to streamline authentication processes

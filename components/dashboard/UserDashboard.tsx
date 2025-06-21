@@ -448,7 +448,10 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                         ) : (
                             <div className="space-y-6">
                                 {/* Upcoming Orders */}
-                                {orders.filter(order => isEventUpcoming(order.events.start_time)).map((order) => {
+                                {orders
+                                    .filter(order => isEventUpcoming(order.events.start_time))
+                                    .sort((a, b) => new Date(a.events.start_time).getTime() - new Date(b.events.start_time).getTime())
+                                    .map((order) => {
                                     const refundInfo = getRefundEligibilityInfo(order)
 
                                     return (
@@ -569,6 +572,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                                             size="sm"
                                                             onClick={() => handleRefundClick(order)}
                                                             className="text-red-600 border-red-200 hover:bg-red-50 w-full sm:w-auto"
+                                                            data-testid="request-refund-button"
                                                         >
                                                             <DollarSign className="w-4 h-4 mr-2" />
                                                             Request Refund
@@ -603,7 +607,10 @@ export default function UserDashboard({ user }: UserDashboardProps) {
 
                                         {showPastOrders && (
                                             <div className="mt-4 space-y-4">
-                                                {orders.filter(order => !isEventUpcoming(order.events.start_time)).map((order) => {
+                                                {orders
+                                                    .filter(order => !isEventUpcoming(order.events.start_time))
+                                                    .sort((a, b) => new Date(b.events.start_time).getTime() - new Date(a.events.start_time).getTime())
+                                                    .map((order) => {
                                                     const refundInfo = getRefundEligibilityInfo(order)
 
                                                     return (
@@ -712,6 +719,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                                                             size="sm"
                                                                             onClick={() => handleRefundClick(order)}
                                                                             className="text-red-600 border-red-200 hover:bg-red-50 w-full sm:w-auto"
+                                                                            data-testid="request-refund-button"
                                                                         >
                                                                             <DollarSign className="w-4 h-4 mr-2" />
                                                                             Request Refund
@@ -757,7 +765,10 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                         ) : (
                             <div className="space-y-6">
                                 {/* Upcoming Events */}
-                                {rsvps.filter(rsvp => isEventUpcoming(rsvp.events.start_time)).map((rsvp) => {
+                                {rsvps
+                                    .filter(rsvp => isEventUpcoming(rsvp.events.start_time))
+                                    .sort((a, b) => new Date(a.events.start_time).getTime() - new Date(b.events.start_time).getTime())
+                                    .map((rsvp) => {
                                     const isUpcoming = isEventUpcoming(rsvp.events.start_time)
 
                                     return (
@@ -869,10 +880,10 @@ export default function UserDashboard({ user }: UserDashboardProps) {
 
                                         {showPastEvents && (
                                             <div className="mt-4 space-y-4">
-                                                {rsvps.filter(rsvp => !isEventUpcoming(rsvp.events.start_time)).map((rsvp) => {
-                                                    const isUpcoming = isEventUpcoming(rsvp.events.start_time)
-
-                                                    return (
+                                                {rsvps
+                                                    .filter(rsvp => !isEventUpcoming(rsvp.events.start_time))
+                                                    .sort((a, b) => new Date(b.events.start_time).getTime() - new Date(a.events.start_time).getTime())
+                                                    .map((rsvp) => (
                                                         <div key={rsvp.id} className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
                                                             {/* RSVP Header */}
                                                             <div className="bg-muted px-4 sm:px-6 py-4 border-b border-border">
@@ -939,8 +950,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    )
-                                                })}
+                                                    ))}
                                             </div>
                                         )}
                                     </div>
