@@ -150,6 +150,7 @@ test.describe('Refund Flow E2E Tests', () => {
       });
       
       // Set up network request monitoring
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const apiRequests: any[] = [];
       page.on('request', request => {
         if (request.url().includes('/api/refunds')) {
@@ -162,6 +163,7 @@ test.describe('Refund Flow E2E Tests', () => {
       });
       
       // Set up response monitoring
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const apiResponses: any[] = [];
       page.on('response', async response => {
         if (response.url().includes('/api/refunds')) {
@@ -274,9 +276,9 @@ test.describe('Refund Flow E2E Tests', () => {
             statusText: response.statusText,
             body: responseText
           };
-        } catch (error) {
+        } catch (error: unknown) {
           return {
-            error: error.message
+            error: error instanceof Error ? error.message : String(error)
           };
         }
       }, KNOWN_ORDER_ID);

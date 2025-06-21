@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { createAuthHelpers } from './utils/auth-helpers';
-import { TEST_ACCOUNTS, GOOGLE_TEST_ACCOUNT } from './config/test-credentials';
+// Test credentials available if needed
 
 /**
  * E2E Tests for Authentication Flow
@@ -18,7 +18,7 @@ import { TEST_ACCOUNTS, GOOGLE_TEST_ACCOUNT } from './config/test-credentials';
  */
 
 test.describe('Authentication Flow E2E Tests', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async () => {
     test.setTimeout(60000);
   });
 
@@ -141,8 +141,6 @@ test.describe('Authentication Flow E2E Tests', () => {
   });
 
   test('Google OAuth login flow', async ({ page }) => {
-    const auth = createAuthHelpers(page);
-    
     console.log('🔍 Testing Google OAuth login...');
     
     await page.goto('/');
@@ -305,7 +303,7 @@ test.describe('Authentication Flow E2E Tests', () => {
     await auth1.loginAsUser();
     
     // Verify authentication in first tab
-    let isAuth1 = await auth1.isAuthenticated();
+    const isAuth1 = await auth1.isAuthenticated();
     expect(isAuth1).toBe(true);
     
     // Navigate to protected route in second tab

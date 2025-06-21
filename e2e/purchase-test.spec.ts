@@ -165,8 +165,8 @@ test.describe('Purchase Test', () => {
               }
             }
           }
-        } catch (error) {
-          console.log(`Could not access event ${eventId}:`, error.message);
+        } catch (error: unknown) {
+          console.log(`Could not access event ${eventId}:`, error instanceof Error ? error.message : String(error));
         }
       }
     }

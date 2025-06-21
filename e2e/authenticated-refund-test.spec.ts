@@ -71,7 +71,7 @@ test.describe('Authenticated Refund API Test', () => {
         let responseJson;
         try {
           responseJson = JSON.parse(responseText);
-        } catch (e) {
+        } catch {
           responseJson = { error: 'Could not parse JSON', rawText: responseText };
         }
         
@@ -81,11 +81,11 @@ test.describe('Authenticated Refund API Test', () => {
           body: responseJson,
           rawBody: responseText
         };
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Fetch error:', error);
         return {
-          error: error.message,
-          stack: error.stack
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined
         };
       }
     }, KNOWN_ORDER_ID);

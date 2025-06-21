@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { createAuthHelpers } from './utils/auth-helpers';
-import { TEST_ACCOUNTS, TEST_EVENT_IDS } from './config/test-credentials';
+// Test credentials available if needed
 
 const BASE_URL = 'http://localhost:3000';
 
@@ -22,7 +22,7 @@ test.describe('Purchase to Dashboard Flow', () => {
     
     // Navigate to the free test event
     console.log('🎫 Navigating to test event...');
-    await page.goto(`${BASE_URL}/events/${TEST_EVENT_IDS.freeEvent}`);
+    await page.goto(`${BASE_URL}/events/75c8904e-671f-426c-916d-4e275806e277`);
     await page.waitForLoadState('networkidle');
     
     // Take screenshot to see what's available
@@ -120,7 +120,7 @@ test.describe('Purchase to Dashboard Flow', () => {
         let responseJson;
         try {
           responseJson = JSON.parse(responseText);
-        } catch (e) {
+        } catch {
           responseJson = { error: 'Could not parse JSON', rawText: responseText };
         }
         
@@ -129,9 +129,9 @@ test.describe('Purchase to Dashboard Flow', () => {
           body: responseJson,
           rawBody: responseText
         };
-      } catch (error) {
+      } catch (error: unknown) {
         return {
-          error: error.message
+          error: error instanceof Error ? error.message : String(error)
         };
       }
     });
@@ -168,7 +168,7 @@ test.describe('Purchase to Dashboard Flow', () => {
         let responseJson;
         try {
           responseJson = JSON.parse(responseText);
-        } catch (e) {
+        } catch {
           responseJson = { error: 'Could not parse JSON', rawText: responseText };
         }
         
@@ -176,9 +176,9 @@ test.describe('Purchase to Dashboard Flow', () => {
           status: response.status,
           body: responseJson
         };
-      } catch (error) {
+      } catch (error: unknown) {
         return {
-          error: error.message
+          error: error instanceof Error ? error.message : String(error)
         };
       }
     });
@@ -230,8 +230,8 @@ test.describe('Purchase to Dashboard Flow', () => {
         }
         
         return { error: 'Could not get user info' };
-      } catch (error) {
-        return { error: error.message };
+      } catch (error: unknown) {
+        return { error: error instanceof Error ? error.message : String(error) };
       }
     });
     
@@ -252,8 +252,8 @@ test.describe('Purchase to Dashboard Flow', () => {
           orderCount: Array.isArray(data) ? data.length : 0,
           data: data
         };
-      } catch (error) {
-        return { error: error.message };
+      } catch (error: unknown) {
+        return { error: error instanceof Error ? error.message : String(error) };
       }
     });
     

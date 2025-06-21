@@ -42,13 +42,13 @@ test.describe('Simple Dashboard Test', () => {
         let parsedOrders, parsedRsvps;
         try {
           parsedOrders = JSON.parse(ordersData);
-        } catch (e) {
+        } catch {
           parsedOrders = { error: 'Could not parse orders JSON', rawText: ordersData };
         }
         
         try {
           parsedRsvps = JSON.parse(rsvpsData);
-        } catch (e) {
+        } catch {
           parsedRsvps = { error: 'Could not parse RSVPs JSON', rawText: rsvpsData };
         }
         
@@ -62,9 +62,9 @@ test.describe('Simple Dashboard Test', () => {
             data: parsedRsvps
           }
         };
-      } catch (error) {
+      } catch (error: unknown) {
         return {
-          error: error.message
+          error: error instanceof Error ? error.message : String(error)
         };
       }
     });

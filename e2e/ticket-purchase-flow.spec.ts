@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { createAuthHelpers } from './utils/auth-helpers';
-import { TEST_ACCOUNTS, TEST_EVENT_IDS } from './config/test-credentials';
+import { TEST_EVENT_IDS } from './config/test-credentials';
 
 /**
  * E2E Tests for Ticket Purchase Flow
@@ -17,7 +17,7 @@ import { TEST_ACCOUNTS, TEST_EVENT_IDS } from './config/test-credentials';
  */
 
 test.describe('Ticket Purchase Flow E2E Tests', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async () => {
     // Set longer timeout for payment operations
     test.setTimeout(90000);
   });
@@ -203,7 +203,7 @@ test.describe('Ticket Purchase Flow E2E Tests', () => {
               return await response.json();
             }
             return [];
-          } catch (error) {
+          } catch {
             return [];
           }
         }, eventId);
@@ -293,8 +293,8 @@ test.describe('Ticket Purchase Flow E2E Tests', () => {
           
           break; // Found a paid event to test, exit loop
         }
-      } catch (error) {
-        console.log(`Could not test event ${eventId}:`, error.message);
+      } catch (error: unknown) {
+        console.log(`Could not test event ${eventId}:`, error instanceof Error ? error.message : String(error));
       }
     }
     

@@ -198,6 +198,6 @@ Required environment variables:
 
 ### Deployment
 - **Platform**: Vercel with auto-deployment on main branch
-- **Live URL**: https://local-loop-qa.vercel.app
+- **Live URL**: https://localloopevents.xyz/
 - **CI/CD**: 6 active GitHub workflows including performance testing and monitoring
 - **Database backups**: Automated daily backups configured

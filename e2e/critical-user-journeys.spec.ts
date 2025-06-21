@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { createAuthHelpers } from './utils/auth-helpers';
-import { TEST_ACCOUNTS, TEST_EVENT_IDS } from './config/test-credentials';
+import { TEST_EVENT_IDS } from './config/test-credentials';
 
 /**
  * Critical User Journeys E2E Tests
@@ -17,7 +17,7 @@ import { TEST_ACCOUNTS, TEST_EVENT_IDS } from './config/test-credentials';
  */
 
 test.describe('Critical User Journeys', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async () => {
     test.setTimeout(120000); // 2 minutes for critical flows
   });
 
@@ -168,7 +168,7 @@ test.describe('Critical User Journeys', () => {
           if (currentUrl.includes('stripe') || currentUrl.includes('checkout')) {
             console.log('✅ Step 4: Successfully reached payment provider');
             break;
-          } else if (currentUrl.includes('customer') || page.locator('input[placeholder*="name"], input[placeholder*="email"]').isVisible()) {
+          } else if (currentUrl.includes('customer') || await page.locator('input[placeholder*="name"], input[placeholder*="email"]').isVisible()) {
             console.log('✅ Step 4: Customer information form displayed for guest');
             
             // Fill guest info if required
@@ -353,10 +353,10 @@ test.describe('Critical User Journeys', () => {
           status: ordersResponse.status,
           success: ordersResponse.ok
         });
-      } catch (error) {
+      } catch (error: unknown) {
         results.push({
           api: 'orders',
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
           success: false
         });
       }
@@ -369,10 +369,10 @@ test.describe('Critical User Journeys', () => {
           status: rsvpsResponse.status,
           success: rsvpsResponse.ok
         });
-      } catch (error) {
+      } catch (error: unknown) {
         results.push({
           api: 'rsvps',
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
           success: false
         });
       }
@@ -390,10 +390,10 @@ test.describe('Critical User Journeys', () => {
           status: refundResponse.status,
           success: refundResponse.status === 400 // Should reject invalid data
         });
-      } catch (error) {
+      } catch (error: unknown) {
         results.push({
           api: 'refunds-validation',
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
           success: false
         });
       }
@@ -419,8 +419,8 @@ test.describe('Critical User Journeys', () => {
     const performanceMetrics = await page.evaluate(() => {
       const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
       return {
-        domContentLoaded: navigation.domContentLoadedEventEnd - navigation.navigationStart,
-        loadComplete: navigation.loadEventEnd - navigation.navigationStart,
+        domContentLoaded: navigation.domContentLoadedEventEnd - navigation.fetchStart,
+        loadComplete: navigation.loadEventEnd - navigation.fetchStart,
         firstPaint: performance.getEntriesByType('paint').find(p => p.name === 'first-paint')?.startTime,
         firstContentfulPaint: performance.getEntriesByType('paint').find(p => p.name === 'first-contentful-paint')?.startTime
       };
