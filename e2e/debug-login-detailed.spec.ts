@@ -9,7 +9,11 @@ test.describe('Detailed Login Debug', () => {
         });
 
         // Capture network responses
-        const networkResponses: any[] = [];
+        const networkResponses: Array<{
+            url: string;
+            status: number;
+            statusText: string;
+        }> = [];
         page.on('response', response => {
             networkResponses.push({
                 url: response.url(),

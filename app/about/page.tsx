@@ -98,10 +98,10 @@ export default function AboutPage() {
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <Link
-                                href="/staff"
+                                href="/auth/signup"
                                 className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
                             >
-                                Create Your First Event
+                                Create Account
                             </Link>
                             <Link
                                 href="/"

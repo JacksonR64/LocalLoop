@@ -79,11 +79,10 @@ export default async function HomePage() {
   
   // Separate events by featured status and time
   const featuredEvents = events.filter(event => event.featured);
-  const nonFeaturedEvents = events.filter(event => !event.featured);
   
-  // Separate non-featured events into upcoming and past
-  const upcomingEvents = nonFeaturedEvents.filter(event => new Date(event.start_time) >= now);
-  const pastEvents = nonFeaturedEvents.filter(event => new Date(event.start_time) < now);
+  // Separate ALL events (both featured and non-featured) into upcoming and past
+  const upcomingEvents = events.filter(event => new Date(event.start_time) >= now);
+  const pastEvents = events.filter(event => new Date(event.start_time) < now);
 
   return (
     <div className="min-h-screen bg-background">

@@ -99,23 +99,33 @@ export async function initWebVitals() {
 // Send metric data to API
 async function sendMetricToAPI(metric: PerformanceMetric) {
   try {
+    // Validate metric data before sending
+    if (!metric || typeof metric.value !== 'number' || !metric.name || !metric.timestamp) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Invalid metric data, skipping send:', metric)
+      }
+      return
+    }
+
+    const payload = {
+      type: 'web_vital',
+      metric_type: 'web_vital',
+      metric_name: metric.name,
+      value: metric.value,
+      rating: metric.rating,
+      url: metric.url,
+      user_agent: metric.userAgent,
+      timestamp: metric.timestamp,
+      additional_data: {
+        navigationType: (window.performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming)?.type || 'unknown',
+        connectionType: ('connection' in navigator ? (navigator as { connection?: { effectiveType?: string } }).connection?.effectiveType : undefined) || 'unknown'
+      }
+    }
+
     await fetch('/api/analytics/performance', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'web_vital',
-        metric_type: 'web_vital',
-        metric_name: metric.name,
-        value: metric.value,
-        rating: metric.rating,
-        url: metric.url,
-        user_agent: metric.userAgent,
-        timestamp: metric.timestamp,
-        additional_data: {
-          navigationType: (window.performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming)?.type || 'unknown',
-          connectionType: ('connection' in navigator ? (navigator as { connection?: { effectiveType?: string } }).connection?.effectiveType : undefined) || 'unknown'
-        }
-      })
+      body: JSON.stringify(payload)
     })
   } catch (error) {
     // Silently fail - don't let analytics break the user experience
@@ -144,31 +154,36 @@ export function trackPageLoad(pageName: string) {
         domParsing: navigation.domComplete - navigation.responseEnd
       }
 
-      // Send page load metrics
-      fetch('/api/analytics/performance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'page_load',
-          metric_type: 'page_load',
-          metric_name: pageName,
-          value: metrics.totalLoadTime,
-          url: window.location.href,
-          user_agent: navigator.userAgent,
-          timestamp: Date.now(),
-          additional_data: {
-            ...metrics,
-            navigationType: navigation.type,
-            transferSize: navigation.transferSize,
-            encodedBodySize: navigation.encodedBodySize,
-            decodedBodySize: navigation.decodedBodySize
+      // Validate metrics before sending
+      if (typeof metrics.totalLoadTime === 'number' && !isNaN(metrics.totalLoadTime) && metrics.totalLoadTime >= 0) {
+        // Send page load metrics
+        fetch('/api/analytics/performance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'page_load',
+            metric_type: 'page_load',
+            metric_name: pageName,
+            value: metrics.totalLoadTime,
+            url: window.location.href,
+            user_agent: navigator.userAgent,
+            timestamp: Date.now(),
+            additional_data: {
+              ...metrics,
+              navigationType: navigation.type,
+              transferSize: navigation.transferSize,
+              encodedBodySize: navigation.encodedBodySize,
+              decodedBodySize: navigation.decodedBodySize
+            }
+          })
+        }).catch(error => {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('Failed to send page load metric:', error)
           }
         })
-      }).catch(error => {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('Failed to send page load metric:', error)
-        }
-      })
+      } else if (process.env.NODE_ENV === 'development') {
+        console.warn('Invalid page load metrics, skipping send:', metrics)
+      }
     }
   })
 }

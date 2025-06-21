@@ -210,7 +210,7 @@ export default function GoogleCalendarConnect({
     }
 
     return (
-        <div className={`p-4 sm:p-6 border border-border rounded-lg bg-card shadow-sm ${className}`}>
+        <div className={`p-4 border border-border rounded-lg bg-muted shadow-sm ${className}`}>
             {/* Success/Error Messages */}
             {callbackMessage && (
                 <div className={`mb-4 p-3 rounded-md ${callbackMessage.type === 'success'
@@ -233,7 +233,7 @@ export default function GoogleCalendarConnect({
                 <div className="space-y-2">
                     <div className="flex items-center space-x-2">
                         <Calendar className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                        <span className="font-medium text-gray-900">Google Calendar</span>
+                        <span className="font-medium text-foreground">Google Calendar</span>
                     </div>
 
                     <div className="flex items-center space-x-2">
@@ -245,7 +245,7 @@ export default function GoogleCalendarConnect({
                         ) : (
                             <>
                                 <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                                <span className="text-sm text-gray-500">{getStatusText()}</span>
+                                <span className="text-sm text-muted-foreground">{getStatusText()}</span>
                             </>
                         )}
                     </div>

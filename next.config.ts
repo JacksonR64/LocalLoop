@@ -171,8 +171,8 @@ const nextConfig: NextConfig = {
       config.resolve = config.resolve || {}
       config.resolve.fallback = {
         ...config.resolve.fallback,
-        'leaflet': false as any,
-        'react-leaflet': false as any,
+        'leaflet': false,
+        'react-leaflet': false,
         'web-vitals': false,
         '@vercel/analytics': false,
         '@stripe/stripe-js': false,

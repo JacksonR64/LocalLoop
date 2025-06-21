@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { User, LogOut, ChevronDown, Settings, Calendar, BarChart3, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { useAuth as useAuthHook } from '@/lib/hooks/useAuth'
@@ -16,10 +16,10 @@ export function ProfileDropdown({ testIdPrefix = "", mobileIconOnly = false, onO
   const [isOpen, setIsOpen] = useState(false)
   
   // Helper function to update open state and notify parent
-  const updateOpenState = (newIsOpen: boolean) => {
+  const updateOpenState = useCallback((newIsOpen: boolean) => {
     setIsOpen(newIsOpen)
     onOpenChange?.(newIsOpen)
-  }
+  }, [onOpenChange])
   const [calendarConnected, setCalendarConnected] = useState(false)
   const [calendarLoading, setCalendarLoading] = useState(false)
   const [calendarCheckLoading, setCalendarCheckLoading] = useState(true)
@@ -173,7 +173,11 @@ export function ProfileDropdown({ testIdPrefix = "", mobileIconOnly = false, onO
       {/* Dropdown Menu */}
       {isOpen && (
         <div 
-          className="absolute right-0 mt-2 w-56 bg-card rounded-lg shadow-lg border border-border py-2 z-50"
+          className={`${
+            mobileIconOnly 
+              ? 'fixed top-16 left-0 right-0 bg-card border-t border-border py-4 z-50' // Full width mobile like burger menu
+              : 'absolute right-0 mt-2 bg-card rounded-lg shadow-lg border border-border py-2 z-50 w-56' // Fixed width on desktop
+          }`}
           data-testid="profile-dropdown-menu"
           role="menu"
           aria-label="Profile menu"

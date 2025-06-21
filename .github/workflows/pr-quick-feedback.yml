@@ -49,8 +49,8 @@ jobs:
 
       - name: 🔍 Lint changed files only
         run: |
-          # Get changed files
-          CHANGED_FILES=$(git diff --name-only origin/main...HEAD -- '*.ts' '*.tsx' '*.js' '*.jsx' | xargs)
+          # Get changed files (exclude deleted files)
+          CHANGED_FILES=$(git diff --name-only --diff-filter=d origin/main...HEAD -- '*.ts' '*.tsx' '*.js' '*.jsx' | xargs)
           if [ ! -z "$CHANGED_FILES" ]; then
             echo "Linting changed files: $CHANGED_FILES"
             npx eslint $CHANGED_FILES

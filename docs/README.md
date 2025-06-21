@@ -27,6 +27,8 @@ Development workflow and technical documentation:
 - **[Architecture](development/architecture.md)** - Application architecture overview
 - **[Database Schema](development/database-schema.md)** - Complete database documentation
 - **[Testing Guide](development/testing-guide.md)** - Comprehensive testing procedures and maintenance
+- **[E2E Testing Guide](development/e2e-testing-guide.md)** - End-to-end testing with Playwright
+- **[Refund System Guide](development/refund-system-guide.md)** - Complete refund system documentation
 - **[CI/CD Workflows](development/ci-cd-workflows.md)** - Continuous integration and deployment
 - **[Deployment Guide](development/deployment-guide.md)** - Production deployment procedures
 - **[Performance Optimization](development/performance-optimization.md)** - Performance optimization strategies
@@ -72,6 +74,15 @@ This documentation is actively maintained and regularly updated. For questions o
 
 ---
 
-**Documentation Version**: 1.0  
-**Last Updated**: June 20, 2025  
-**Total Documents**: 20 comprehensive guides
+**Documentation Version**: 1.1  
+**Last Updated**: June 21, 2025  
+**Total Documents**: 22 comprehensive guides
+
+## 🆕 **Recent Updates**
+
+### **June 21, 2025 - v1.1**
+- ✅ **Added E2E Testing Guide** - Comprehensive Playwright testing documentation
+- ✅ **Added Refund System Guide** - Complete refund functionality documentation  
+- ✅ **Enhanced Testing Coverage** - Production-ready test suites for critical user journeys
+- ✅ **Webhook System Documentation** - Stripe integration and order processing flows
+- ✅ **Authentication Helpers** - Robust login/logout testing utilities

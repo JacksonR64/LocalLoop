@@ -32,8 +32,10 @@ export async function GET() {
             }
 
             if (authError) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 supabaseAuthError = authError as any // Type assertion to handle the error properly
             }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             supabaseAuthError = err
         }
