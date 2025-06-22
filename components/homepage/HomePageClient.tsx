@@ -96,10 +96,9 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
   }, []);
 
   const handleCompactFiltersStateChange = React.useCallback((filtersActive: boolean, filteredEvents: EventData[]) => {
-    console.log('🔍 CompactSearchBar filters changed:', { filtersActive, resultCount: filteredEvents.length, isSearchOpen });
     setHasActiveCompactFilters(filtersActive);
     setCompactSearchResults(filteredEvents);
-  }, [isSearchOpen]);
+  }, []);
 
   // Pagination for upcoming events
   const {

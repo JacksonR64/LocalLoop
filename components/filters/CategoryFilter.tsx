@@ -76,14 +76,22 @@ export function CategoryFilter({
                         </span>
                     </div>
                     {selectedCategories.length > 0 && (
-                        <button
-                            type="button"
+                        <div
                             onClick={clearSelection}
-                            className="p-0.5 hover:bg-accent rounded ml-2"
+                            className="p-0.5 hover:bg-accent rounded ml-2 cursor-pointer"
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    onChange([]);
+                                }
+                            }}
                             aria-label="Clear selection"
                         >
                             <X className="w-3 h-3 text-muted-foreground" />
-                        </button>
+                        </div>
                     )}
                 </div>
             </FilterButton>
