@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { LoadingSpinner } from '@/components/ui';
+import { LoadingSpinner, SectionToggle } from '@/components/ui';
 import { EventCard, type EventData } from '@/components/events';
 import { EventFilters } from '@/components/filters/EventFilters';
 import { CompactSearchBar } from '@/components/search/CompactSearchBar';
@@ -19,11 +19,17 @@ interface HomePageClientProps {
 
 export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: HomePageClientProps) {
   const router = useRouter();
-  const { isSearchOpen } = useSearch();
+  const { isSearchOpen, isSearchAnimating } = useSearch();
   const [filteredEvents, setFilteredEvents] = React.useState(upcomingEvents);
   const [showPastEvents, setShowPastEvents] = React.useState(false);
+  const [showFeaturedEvents, setShowFeaturedEvents] = React.useState(true);
+  const [showUpcomingEvents, setShowUpcomingEvents] = React.useState(true);
   const [searchResults, setSearchResults] = React.useState<EventData[]>([]);
   const [hasActiveFilters, setHasActiveFilters] = React.useState(false);
+  
+  // Separate state for CompactSearchBar
+  const [compactSearchResults, setCompactSearchResults] = React.useState<EventData[]>([]);
+  const [hasActiveCompactFilters, setHasActiveCompactFilters] = React.useState(false);
 
 
   // Memoize the filtered events setter to prevent infinite re-renders
@@ -83,6 +89,17 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
       });
     }
   }, [hasActiveFilters]);
+
+  // Separate handlers for CompactSearchBar
+  const handleCompactFilteredEventsChange = React.useCallback((events: EventData[]) => {
+    setCompactSearchResults(events);
+  }, []);
+
+  const handleCompactFiltersStateChange = React.useCallback((filtersActive: boolean, filteredEvents: EventData[]) => {
+    console.log('🔍 CompactSearchBar filters changed:', { filtersActive, resultCount: filteredEvents.length, isSearchOpen });
+    setHasActiveCompactFilters(filtersActive);
+    setCompactSearchResults(filteredEvents);
+  }, [isSearchOpen]);
 
   // Pagination for upcoming events
   const {
@@ -145,17 +162,18 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
     }, 100);
   };
 
-  // View all events handler
-  const handleViewAll = () => {
-    handleFilteredEventsChange(upcomingEvents);
-    const upcomingSection = document.getElementById('upcoming-events');
-    if (upcomingSection) {
-      upcomingSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   return (
     <>
+      {/* Compact Search Bar - appears when search is toggled open */}
+      {(isSearchOpen || isSearchAnimating) && (
+        <CompactSearchBar
+          events={upcomingEvents}
+          onFilteredEventsChange={handleCompactFilteredEventsChange}
+          onFiltersStateChange={handleCompactFiltersStateChange}
+        />
+      )}
+
       {/* Hero Section - always visible */}
         <section className="bg-gradient-to-br from-[var(--primary)] to-purple-700 text-white py-20" data-test-id="hero-section">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -217,20 +235,39 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
           </div>
         </section>
 
-      {/* Compact Search Bar - appears when search is toggled open */}
-      {isSearchOpen && (
-        <CompactSearchBar
-          events={upcomingEvents}
-          onFilteredEventsChange={handleFilteredEventsChange}
-          onFiltersStateChange={handleFiltersStateChange}
-          onClearFilters={handleClearFilters}
-        />
-      )}
-
       {/* Main Content */}
-      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 ${isSearchOpen ? 'pt-24' : ''}`} data-test-id="main-content">
-        {/* Search Results */}
-        {hasActiveFilters && searchResults.length > 0 && (
+      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 ${isSearchOpen ? 'pt-32' : 'pt-16'}`} data-test-id="main-content">
+        {/* CompactSearchBar Search Results */}
+        {isSearchOpen && hasActiveCompactFilters && compactSearchResults.length > 0 && (
+          <section id="compact-search-results-section" className="mb-12 sm:mb-16" data-test-id="compact-search-results-section">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6" data-test-id="compact-search-results-title">
+              Search Results ({compactSearchResults.length})
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" data-test-id="compact-search-results-grid">
+              {compactSearchResults.map((event) => (
+                <div key={event.id} data-test-id={`compact-search-result-${event.id}`}>
+                  <EventCard
+                    event={event}
+                    size="md"
+                    featured={event.featured}
+                    onClick={() => handleEventClick(event.id)}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* CompactSearchBar No Results */}
+        {isSearchOpen && hasActiveCompactFilters && compactSearchResults.length === 0 && (
+          <section id="compact-no-search-results-section" className="mb-12 sm:mb-16 text-center" data-test-id="compact-no-search-results-section">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4">No Results Found</h2>
+            <p className="text-muted-foreground mb-6">Try adjusting your search criteria or browse all events below.</p>
+          </section>
+        )}
+
+        {/* Hero Search Results */}
+        {!isSearchOpen && hasActiveFilters && searchResults.length > 0 && (
           <section id="search-results-section" className="mb-12 sm:mb-16" data-test-id="search-results-section">
             <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6" data-test-id="search-results-title">
               Search Results ({searchResults.length})
@@ -250,8 +287,8 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
           </section>
         )}
 
-        {/* No Search Results */}
-        {hasActiveFilters && searchResults.length === 0 && (
+        {/* Hero No Search Results */}
+        {!isSearchOpen && hasActiveFilters && searchResults.length === 0 && (
           <section id="no-search-results-section" className="mb-12 sm:mb-16 text-center" data-test-id="no-search-results-section">
             <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4">No Results Found</h2>
             <p className="text-muted-foreground mb-6">
@@ -260,97 +297,115 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
           </section>
         )}
 
-        {/* Featured Events */}
-        {featuredEvents.length > 0 && (
+        {/* Featured Events - hidden when CompactSearchBar has active filters */}
+        {featuredEvents.length > 0 && !(isSearchOpen && hasActiveCompactFilters) && (
           <section className="mb-12 sm:mb-16" data-test-id="featured-events-section">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6" data-test-id="featured-events-title">Featured Events</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" data-test-id="featured-events-grid">
-              {featuredEvents.map((event) => (
-                <div key={event.id} data-test-id={`featured-event-${event.id}`}>
-                  <EventCard
-                    event={event}
-                    size="lg"
-                    featured={true}
-                    onClick={() => handleEventClick(event.id)}
-                  />
-                </div>
-              ))}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground" data-test-id="featured-events-title">Featured Events</h2>
+              <SectionToggle
+                isVisible={showFeaturedEvents}
+                onToggle={() => setShowFeaturedEvents(!showFeaturedEvents)}
+                showText="Show Featured Events"
+                hideText="Hide Featured Events"
+                data-testid="toggle-featured-events-button"
+              />
             </div>
-          </section>
-        )}
 
-        {/* Upcoming Events */}
-        <section id="upcoming-events" data-test-id="upcoming-events-section">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground" data-test-id="upcoming-events-title">Upcoming Events</h2>
-            <button
-              onClick={handleViewAll}
-              className="text-primary hover:text-primary/80 font-medium text-left sm:text-right"
-              data-test-id="view-all-button"
-            >
-              View All →
-            </button>
-          </div>
-
-          {filteredEvents.length === 0 ? (
-            <div className="text-center py-12 sm:py-16 text-muted-foreground px-4" data-test-id="no-events-message">
-              <p className="mb-4 text-base sm:text-lg">No events match your search or filters.</p>
-              <button
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors mb-4"
-                onClick={handleViewAll}
-                data-test-id="show-all-events-button"
-              >
-                Show All Events
-              </button>
-              <p className="text-sm">Try adjusting your search or filter criteria to find more events.</p>
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" data-test-id="upcoming-events-grid">
-                {paginatedUpcomingEvents.map((event) => (
-                  <div key={event.id} data-test-id={`upcoming-event-${event.id}`}>
+            {showFeaturedEvents && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" data-test-id="featured-events-grid">
+                {featuredEvents.map((event) => (
+                  <div key={event.id} data-test-id={`featured-event-${event.id}`}>
                     <EventCard
                       event={event}
-                      size="md"
+                      size="lg"
+                      featured={true}
                       onClick={() => handleEventClick(event.id)}
                     />
                   </div>
                 ))}
               </div>
+            )}
+          </section>
+        )}
 
-              {/* Infinite Scroll Loading Trigger */}
-              <div ref={loadingTriggerRef} className="mt-6 sm:mt-8" data-test-id="loading-trigger">
-                {paginationState.isLoading && (
-                  <div data-test-id="loading-spinner">
-                    <LoadingSpinner
-                      size="md"
-                      text="Loading more events..."
-                      className="py-6 sm:py-8"
-                    />
+        {/* Upcoming Events - hidden when CompactSearchBar has active filters */}
+        {!(isSearchOpen && hasActiveCompactFilters) && (
+        <section id="upcoming-events" data-test-id="upcoming-events-section">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground" data-test-id="upcoming-events-title">Upcoming Events</h2>
+            <SectionToggle
+              isVisible={showUpcomingEvents}
+              onToggle={() => setShowUpcomingEvents(!showUpcomingEvents)}
+              showText="Show Upcoming Events"
+              hideText="Hide Upcoming Events"
+              data-testid="toggle-upcoming-events-button"
+            />
+          </div>
+
+          {showUpcomingEvents && (
+            <>
+              {filteredEvents.length === 0 ? (
+                <div className="text-center py-12 sm:py-16 text-muted-foreground px-4" data-test-id="no-events-message">
+                  <p className="mb-4 text-base sm:text-lg">No events match your search or filters.</p>
+                  <button
+                    className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors mb-4"
+                    onClick={handleClearFilters}
+                    data-test-id="show-all-events-button"
+                  >
+                    Show All Events
+                  </button>
+                  <p className="text-sm">Try adjusting your search or filter criteria to find more events.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" data-test-id="upcoming-events-grid">
+                    {paginatedUpcomingEvents.map((event) => (
+                      <div key={event.id} data-test-id={`upcoming-event-${event.id}`}>
+                        <EventCard
+                          event={event}
+                          size="md"
+                          onClick={() => handleEventClick(event.id)}
+                        />
+                      </div>
+                    ))}
                   </div>
-                )}
-                {!paginationState.hasMore && paginatedUpcomingEvents.length > 0 && (
-                  <div className="text-center py-6 sm:py-8 text-gray-500" data-test-id="end-of-events-message">
-                    <p>You&apos;ve reached the end of the events list.</p>
+
+                  {/* Infinite Scroll Loading Trigger */}
+                  <div ref={loadingTriggerRef} className="mt-6 sm:mt-8" data-test-id="loading-trigger">
+                    {paginationState.isLoading && (
+                      <div data-test-id="loading-spinner">
+                        <LoadingSpinner
+                          size="md"
+                          text="Loading more events..."
+                          className="py-6 sm:py-8"
+                        />
+                      </div>
+                    )}
+                    {!paginationState.hasMore && paginatedUpcomingEvents.length > 0 && (
+                      <div className="text-center py-6 sm:py-8 text-gray-500" data-test-id="end-of-events-message">
+                        <p>You&apos;ve reached the end of the events list.</p>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                </>
+              )}
             </>
           )}
         </section>
+        )}
 
-        {/* Past Events Section */}
-        {pastEvents.length > 0 && (
+        {/* Past Events Section - hidden when CompactSearchBar has active filters */}
+        {pastEvents.length > 0 && !(isSearchOpen && hasActiveCompactFilters) && (
           <section className="mt-12 sm:mt-16" data-test-id="past-events-section">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
               <h2 className="text-xl sm:text-2xl font-bold text-foreground" data-test-id="past-events-title">Past Events</h2>
-              <button
-                onClick={() => setShowPastEvents(!showPastEvents)}
-                className="text-muted-foreground hover:text-foreground font-medium text-left sm:text-right transition-colors"
-                data-test-id="toggle-past-events-button"
-              >
-                {showPastEvents ? 'Hide Past Events' : 'Show Past Events'} {showPastEvents ? '↑' : '↓'}
-              </button>
+              <SectionToggle
+                isVisible={showPastEvents}
+                onToggle={() => setShowPastEvents(!showPastEvents)}
+                showText="Show Past Events"
+                hideText="Hide Past Events"
+                data-testid="toggle-past-events-button"
+              />
             </div>
 
             {showPastEvents && (

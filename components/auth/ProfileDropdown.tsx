@@ -14,12 +14,30 @@ interface ProfileDropdownProps {
 
 export function ProfileDropdown({ testIdPrefix = "", mobileIconOnly = false, onOpenChange }: ProfileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false)
+  const [animationType, setAnimationType] = useState<'enter' | 'exit'>('enter')
   
   // Helper function to update open state and notify parent
   const updateOpenState = useCallback((newIsOpen: boolean) => {
-    setIsOpen(newIsOpen)
+    if (newIsOpen) {
+      // Opening - trigger enter animation
+      setAnimationType('enter')
+      setIsOpen(true)
+      setIsAnimating(true)
+      setTimeout(() => {
+        setIsAnimating(false)
+      }, mobileIconOnly ? 300 : 200) // Match animation duration
+    } else if (isOpen) {
+      // Closing - trigger exit animation
+      setAnimationType('exit')
+      setIsAnimating(true)
+      setTimeout(() => {
+        setIsOpen(false)
+        setIsAnimating(false)
+      }, mobileIconOnly ? 300 : 200) // Match animation duration
+    }
     onOpenChange?.(newIsOpen)
-  }, [onOpenChange])
+  }, [onOpenChange, isOpen, mobileIconOnly])
   const [calendarConnected, setCalendarConnected] = useState(false)
   const [calendarLoading, setCalendarLoading] = useState(false)
   const [calendarCheckLoading, setCalendarCheckLoading] = useState(true)
@@ -171,13 +189,18 @@ export function ProfileDropdown({ testIdPrefix = "", mobileIconOnly = false, onO
       </button>
 
       {/* Dropdown Menu */}
-      {isOpen && (
+      {(isOpen || isAnimating) && (
         <div 
           className={`${
             mobileIconOnly 
-              ? 'fixed top-16 left-0 right-0 bg-card border-t border-border py-4 z-50' // Full width mobile like burger menu
-              : 'absolute right-0 mt-2 bg-card rounded-lg shadow-lg border border-border py-2 z-50 w-56' // Fixed width on desktop
+              ? 'fixed top-16 left-0 right-0 bg-card border-t border-border py-4 z-50 transform transition-all duration-300 ease-out' // Full width mobile like burger menu
+              : 'absolute right-0 mt-2 bg-card rounded-lg shadow-lg border border-border py-2 z-50 w-56 transform transition-all duration-200 ease-out' // Fixed width on desktop
           }`}
+          style={{
+            animation: mobileIconOnly 
+              ? (animationType === 'enter' ? 'slideInFromTop 300ms ease-out forwards' : 'slideOutToTop 300ms ease-out forwards')
+              : (animationType === 'enter' ? 'fadeInScale 200ms ease-out forwards' : 'scaleOutFade 200ms ease-out forwards')
+          }}
           data-testid="profile-dropdown-menu"
           role="menu"
           aria-label="Profile menu"

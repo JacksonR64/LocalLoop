@@ -27,6 +27,7 @@ interface EventFiltersProps {
     className?: string;
     showSearch?: boolean;
     showActiveFilters?: boolean;
+    showFilters?: boolean;
     layout?: 'horizontal' | 'vertical';
     onSearchEnter?: () => void;
 }
@@ -38,6 +39,7 @@ export function EventFilters({
     className = '',
     showSearch = true,
     showActiveFilters = true,
+    showFilters = true,
     layout = 'horizontal',
     onSearchEnter
 }: EventFiltersProps) {
@@ -204,33 +206,35 @@ export function EventFilters({
             )}
 
             {/* Filter Controls */}
-            <div className={`${isCompact ? 'flex flex-wrap gap-2' : isHorizontal ? 'flex flex-col sm:flex-row sm:flex-wrap gap-3' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3'}`}>
-                <CategoryFilter
-                    selectedCategories={filters.categories}
-                    onChange={(categories) => updateFilters({ categories })}
-                    availableCategories={categories}
-                    className={isHorizontal ? 'w-full sm:min-w-[200px] sm:flex-1' : ''}
-                />
+            {showFilters && (
+                <div className={`${isCompact ? 'flex flex-wrap gap-1 sm:gap-2' : isHorizontal ? 'flex flex-col sm:flex-row sm:flex-wrap gap-1 sm:gap-3' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3'}`}>
+                    <CategoryFilter
+                        selectedCategories={filters.categories}
+                        onChange={(categories) => updateFilters({ categories })}
+                        availableCategories={categories}
+                        className={isHorizontal ? 'w-full sm:min-w-[200px] sm:flex-1' : ''}
+                    />
 
-                <DateFilter
-                    selectedRange={filters.dateRange}
-                    onRangeChange={(dateRange) => updateFilters({ dateRange })}
-                    className={isHorizontal ? 'w-full sm:min-w-[180px] sm:flex-1' : ''}
-                />
+                    <DateFilter
+                        selectedRange={filters.dateRange}
+                        onRangeChange={(dateRange) => updateFilters({ dateRange })}
+                        className={isHorizontal ? 'w-full sm:min-w-[180px] sm:flex-1' : ''}
+                    />
 
-                <PriceFilter
-                    selectedPrice={filters.priceType}
-                    onPriceChange={(priceType) => updateFilters({ priceType })}
-                    eventCounts={priceCounts}
-                    className={isHorizontal ? 'w-full sm:min-w-[140px] sm:flex-1' : ''}
-                />
+                    <PriceFilter
+                        selectedPrice={filters.priceType}
+                        onPriceChange={(priceType) => updateFilters({ priceType })}
+                        eventCounts={priceCounts}
+                        className={isHorizontal ? 'w-full sm:min-w-[140px] sm:flex-1' : ''}
+                    />
 
-                <SortControl
-                    sortBy={filters.sortBy}
-                    onSortChange={(sortBy) => updateFilters({ sortBy })}
-                    className={isHorizontal ? 'w-full sm:min-w-[180px] sm:flex-1' : ''}
-                />
-            </div>
+                    <SortControl
+                        sortBy={filters.sortBy}
+                        onSortChange={(sortBy) => updateFilters({ sortBy })}
+                        className={isHorizontal ? 'w-full sm:min-w-[180px] sm:flex-1' : ''}
+                    />
+                </div>
+            )}
 
             {/* Active Filters */}
             {showActiveFilters && (

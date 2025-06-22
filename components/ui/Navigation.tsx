@@ -11,6 +11,59 @@ import { useAuth as useAuthHook } from '@/lib/hooks/useAuth'
 import { ProfileDropdown } from '@/components/auth/ProfileDropdown'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
+// Mobile Role Badge Component with hover/click expansion
+function MobileRoleBadge({ isAdmin }: { isAdmin: boolean }) {
+    const [isExpanded, setIsExpanded] = React.useState(false);
+    const [timeoutId, setTimeoutId] = React.useState<NodeJS.Timeout | null>(null);
+
+    const handleInteraction = () => {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+        
+        setIsExpanded(true);
+        
+        const newTimeoutId = setTimeout(() => {
+            setIsExpanded(false);
+        }, 5000);
+        
+        setTimeoutId(newTimeoutId);
+    };
+
+    React.useEffect(() => {
+        return () => {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        };
+    }, [timeoutId]);
+
+    return (
+        <div 
+            className={`md:hidden absolute top-1 right-1 z-[60] flex items-center gap-1 rounded-full text-[10px] font-medium shadow-sm transition-all duration-300 ease-in-out cursor-pointer ${
+                isAdmin 
+                    ? 'bg-red-100 text-red-700 border border-red-200' 
+                    : 'bg-blue-100 text-blue-700 border border-blue-200'
+            } ${isExpanded ? 'px-2 py-0.5' : 'p-1'}`}
+            aria-label={`Current user role: ${isAdmin ? 'Administrator' : 'Staff member'}`}
+            data-test-id="mobile-user-role-badge"
+            onClick={handleInteraction}
+            onMouseEnter={handleInteraction}
+        >
+            {isAdmin ? (
+                <Settings className="w-2.5 h-2.5 flex-shrink-0" aria-hidden="true" />
+            ) : (
+                <Shield className="w-2.5 h-2.5 flex-shrink-0" aria-hidden="true" />
+            )}
+            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+                isExpanded ? 'max-w-[50px] opacity-100 ml-1' : 'max-w-0 opacity-0 ml-0'
+            }`}>
+                {isAdmin ? 'Admin' : 'Staff'}
+            </span>
+        </div>
+    );
+}
+
 interface NavigationProps {
     className?: string
 }
@@ -19,6 +72,8 @@ export function Navigation({
     className = ''
 }: NavigationProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const [isMenuAnimating, setIsMenuAnimating] = useState(false)
+    const [menuAnimationType, setMenuAnimationType] = useState<'enter' | 'exit'>('enter')
     const { user, loading: authLoading } = useAuth()
     const { isStaff, isAdmin } = useAuthHook()
     const { isSearchOpen, toggleSearch } = useSearch()
@@ -36,6 +91,31 @@ export function Navigation({
         }, 100)
     }
 
+    // Handle search toggle (keep mobile menu open)
+    const handleSearchToggle = () => {
+        toggleSearch()
+    }
+
+    const handleMobileMenuToggle = () => {
+        if (isMobileMenuOpen) {
+            // Trigger exit animation
+            setMenuAnimationType('exit')
+            setIsMenuAnimating(true)
+            setTimeout(() => {
+                setIsMobileMenuOpen(false)
+                setIsMenuAnimating(false)
+            }, 300) // Match animation duration
+        } else {
+            // Trigger enter animation
+            setMenuAnimationType('enter')
+            setIsMobileMenuOpen(true)
+            setIsMenuAnimating(true)
+            setTimeout(() => {
+                setIsMenuAnimating(false)
+            }, 300) // Match animation duration
+        }
+    }
+
 
     return (
         <>
@@ -47,10 +127,10 @@ export function Navigation({
             >
                 Skip to main content
             </a>
-            <header className={`bg-card shadow-sm border-b border-border sticky top-0 z-50 ${className}`} data-test-id="homepage-header">
+            <header className={`bg-card shadow-sm border-b border-border fixed top-0 left-0 right-0 z-50 ${className}`} data-test-id="homepage-header">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
-                    {/* Left side - Logo and Admin/Staff Badge */}
+                    {/* Left side - Logo only on mobile, Logo + Badge on desktop */}
                     <div className="flex items-center gap-3">
                         <Link href="/" className="flex items-center gap-2" data-test-id="homepage-logo">
                             <Image 
@@ -61,13 +141,13 @@ export function Navigation({
                                 height={48}
                                 className="w-12 h-12" 
                             />
-                            <span className="text-xl font-bold text-card-foreground" data-test-id="homepage-title">LocalLoop</span>
+                            <span className="text-xl font-bold text-card-foreground min-[400px]:inline hidden" data-test-id="homepage-title">LocalLoop</span>
                         </Link>
                         
-                        {/* Admin/Staff Badge */}
+                        {/* Admin/Staff Badge - Hidden on mobile, shown on desktop */}
                         {user && (isAdmin || isStaff) && (
                             <div 
-                                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                                className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
                                     isAdmin 
                                         ? 'bg-red-100 text-red-700 border border-red-200' 
                                         : 'bg-blue-100 text-blue-700 border border-blue-200'
@@ -126,7 +206,7 @@ export function Navigation({
 
                             {/* Search Toggle Button */}
                             <button
-                                onClick={toggleSearch}
+                                onClick={handleSearchToggle}
                                 className={`p-2 rounded-lg transition-colors ${
                                     isSearchOpen 
                                         ? 'bg-primary text-primary-foreground' 
@@ -141,7 +221,14 @@ export function Navigation({
                             <ThemeToggle />
                             {/* Auth state conditional rendering - Optimistic UI */}
                             {user ? (
-                                <ProfileDropdown testIdPrefix="desktop-" />
+                                <ProfileDropdown 
+                                    testIdPrefix="desktop-" 
+                                    onOpenChange={(isOpen) => {
+                                        if (isOpen && isSearchOpen) {
+                                            toggleSearch()
+                                        }
+                                    }}
+                                />
                             ) : (
                                 <Link
                                     href="/auth/login"
@@ -155,8 +242,22 @@ export function Navigation({
                             )}
                         </nav>
 
-                        {/* Mobile - Profile and Menu Button */}
+                        {/* Mobile - Search, Profile and Menu Button */}
                         <div className="md:hidden flex items-center gap-2">
+                            {/* Mobile Search Toggle Button - Always visible */}
+                            <button
+                                onClick={handleSearchToggle}
+                                className={`p-2 rounded-lg transition-colors ${
+                                    isSearchOpen 
+                                        ? 'bg-primary text-primary-foreground' 
+                                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                                }`}
+                                aria-label={isSearchOpen ? 'Close search' : 'Open search'}
+                                data-test-id="mobile-search-toggle-button"
+                            >
+                                <Search className="w-5 h-5" />
+                            </button>
+
                             {/* Theme Toggle for mobile */}
                             <ThemeToggle />
                             
@@ -166,7 +267,10 @@ export function Navigation({
                                     testIdPrefix="mobile-" 
                                     mobileIconOnly={true}
                                     onOpenChange={(isOpen) => {
-                                        if (isOpen) setIsMobileMenuOpen(false)
+                                        if (isOpen) {
+                                            setIsMobileMenuOpen(false)
+                                            if (isSearchOpen) toggleSearch()
+                                        }
                                     }}
                                 />
                             ) : (
@@ -184,7 +288,7 @@ export function Navigation({
                             {/* Mobile Menu Button with symmetrical padding */}
                             <button
                                 className="p-2 rounded-lg hover:bg-accent transition-colors mr-1"
-                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                                onClick={handleMobileMenuToggle}
                                 aria-label="Toggle mobile menu"
                                 data-test-id="mobile-menu-button"
                             >
@@ -199,8 +303,16 @@ export function Navigation({
                 </div>
 
                 {/* Mobile Navigation */}
-                {isMobileMenuOpen && (
-                    <div className="md:hidden border-t border-border py-4" data-test-id="mobile-navigation">
+                {(isMobileMenuOpen || isMenuAnimating) && (
+                    <div 
+                        className="md:hidden border-t border-border py-4 transform transition-all duration-300 ease-out" 
+                        data-test-id="mobile-navigation"
+                        style={{
+                            animation: menuAnimationType === 'enter' 
+                                ? 'slideInFromTop 300ms ease-out forwards' 
+                                : 'slideOutToTop 300ms ease-out forwards'
+                        }}
+                    >
                         <nav className="flex flex-col space-y-4" aria-label="Mobile navigation">
                             {(isStaff || isAdmin) && (
                                 <Link
@@ -243,26 +355,15 @@ export function Navigation({
                             >
                                 Browse Events
                             </button>
-                            {/* Mobile Search Toggle Button */}
-                            <button
-                                onClick={() => {
-                                    toggleSearch()
-                                    setIsMobileMenuOpen(false)
-                                }}
-                                className={`flex items-center gap-2 transition-colors py-2 text-left ${
-                                    isSearchOpen 
-                                        ? 'text-primary font-medium' 
-                                        : 'text-muted-foreground hover:text-foreground'
-                                }`}
-                                data-test-id="mobile-search-toggle-button"
-                            >
-                                <Search className="w-5 h-5" />
-                                {isSearchOpen ? 'Close Search' : 'Search Events'}
-                            </button>
                         </nav>
                     </div>
                 )}
             </div>
+            
+            {/* Admin/Staff Badge - Mobile Only, positioned within header */}
+            {user && (isAdmin || isStaff) && (
+                <MobileRoleBadge isAdmin={isAdmin} />
+            )}
         </header>
         </>
     )

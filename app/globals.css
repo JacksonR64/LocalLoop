@@ -219,3 +219,91 @@ body {
     border-radius: 4px;
   }
 }
+
+/* Dropdown and Menu Animations */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slideOutToTop {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+}
+
+@keyframes scaleOutFade {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(-8px);
+  }
+}
+
+/* Filter expand animation classes */
+.filter-expand-enter {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 300ms ease-out, opacity 300ms ease-out;
+}
+
+.filter-expand-enter-active {
+  max-height: 200px;
+  opacity: 1;
+}
+
+.filter-expand-exit {
+  max-height: 200px;
+  opacity: 1;
+  overflow: hidden;
+  transition: max-height 300ms ease-out, opacity 300ms ease-out;
+}
+
+.filter-expand-exit-active {
+  max-height: 0;
+  opacity: 0;
+}

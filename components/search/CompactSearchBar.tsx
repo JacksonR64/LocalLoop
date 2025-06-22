@@ -1,64 +1,256 @@
 'use client';
 
-import React from 'react';
-import { X, Search } from 'lucide-react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { Search, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { EventData } from '@/components/events';
 import { EventFilters } from '@/components/filters/EventFilters';
+import { useSearch } from '@/lib/search-context';
 
 interface CompactSearchBarProps {
   events: EventData[];
   onFilteredEventsChange: (filteredEvents: EventData[]) => void;
   onFiltersStateChange?: (hasActiveFilters: boolean, filteredEvents: EventData[]) => void;
-  onClearFilters: () => void;
 }
 
-export function CompactSearchBar({ 
-  events, 
+export function CompactSearchBar({
+  events,
   onFilteredEventsChange,
-  onFiltersStateChange,
-  onClearFilters 
+  onFiltersStateChange
 }: CompactSearchBarProps) {
+  const { closeSearch, searchAnimationType } = useSearch();
+  const searchBarRef = useRef<HTMLDivElement>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpandAnimating, setIsExpandAnimating] = useState(false);
+  const [expandAnimationType, setExpandAnimationType] = useState<'enter' | 'exit'>('enter');
+  const [hasActiveFilters, setHasActiveFilters] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [hasTriggeredScroll, setHasTriggeredScroll] = useState(false);
+
+  const scrollToEventsWithCorrectOffset = useCallback(() => {
+    // Scroll to the compact search results section 
+    const compactSearchResultsSection = document.getElementById('compact-search-results-section') || 
+                                       document.getElementById('compact-no-search-results-section');
+    
+    if (compactSearchResultsSection) {
+      // Calculate search bar height based on current state
+      const baseSearchHeight = 80; // Base search bar height
+      const expandedFiltersHeight = isExpanded ? 120 : 0; // Additional height when filters are expanded
+      const totalSearchBarHeight = baseSearchHeight + expandedFiltersHeight;
+      
+      const targetPosition = compactSearchResultsSection.offsetTop - totalSearchBarHeight;
+      
+      window.scrollTo({
+        top: targetPosition,
+        behavior: 'smooth'
+      });
+    }
+  }, [isExpanded]);
+
+  // Handle filters state change
+  const handleFiltersStateChange = useCallback((hasFilters: boolean, filteredEvents: EventData[]) => {
+    setHasActiveFilters(hasFilters || searchQuery.trim().length > 0);
+    onFiltersStateChange?.(hasFilters, filteredEvents);
+    
+    // Trigger scroll when user applies filters
+    if (hasFilters && !hasTriggeredScroll) {
+      setHasTriggeredScroll(true);
+      setTimeout(() => scrollToEventsWithCorrectOffset(), 100);
+    }
+  }, [searchQuery, onFiltersStateChange, hasTriggeredScroll, scrollToEventsWithCorrectOffset]);
+
+  // Update active filters when search query changes
+  useEffect(() => {
+    setHasActiveFilters(searchQuery.trim().length > 0);
+  }, [searchQuery]);
+
+  // Handle ESC key to close search
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeSearch();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [closeSearch]);
+
+  // Handle click outside to close search on mobile
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (window.innerWidth < 768 && searchBarRef.current && !searchBarRef.current.contains(event.target as Node)) {
+        const target = event.target as Element;
+        if (!target.closest('header') && !target.closest('[data-test-id*="dropdown"]')) {
+          closeSearch();
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [closeSearch]);
+
+  const handleSearchEnter = () => {
+    // Simply close search without scrolling to top
+    closeSearch();
+  };
+
+  const handleToggleExpanded = () => {
+    if (isExpanded) {
+      // Start collapse animation
+      setExpandAnimationType('exit');
+      setIsExpandAnimating(true);
+      setTimeout(() => {
+        setIsExpanded(false);
+        setTimeout(() => {
+          setIsExpandAnimating(false);
+        }, 300);
+      }, 10);
+    } else {
+      // Start expand animation
+      setExpandAnimationType('enter');
+      setIsExpandAnimating(true);
+      setIsExpanded(false);
+      
+      // Trigger active state in next frame for smooth transition
+      requestAnimationFrame(() => {
+        setIsExpanded(true);
+      });
+      
+      setTimeout(() => {
+        setIsExpandAnimating(false);
+      }, 300);
+    }
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    
+    // Trigger scroll when user starts typing (first character)
+    if (value.trim().length === 1 && !hasTriggeredScroll) {
+      setHasTriggeredScroll(true);
+      setTimeout(() => scrollToEventsWithCorrectOffset(), 100);
+    }
+  };
+
+  const handleClearAll = () => {
+    setSearchQuery('');
+    setHasActiveFilters(false);
+    setHasTriggeredScroll(false);
+    // Reset filters through EventFilters component
+    // This will be handled by the EventFilters component's internal state reset
+  };
+
+  const getFilterExpandClasses = () => {
+    if (expandAnimationType === 'enter') {
+      return isExpanded ? 'filter-expand-enter filter-expand-enter-active' : 'filter-expand-enter';
+    }
+    if (expandAnimationType === 'exit') {
+      return isExpanded ? 'filter-expand-exit' : 'filter-expand-exit filter-expand-exit-active';
+    }
+    return '';
+  };
+
   return (
-    <div className="fixed top-16 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-        <div className="flex items-center gap-3">
-          {/* Search Icon */}
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-            
-            {/* Compact Event Filters */}
-            <div className="min-w-0 flex-1">
-              <EventFilters
-                events={events}
-                onFilteredEventsChange={onFilteredEventsChange}
-                onFiltersStateChange={onFiltersStateChange}
-                showSearch={true}
-                showActiveFilters={false}
-                layout="horizontal"
-                className="compact-mode"
-                onSearchEnter={() => {
-                  // Scroll to search results when Enter is pressed in compact mode
-                  const searchResults = document.getElementById('search-results-section') || 
-                                      document.getElementById('no-search-results-section');
-                  if (searchResults) {
-                    searchResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }
-                }}
-              />
+    <>
+      {/* Mobile Overlay Background - only show when expanded */}
+      {isExpanded && (
+        <div 
+          className="md:hidden fixed inset-0 top-32 z-30 bg-black/10 transition-opacity duration-300 ease-out"
+          onClick={closeSearch}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && closeSearch()}
+          aria-label="Close search"
+        />
+      )}
+
+      {/* Search Bar Container */}
+      <div
+        ref={searchBarRef}
+        className="fixed top-16 left-0 right-0 z-40 bg-background border-b border-border shadow-lg md:shadow-sm"
+        style={{
+          animation: searchAnimationType === 'enter' 
+            ? 'slideInFromTop 300ms ease-out forwards' 
+            : 'slideOutToTop 300ms ease-out forwards'
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-3 md:px-6 lg:px-8">
+          {/* Mobile Compact Mode */}
+          <div className="md:hidden">
+            {/* Search Bar - Always visible */}
+            <div className="flex items-center gap-3 py-3">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search events..."
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 text-sm border border-border rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearchEnter()}
+                />
+              </div>
+              {hasActiveFilters && (
+                <button
+                  onClick={handleClearAll}
+                  className="flex items-center gap-1 px-3 py-2 text-sm text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted rounded-md transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                  <span>Clear All</span>
+                </button>
+              )}
+              {!hasActiveFilters && (
+                <button
+                  onClick={handleToggleExpanded}
+                  className="flex items-center gap-1 px-3 py-2 text-sm text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted rounded-md transition-colors"
+                >
+                  <span>Filters</span>
+                  {isExpanded ? (
+                    <ChevronUp className="h-4 w-4 transition-transform duration-200" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+                  )}
+                </button>
+              )}
             </div>
+            
+            {/* Expandable Filters Section */}
+            {(isExpanded || isExpandAnimating) && (
+              <div 
+                className={getFilterExpandClasses()}
+              >
+                <div className="pb-3">
+                  <EventFilters
+                    events={events}
+                    onFilteredEventsChange={onFilteredEventsChange}
+                    onFiltersStateChange={handleFiltersStateChange}
+                    showSearch={false}
+                    showActiveFilters={false}
+                    layout="horizontal"
+                    className="search-horizontal"
+                    onSearchEnter={handleSearchEnter}
+                  />
+                </div>
+              </div>
+            )}
           </div>
-          
-          {/* Clear Filters Button */}
-          <button
-            onClick={onClearFilters}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted rounded-md transition-colors flex-shrink-0"
-            data-test-id="clear-filters-button"
-          >
-            <X className="h-4 w-4" />
-            <span className="hidden sm:inline">Clear</span>
-          </button>
+
+          {/* Desktop - Always Expanded */}
+          <div className="hidden md:block py-2 md:py-3">
+            <EventFilters
+              events={events}
+              onFilteredEventsChange={onFilteredEventsChange}
+              onFiltersStateChange={handleFiltersStateChange}
+              showSearch={true}
+              showActiveFilters={false}
+              layout="horizontal"
+              className="search-horizontal"
+              onSearchEnter={handleSearchEnter}
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

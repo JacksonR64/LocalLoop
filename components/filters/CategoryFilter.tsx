@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Check, X } from 'lucide-react';
+import { Check, X, Tag } from 'lucide-react';
 import { FilterOption } from '@/lib/types/filters';
 import { FilterButton, FilterDropdown, FilterContainer } from '@/components/ui/FilterButton';
 
@@ -69,9 +69,12 @@ export function CategoryFilter({
                 aria-haspopup="listbox"
             >
                 <div className="flex items-center justify-between w-full">
-                    <span className="truncate text-muted-foreground hover:text-foreground transition-colors">
-                        {getDisplayText()}
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <Tag className="w-4 h-4 text-muted-foreground" />
+                        <span className="truncate text-muted-foreground hover:text-foreground transition-colors">
+                            {getDisplayText()}
+                        </span>
+                    </div>
                     {selectedCategories.length > 0 && (
                         <button
                             type="button"

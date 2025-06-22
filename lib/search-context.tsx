@@ -4,20 +4,65 @@ import React, { createContext, useContext, useState } from 'react'
 
 interface SearchContextType {
   isSearchOpen: boolean
+  isSearchAnimating: boolean
+  searchAnimationType: 'enter' | 'exit'
   toggleSearch: () => void
   closeSearch: () => void
+  scrollToEvents: () => void
 }
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined)
 
 export function SearchProvider({ children }: { children: React.ReactNode }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isSearchAnimating, setIsSearchAnimating] = useState(false)
+  const [searchAnimationType, setSearchAnimationType] = useState<'enter' | 'exit'>('enter')
 
-  const toggleSearch = () => setIsSearchOpen(prev => !prev)
-  const closeSearch = () => setIsSearchOpen(false)
+  const toggleSearch = () => {
+    const wasOpen = isSearchOpen;
+    
+    if (!wasOpen) {
+      // Opening search - trigger enter animation
+      setSearchAnimationType('enter')
+      setIsSearchOpen(true);
+      setIsSearchAnimating(true)
+      
+      // Animation complete - no auto-scroll on open
+      setTimeout(() => {
+        setIsSearchAnimating(false)
+      }, 300);
+    } else {
+      closeSearch();
+    }
+  }
+  
+  const closeSearch = () => {
+    if (isSearchOpen) {
+      // Trigger exit animation
+      setSearchAnimationType('exit')
+      setIsSearchAnimating(true)
+      setTimeout(() => {
+        setIsSearchOpen(false);
+        setIsSearchAnimating(false)
+      }, 300);
+    }
+  }
+
+  const scrollToEvents = () => {
+    const upcomingEventsSection = document.getElementById('upcoming-events');
+    if (upcomingEventsSection) {
+      const searchBarHeight = 80; // Approximate height of search bar
+      const targetPosition = upcomingEventsSection.offsetTop - searchBarHeight;
+      
+      window.scrollTo({
+        top: targetPosition,
+        behavior: 'smooth'
+      });
+    }
+  }
 
   return (
-    <SearchContext.Provider value={{ isSearchOpen, toggleSearch, closeSearch }}>
+    <SearchContext.Provider value={{ isSearchOpen, isSearchAnimating, searchAnimationType, toggleSearch, closeSearch, scrollToEvents }}>
       {children}
     </SearchContext.Provider>
   )
