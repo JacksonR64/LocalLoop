@@ -39,11 +39,11 @@ function MobileRoleBadge({ isAdmin }: { isAdmin: boolean }) {
 
     return (
         <div 
-            className={`md:hidden absolute top-1 right-1 z-[60] flex items-center gap-1 rounded-full text-[10px] font-medium shadow-sm transition-all duration-300 ease-in-out cursor-pointer ${
+            className={`md:hidden absolute top-1 right-1 z-[60] flex items-center justify-center gap-1 rounded-full text-[10px] font-medium shadow-sm transition-all duration-300 ease-in-out cursor-pointer ${
                 isAdmin 
                     ? 'bg-red-100 text-red-700 border border-red-200' 
                     : 'bg-blue-100 text-blue-700 border border-blue-200'
-            } ${isExpanded ? 'px-2 py-0.5' : 'p-1'}`}
+            } ${isExpanded ? 'px-2 py-0.5' : 'w-6 h-6'}`}
             aria-label={`Current user role: ${isAdmin ? 'Administrator' : 'Staff member'}`}
             data-test-id="mobile-user-role-badge"
             onClick={handleInteraction}
