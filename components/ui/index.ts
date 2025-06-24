@@ -46,4 +46,5 @@ export {
     DialogTitle,
     DialogDescription,
     DialogFooter
-} from './dialog'; 
+} from './dialog';
+export { SectionToggle } from './SectionToggle'; 
