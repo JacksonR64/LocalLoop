@@ -30,21 +30,34 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
   const [hasPersistentFilters, setHasPersistentFilters] = React.useState(false);
   const [wasClosedByEnter, setWasClosedByEnter] = React.useState(false);
 
+  // Use refs to avoid infinite loop in useEffect
+  const hasActiveFiltersRef = React.useRef(hasActiveFilters);
+  const searchResultsRef = React.useRef(searchResults);
+  
+  // Update refs when values change
+  React.useEffect(() => {
+    hasActiveFiltersRef.current = hasActiveFilters;
+  }, [hasActiveFilters]);
+  
+  React.useEffect(() => {
+    searchResultsRef.current = searchResults;
+  }, [searchResults]);
+
   // Set up search toggle callback
   React.useEffect(() => {
     setOnSearchToggle((closedByEnter: boolean) => {
       setWasClosedByEnter(closedByEnter);
       if (closedByEnter) {
         // When closed by Enter, save current search state
-        setPersistentSearchResults(searchResults);
-        setHasPersistentFilters(hasActiveFilters);
+        setPersistentSearchResults(searchResultsRef.current);
+        setHasPersistentFilters(hasActiveFiltersRef.current);
       } else {
         // When manually toggled off, clear persistent results
         setPersistentSearchResults([]);
         setHasPersistentFilters(false);
       }
     });
-  }, [setOnSearchToggle, hasActiveFilters, searchResults]);
+  }, [setOnSearchToggle]);
 
 
   // Memoize the filtered events setter to prevent infinite re-renders
