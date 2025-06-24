@@ -220,11 +220,30 @@ body {
   }
 }
 
+/* Animation Configuration Variables */
+:root {
+  /* Timing Variables - Made slower with delay support */
+  --animation-duration-fast: 300ms;
+  --animation-duration-medium: 500ms;
+  --animation-duration-slow: 700ms;
+  --animation-delay-base: 500ms;
+  
+  /* Easing Functions - Natural and Smooth */
+  --ease-momentum: cubic-bezier(0.25, 0.1, 0.25, 1); /* iOS-style momentum */
+  --ease-smooth-out: cubic-bezier(0.16, 1, 0.3, 1); /* Smooth deceleration */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* Gentle spring */
+  --ease-natural: cubic-bezier(0.4, 0, 0.2, 1); /* Material Design standard */
+  
+  /* Distance Variables */
+  --slide-distance: 16px;
+  --scale-factor: 0.95;
+}
+
 /* Dropdown and Menu Animations */
 @keyframes fadeInScale {
   from {
     opacity: 0;
-    transform: scale(0.95) translateY(-8px);
+    transform: scale(var(--scale-factor)) translateY(calc(-1 * var(--slide-distance) / 2));
   }
   to {
     opacity: 1;
@@ -234,11 +253,9 @@ body {
 
 @keyframes slideInFromTop {
   from {
-    opacity: 0;
-    transform: translateY(-16px);
+    transform: translateY(calc(-1 * var(--slide-distance)));
   }
   to {
-    opacity: 1;
     transform: translateY(0);
   }
 }
@@ -263,12 +280,10 @@ body {
 
 @keyframes slideOutToTop {
   from {
-    opacity: 1;
     transform: translateY(0);
   }
   to {
-    opacity: 0;
-    transform: translateY(-16px);
+    transform: translateY(calc(-1 * var(--slide-distance)));
   }
 }
 
@@ -279,31 +294,61 @@ body {
   }
   to {
     opacity: 0;
-    transform: scale(0.95) translateY(-8px);
+    transform: scale(var(--scale-factor)) translateY(calc(-1 * var(--slide-distance) / 2));
   }
 }
 
-/* Filter expand animation classes */
+/* Enhanced Filter Expand Animations with Smooth Momentum and Delay */
 .filter-expand-enter {
   max-height: 0;
-  opacity: 0;
   overflow: hidden;
-  transition: max-height 300ms ease-out, opacity 300ms ease-out;
+  transition: max-height var(--animation-duration-medium) var(--ease-smooth-out) var(--animation-delay-base);
 }
 
 .filter-expand-enter-active {
   max-height: 200px;
-  opacity: 1;
 }
 
 .filter-expand-exit {
   max-height: 200px;
-  opacity: 1;
   overflow: hidden;
-  transition: max-height 300ms ease-out, opacity 300ms ease-out;
+  transition: max-height var(--animation-duration-medium) var(--ease-momentum) var(--animation-delay-base);
 }
 
 .filter-expand-exit-active {
   max-height: 0;
-  opacity: 0;
+}
+
+/* Smooth Animation Utility Classes */
+.animate-smooth-slide-in {
+  animation: slideInFromTop var(--animation-duration-medium) var(--ease-smooth-out) forwards;
+}
+
+.animate-smooth-slide-out {
+  animation: slideOutToTop var(--animation-duration-medium) var(--ease-momentum) forwards;
+}
+
+.animate-momentum-fade-in {
+  animation: fadeInScale var(--animation-duration-medium) var(--ease-spring) forwards;
+}
+
+.animate-momentum-fade-out {
+  animation: scaleOutFade var(--animation-duration-medium) var(--ease-momentum) forwards;
+}
+
+/* Modular Section Spacing System */
+.section-container {
+  @apply mb-12 sm:mb-16;
+}
+
+.section-header {
+  @apply text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6;
+}
+
+.section-header-row {
+  @apply flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2;
+}
+
+.section-header-title {
+  @apply text-xl sm:text-2xl font-bold text-foreground;
 }

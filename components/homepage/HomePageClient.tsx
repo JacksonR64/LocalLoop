@@ -19,7 +19,7 @@ interface HomePageClientProps {
 
 export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: HomePageClientProps) {
   const router = useRouter();
-  const { isSearchOpen, isSearchAnimating, setOnSearchToggle } = useSearch();
+  const { isSearchOpen, isSearchAnimating } = useSearch();
   const [filteredEvents, setFilteredEvents] = React.useState(upcomingEvents);
   const [showPastEvents, setShowPastEvents] = React.useState(false);
   const [showFeaturedEvents, setShowFeaturedEvents] = React.useState(true);
@@ -28,6 +28,7 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
   const [hasActiveFilters, setHasActiveFilters] = React.useState(false);
   // Track if search results should persist after search box closes
   const [showPersistentResults, setShowPersistentResults] = React.useState(false);
+
 
 
   // Memoize the filtered events setter to prevent infinite re-renders
@@ -105,6 +106,19 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
     setShowPersistentResults(filtersActive);
   }, []);
 
+  // Handle compact search close - maintain persistent results
+  const handleCompactSearchClose = React.useCallback((filtersActive: boolean, filteredEvents: EventData[]) => {
+    if (filtersActive) {
+      setShowPersistentResults(true);
+      setSearchResults(filteredEvents);
+      setHasActiveFilters(filtersActive);
+    } else {
+      setShowPersistentResults(false);
+      setSearchResults([]);
+      setHasActiveFilters(false);
+    }
+  }, []);
+
   // Pagination for upcoming events
   const {
     paginatedData: paginatedUpcomingEvents,
@@ -176,6 +190,7 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
           events={upcomingEvents}
           onFilteredEventsChange={handleCompactFilteredEventsChange}
           onFiltersStateChange={handleCompactFiltersStateChange}
+          onSearchClose={handleCompactSearchClose}
         />
       )}
 
@@ -244,70 +259,10 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
 
       {/* Main Content */}
       <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 ${isSearchOpen ? 'pt-32' : 'pt-16'}`} data-test-id="main-content">
-        {/* CompactSearchBar Search Results - reuse hero search state */}
-        {isSearchOpen && hasActiveFilters && searchResults.length > 0 && (
-          <section id="compact-search-results-section" className="mb-12 sm:mb-16" data-test-id="compact-search-results-section">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6" data-test-id="compact-search-results-title">
-              Search Results ({searchResults.length})
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" data-test-id="compact-search-results-grid">
-              {searchResults.map((event) => (
-                <div key={event.id} data-test-id={`compact-search-result-${event.id}`}>
-                  <EventCard
-                    event={event}
-                    size="md"
-                    featured={event.featured}
-                    onClick={() => handleEventClick(event.id)}
-                  />
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* CompactSearchBar No Results */}
-        {isSearchOpen && hasActiveFilters && searchResults.length === 0 && (
-          <section id="compact-no-search-results-section" className="mb-12 sm:mb-16 text-center" data-test-id="compact-no-search-results-section">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4">No Results Found</h2>
-            <p className="text-muted-foreground mb-6">Try adjusting your search criteria or browse all events below.</p>
-          </section>
-        )}
-
-        {/* Persistent Search Results - show when search is closed but filters are active */}
-        {!isSearchOpen && showPersistentResults && searchResults.length > 0 && (
-          <section id="persistent-search-results-section" className="mb-12 sm:mb-16" data-test-id="persistent-search-results-section">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6" data-test-id="persistent-search-results-title">
-              Search Results ({searchResults.length})
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" data-test-id="persistent-search-results-grid">
-              {searchResults.map((event) => (
-                <div key={event.id} data-test-id={`persistent-search-result-${event.id}`}>
-                  <EventCard
-                    event={event}
-                    size="md"
-                    featured={event.featured}
-                    onClick={() => handleEventClick(event.id)}
-                  />
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Persistent No Search Results */}
-        {!isSearchOpen && showPersistentResults && searchResults.length === 0 && (
-          <section id="persistent-no-search-results-section" className="mb-12 sm:mb-16 text-center" data-test-id="persistent-no-search-results-section">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4">No Results Found</h2>
-            <p className="text-muted-foreground mb-6">
-              No events match your search or filter criteria. Try adjusting your search or clearing filters.
-            </p>
-          </section>
-        )}
-
-        {/* Hero Search Results */}
-        {!isSearchOpen && hasActiveFilters && searchResults.length > 0 && (
-          <section id="search-results-section" className="mb-12 sm:mb-16" data-test-id="search-results-section">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6" data-test-id="search-results-title">
+        {/* Search Results - unified section for both compact and hero search */}
+        {(isSearchOpen || showPersistentResults) && hasActiveFilters && searchResults.length > 0 && (
+          <section id="search-results-section" className="section-container" data-test-id="search-results-section">
+            <h2 className="section-header" data-test-id="search-results-title">
               Search Results ({searchResults.length})
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" data-test-id="search-results-grid">
@@ -322,26 +277,50 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
                 </div>
               ))}
             </div>
+            
+            {/* Show All Events button - only when search is persistent (closed) */}
+            {!isSearchOpen && showPersistentResults && (
+              <div className="mt-8 text-center">
+                <button
+                  onClick={handleClearFilters}
+                  className="bg-primary text-primary-foreground px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                  data-test-id="show-all-events-button"
+                >
+                  Show All Events
+                </button>
+              </div>
+            )}
           </section>
         )}
 
-        {/* PERSISTENT SEARCH RESULTS TEMPORARILY REMOVED - causing infinite loops */}
-
-        {/* Hero No Search Results */}
-        {!isSearchOpen && hasActiveFilters && searchResults.length === 0 && (
-          <section id="no-search-results-section" className="mb-12 sm:mb-16 text-center" data-test-id="no-search-results-section">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4">No Results Found</h2>
+        {/* No Search Results */}
+        {(isSearchOpen || showPersistentResults) && hasActiveFilters && searchResults.length === 0 && (
+          <section id="no-search-results-section" className="section-container text-center" data-test-id="no-search-results-section">
+            <h2 className="section-header">No Results Found</h2>
             <p className="text-muted-foreground mb-6">
               No events match your search or filter criteria. Try adjusting your search or clearing filters.
             </p>
+            
+            {/* Show All Events button - only when search is persistent (closed) */}
+            {!isSearchOpen && showPersistentResults && (
+              <div className="mt-6">
+                <button
+                  onClick={handleClearFilters}
+                  className="bg-primary text-primary-foreground px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                  data-test-id="show-all-events-button"
+                >
+                  Show All Events
+                </button>
+              </div>
+            )}
           </section>
         )}
 
-        {/* Featured Events - hidden when CompactSearchBar has active filters or showing persistent results */}
-        {featuredEvents.length > 0 && !(isSearchOpen && hasActiveFilters) && !showPersistentResults && (
-          <section className="mb-12 sm:mb-16" data-test-id="featured-events-section">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground" data-test-id="featured-events-title">Featured Events</h2>
+        {/* Featured Events - hidden when showing persistent search results */}
+        {featuredEvents.length > 0 && !showPersistentResults && (
+          <section className="section-container" data-test-id="featured-events-section">
+            <div className="section-header-row">
+              <h2 className="section-header-title" data-test-id="featured-events-title">Featured Events</h2>
               <SectionToggle
                 isVisible={showFeaturedEvents}
                 onToggle={() => setShowFeaturedEvents(!showFeaturedEvents)}
@@ -368,11 +347,11 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
           </section>
         )}
 
-        {/* Upcoming Events - hidden when CompactSearchBar has active filters or showing persistent results */}
-        {!(isSearchOpen && hasActiveFilters) && !showPersistentResults && (
-        <section id="upcoming-events" data-test-id="upcoming-events-section">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground" data-test-id="upcoming-events-title">Upcoming Events</h2>
+        {/* Upcoming Events - hidden when showing persistent search results */}
+        {!showPersistentResults && (
+        <section id="upcoming-events" className="section-container" data-test-id="upcoming-events-section">
+          <div className="section-header-row">
+            <h2 className="section-header-title" data-test-id="upcoming-events-title">Upcoming Events</h2>
             <SectionToggle
               isVisible={showUpcomingEvents}
               onToggle={() => setShowUpcomingEvents(!showUpcomingEvents)}
@@ -434,11 +413,11 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
         </section>
         )}
 
-        {/* Past Events Section - hidden when CompactSearchBar has active filters or showing persistent results */}
-        {pastEvents.length > 0 && !(isSearchOpen && hasActiveFilters) && !showPersistentResults && (
-          <section className="mt-12 sm:mt-16" data-test-id="past-events-section">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground" data-test-id="past-events-title">Past Events</h2>
+        {/* Past Events Section - hidden when showing persistent search results */}
+        {pastEvents.length > 0 && !showPersistentResults && (
+          <section className="section-container" data-test-id="past-events-section">
+            <div className="section-header-row">
+              <h2 className="section-header-title" data-test-id="past-events-title">Past Events</h2>
               <SectionToggle
                 isVisible={showPastEvents}
                 onToggle={() => setShowPastEvents(!showPastEvents)}

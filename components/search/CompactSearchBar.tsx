@@ -5,17 +5,20 @@ import { Search, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { EventData } from '@/components/events';
 import { EventFilters } from '@/components/filters/EventFilters';
 import { useSearch } from '@/lib/search-context';
+import { smoothScrollTo, calculateScrollTarget, animationPresets } from '@/lib/utils/smoothAnimations';
 
 interface CompactSearchBarProps {
   events: EventData[];
   onFilteredEventsChange: (filteredEvents: EventData[]) => void;
   onFiltersStateChange?: (hasActiveFilters: boolean, filteredEvents: EventData[]) => void;
+  onSearchClose?: (hasActiveFilters: boolean, filteredEvents: EventData[]) => void;
 }
 
 export function CompactSearchBar({
   events,
   onFilteredEventsChange,
-  onFiltersStateChange
+  onFiltersStateChange,
+  onSearchClose
 }: CompactSearchBarProps) {
   const { closeSearch, searchAnimationType } = useSearch();
   const searchBarRef = useRef<HTMLDivElement>(null);
@@ -26,8 +29,9 @@ export function CompactSearchBar({
   const [hasActiveFilters, setHasActiveFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [hasTriggeredScroll, setHasTriggeredScroll] = useState(false);
+  const [currentFilteredEvents, setCurrentFilteredEvents] = useState<EventData[]>([]);
 
-  const scrollToSearchResults = useCallback(() => {
+  const scrollToSearchResults = useCallback(async () => {
     const compactSearchResultsSection = document.getElementById('compact-search-results-section') || 
                                        document.getElementById('compact-no-search-results-section');
     
@@ -38,12 +42,43 @@ export function CompactSearchBar({
       const buffer = 10;
       
       const targetOffset = navHeight + searchBarHeight + buffer;
-      const targetPosition = compactSearchResultsSection.offsetTop - targetOffset;
+      const targetPosition = Math.max(0, compactSearchResultsSection.offsetTop - targetOffset);
       
-      window.scrollTo({
-        top: Math.max(0, targetPosition),
-        behavior: 'smooth'
-      });
+      try {
+        await smoothScrollTo(targetPosition, animationPresets.contentNavigation);
+      } catch {
+        // Fallback to native smooth scroll
+        window.scrollTo({
+          top: targetPosition,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, []);
+
+  // Synchronized scroll animation when search closes
+  const animateSynchronizedScroll = useCallback(async () => {
+    if (!searchBarRef.current) return;
+    
+    const searchBarHeight = searchBarRef.current.offsetHeight;
+    const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+    // Calculate optimal scroll target using the new utility
+    const targetScrollTop = calculateScrollTarget(searchBarHeight, currentScrollTop, {
+      navHeight: 64,
+      bufferZone: 10,
+      minScroll: 0,
+      maxReduction: 0.9 // Allow up to 90% reduction for smooth feel
+    });
+    
+    // Only animate if there's a meaningful difference
+    if (Math.abs(currentScrollTop - targetScrollTop) > 5) {
+      try {
+        await smoothScrollTo(targetScrollTop, animationPresets.searchClose);
+      } catch {
+        // Fallback to instant scroll if animation fails
+        window.scrollTo(0, targetScrollTop);
+      }
     }
   }, []);
 
@@ -53,10 +88,11 @@ export function CompactSearchBar({
     const totalFiltersActive = hasFilters || hasSearchQuery;
     
     setHasActiveFilters(totalFiltersActive);
+    setCurrentFilteredEvents(filteredEvents);
     onFiltersStateChange?.(totalFiltersActive, filteredEvents);
     
-    // Trigger scroll when user applies filters (not search query changes)
-    if (hasFilters && !hasTriggeredScroll) {
+    // Trigger scroll when user applies filters or search query changes
+    if (totalFiltersActive && !hasTriggeredScroll) {
       setHasTriggeredScroll(true);
       setTimeout(() => {
         scrollToSearchResults();
@@ -81,13 +117,15 @@ export function CompactSearchBar({
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        // Start synchronized scroll animation before closing
+        animateSynchronizedScroll();
         closeSearch(false);
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [closeSearch]);
+  }, [closeSearch, animateSynchronizedScroll]);
 
   // Handle click outside to close search on mobile
   useEffect(() => {
@@ -95,6 +133,8 @@ export function CompactSearchBar({
       if (window.innerWidth < 768 && searchBarRef.current && !searchBarRef.current.contains(event.target as Node)) {
         const target = event.target as Element;
         if (!target.closest('header') && !target.closest('[data-test-id*="dropdown"]')) {
+          // Start synchronized scroll animation before closing
+          animateSynchronizedScroll();
           closeSearch(false);
         }
       }
@@ -102,14 +142,19 @@ export function CompactSearchBar({
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [closeSearch]);
+  }, [closeSearch, animateSynchronizedScroll]);
 
   const handleSearchEnter = () => {
-    // Close search and scroll to results
+    // Notify parent about search close with current filter state
+    if (onSearchClose) {
+      onSearchClose(hasActiveFilters, currentFilteredEvents);
+    }
+    
+    // Start synchronized scroll animation immediately
+    animateSynchronizedScroll();
+    
+    // Close search (animation will run in parallel)
     closeSearch(true); // Closed by Enter key
-    setTimeout(() => {
-      scrollToSearchResults();
-    }, 100);
   };
 
   const handleToggleExpanded = () => {
@@ -121,7 +166,7 @@ export function CompactSearchBar({
         setIsExpanded(false);
         setTimeout(() => {
           setIsExpandAnimating(false);
-        }, 300);
+        }, 500);
       }, 10);
     } else {
       // Start expand animation
@@ -136,7 +181,7 @@ export function CompactSearchBar({
       
       setTimeout(() => {
         setIsExpandAnimating(false);
-      }, 300);
+      }, 500);
     }
   };
 
@@ -187,12 +232,11 @@ export function CompactSearchBar({
       {/* Search Bar Container */}
       <div
         ref={searchBarRef}
-        className="fixed top-16 left-0 right-0 z-40 bg-background border-b border-border shadow-lg md:shadow-sm"
-        style={{
-          animation: searchAnimationType === 'enter' 
-            ? 'slideInFromTop 300ms ease-out forwards' 
-            : 'slideOutToTop 300ms ease-out forwards'
-        }}
+        className={`fixed top-16 left-0 right-0 z-40 bg-background border-b border-border shadow-lg md:shadow-sm ${
+          searchAnimationType === 'enter' 
+            ? 'animate-smooth-slide-in' 
+            : 'animate-smooth-slide-out'
+        }`}
       >
         <div className="max-w-7xl mx-auto px-3 md:px-6 lg:px-8">
           {/* Mobile Compact Mode */}
