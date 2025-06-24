@@ -113,7 +113,9 @@ export default function RootLayout({
         >
           <AuthProvider>
             <Navigation />
-            {children}
+            <main className="pt-16">
+              {children}
+            </main>
           </AuthProvider>
         </ThemeProvider>
         <PerformanceMonitor pageName="app" />
