@@ -7,8 +7,10 @@ interface SearchContextType {
   isSearchAnimating: boolean
   searchAnimationType: 'enter' | 'exit'
   toggleSearch: () => void
-  closeSearch: () => void
+  closeSearch: (byEnter?: boolean) => void
   scrollToEvents: () => void
+  onSearchToggle?: (wasClosedByEnter: boolean) => void
+  setOnSearchToggle: (callback: (wasClosedByEnter: boolean) => void) => void
 }
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined)
@@ -17,6 +19,7 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isSearchAnimating, setIsSearchAnimating] = useState(false)
   const [searchAnimationType, setSearchAnimationType] = useState<'enter' | 'exit'>('enter')
+  const [onSearchToggle, setOnSearchToggleCallback] = useState<((wasClosedByEnter: boolean) => void) | undefined>(undefined)
 
   const toggleSearch = () => {
     const wasOpen = isSearchOpen;
@@ -32,12 +35,17 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
         setIsSearchAnimating(false)
       }, 300);
     } else {
-      closeSearch();
+      closeSearch(false); // Manual toggle, not by Enter
     }
   }
   
-  const closeSearch = () => {
+  const closeSearch = (byEnter: boolean = false) => {
     if (isSearchOpen) {
+      // Notify parent about how the search was closed
+      if (onSearchToggle) {
+        onSearchToggle(byEnter);
+      }
+      
       // Trigger exit animation
       setSearchAnimationType('exit')
       setIsSearchAnimating(true)
@@ -61,8 +69,21 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const setOnSearchToggle = (callback: (wasClosedByEnter: boolean) => void) => {
+    setOnSearchToggleCallback(() => callback);
+  };
+
   return (
-    <SearchContext.Provider value={{ isSearchOpen, isSearchAnimating, searchAnimationType, toggleSearch, closeSearch, scrollToEvents }}>
+    <SearchContext.Provider value={{ 
+      isSearchOpen, 
+      isSearchAnimating, 
+      searchAnimationType, 
+      toggleSearch, 
+      closeSearch, 
+      scrollToEvents,
+      onSearchToggle,
+      setOnSearchToggle
+    }}>
       {children}
     </SearchContext.Provider>
   )

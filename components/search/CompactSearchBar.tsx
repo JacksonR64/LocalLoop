@@ -19,6 +19,7 @@ export function CompactSearchBar({
 }: CompactSearchBarProps) {
   const { closeSearch, searchAnimationType } = useSearch();
   const searchBarRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isExpandAnimating, setIsExpandAnimating] = useState(false);
   const [expandAnimationType, setExpandAnimationType] = useState<'enter' | 'exit'>('enter');
@@ -26,48 +27,61 @@ export function CompactSearchBar({
   const [searchQuery, setSearchQuery] = useState('');
   const [hasTriggeredScroll, setHasTriggeredScroll] = useState(false);
 
-  const scrollToEventsWithCorrectOffset = useCallback(() => {
-    // Scroll to the compact search results section 
+  const scrollToSearchResults = useCallback(() => {
     const compactSearchResultsSection = document.getElementById('compact-search-results-section') || 
                                        document.getElementById('compact-no-search-results-section');
     
-    if (compactSearchResultsSection) {
-      // Calculate search bar height based on current state
-      const baseSearchHeight = 80; // Base search bar height
-      const expandedFiltersHeight = isExpanded ? 120 : 0; // Additional height when filters are expanded
-      const totalSearchBarHeight = baseSearchHeight + expandedFiltersHeight;
+    if (compactSearchResultsSection && searchBarRef.current) {
+      // Get actual search bar height dynamically
+      const searchBarHeight = searchBarRef.current.offsetHeight;
+      const navHeight = 64; // Top navigation height
+      const buffer = 10;
       
-      const targetPosition = compactSearchResultsSection.offsetTop - totalSearchBarHeight;
+      const targetOffset = navHeight + searchBarHeight + buffer;
+      const targetPosition = compactSearchResultsSection.offsetTop - targetOffset;
       
       window.scrollTo({
-        top: targetPosition,
+        top: Math.max(0, targetPosition),
         behavior: 'smooth'
       });
     }
-  }, [isExpanded]);
+  }, []);
 
   // Handle filters state change
   const handleFiltersStateChange = useCallback((hasFilters: boolean, filteredEvents: EventData[]) => {
-    setHasActiveFilters(hasFilters || searchQuery.trim().length > 0);
-    onFiltersStateChange?.(hasFilters, filteredEvents);
+    const hasSearchQuery = searchQuery.trim().length > 0;
+    const totalFiltersActive = hasFilters || hasSearchQuery;
     
-    // Trigger scroll when user applies filters
+    setHasActiveFilters(totalFiltersActive);
+    onFiltersStateChange?.(totalFiltersActive, filteredEvents);
+    
+    // Trigger scroll when user applies filters (not search query changes)
     if (hasFilters && !hasTriggeredScroll) {
       setHasTriggeredScroll(true);
-      setTimeout(() => scrollToEventsWithCorrectOffset(), 100);
+      setTimeout(() => {
+        scrollToSearchResults();
+      }, 100);
     }
-  }, [searchQuery, onFiltersStateChange, hasTriggeredScroll, scrollToEventsWithCorrectOffset]);
+  }, [searchQuery, onFiltersStateChange, hasTriggeredScroll, scrollToSearchResults]);
 
   // Update active filters when search query changes
   useEffect(() => {
     setHasActiveFilters(searchQuery.trim().length > 0);
   }, [searchQuery]);
 
+  // Auto-focus search input when component mounts (search opens)
+  useEffect(() => {
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, []);
+
+
   // Handle ESC key to close search
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        closeSearch();
+        closeSearch(false);
       }
     };
 
@@ -81,7 +95,7 @@ export function CompactSearchBar({
       if (window.innerWidth < 768 && searchBarRef.current && !searchBarRef.current.contains(event.target as Node)) {
         const target = event.target as Element;
         if (!target.closest('header') && !target.closest('[data-test-id*="dropdown"]')) {
-          closeSearch();
+          closeSearch(false);
         }
       }
     };
@@ -91,8 +105,11 @@ export function CompactSearchBar({
   }, [closeSearch]);
 
   const handleSearchEnter = () => {
-    // Simply close search without scrolling to top
-    closeSearch();
+    // Close search and scroll to results
+    closeSearch(true); // Closed by Enter key
+    setTimeout(() => {
+      scrollToSearchResults();
+    }, 100);
   };
 
   const handleToggleExpanded = () => {
@@ -129,7 +146,9 @@ export function CompactSearchBar({
     // Trigger scroll when user starts typing (first character)
     if (value.trim().length === 1 && !hasTriggeredScroll) {
       setHasTriggeredScroll(true);
-      setTimeout(() => scrollToEventsWithCorrectOffset(), 100);
+      setTimeout(() => {
+        scrollToSearchResults();
+      }, 100);
     }
   };
 
@@ -157,10 +176,10 @@ export function CompactSearchBar({
       {isExpanded && (
         <div 
           className="md:hidden fixed inset-0 top-32 z-30 bg-black/10 transition-opacity duration-300 ease-out"
-          onClick={closeSearch}
+          onClick={() => closeSearch(false)}
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => e.key === 'Enter' && closeSearch()}
+          onKeyDown={(e) => e.key === 'Enter' && closeSearch(false)}
           aria-label="Close search"
         />
       )}
@@ -183,6 +202,7 @@ export function CompactSearchBar({
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
+                  ref={searchInputRef}
                   type="text"
                   placeholder="Search events..."
                   value={searchQuery}
@@ -230,6 +250,7 @@ export function CompactSearchBar({
                     layout="horizontal"
                     className="search-horizontal"
                     onSearchEnter={handleSearchEnter}
+                    externalSearchQuery={searchQuery}
                   />
                 </div>
               </div>
@@ -247,6 +268,7 @@ export function CompactSearchBar({
               layout="horizontal"
               className="search-horizontal"
               onSearchEnter={handleSearchEnter}
+              externalSearchQuery={searchQuery}
             />
           </div>
         </div>

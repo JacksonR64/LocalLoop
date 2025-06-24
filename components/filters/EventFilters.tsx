@@ -30,6 +30,7 @@ interface EventFiltersProps {
     showFilters?: boolean;
     layout?: 'horizontal' | 'vertical';
     onSearchEnter?: () => void;
+    externalSearchQuery?: string;
 }
 
 export function EventFilters({
@@ -41,12 +42,20 @@ export function EventFilters({
     showActiveFilters = true,
     showFilters = true,
     layout = 'horizontal',
-    onSearchEnter
+    onSearchEnter,
+    externalSearchQuery
 }: EventFiltersProps) {
     const [filters, setFilters] = useState<EventFiltersType>(DEFAULT_FILTERS);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState(externalSearchQuery || '');
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
+
+    // Update search query when external search query changes
+    useEffect(() => {
+        if (externalSearchQuery !== undefined) {
+            setSearchQuery(externalSearchQuery);
+        }
+    }, [externalSearchQuery]);
 
     // Memoized calculations
     const categories = useMemo(() => getEventCategories(events), [events]);
