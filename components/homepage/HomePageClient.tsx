@@ -26,10 +26,8 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
   const [showUpcomingEvents, setShowUpcomingEvents] = React.useState(true);
   const [searchResults, setSearchResults] = React.useState<EventData[]>([]);
   const [hasActiveFilters, setHasActiveFilters] = React.useState(false);
-  // TEMPORARILY REMOVED - persistent search state causing infinite loops
-  // const [persistentSearchResults, setPersistentSearchResults] = React.useState<EventData[]>([]);
-  // const [hasPersistentFilters, setHasPersistentFilters] = React.useState(false);
-  // const [wasClosedByEnter, setWasClosedByEnter] = React.useState(false);
+  // Track if search results should persist after search box closes
+  const [showPersistentResults, setShowPersistentResults] = React.useState(false);
 
 
   // Memoize the filtered events setter to prevent infinite re-renders
@@ -62,8 +60,10 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
     
     if (filtersActive) {
       setSearchResults(filteredEvents);
+      setShowPersistentResults(true);
     } else {
       setSearchResults([]);
+      setShowPersistentResults(false);
     }
   }, []);
 
@@ -72,6 +72,7 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
     setSearchResults([]);
     setHasActiveFilters(false);
     setFilteredEvents(upcomingEvents);
+    setShowPersistentResults(false);
     // Scroll to top to show the original hero section
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [upcomingEvents]);
@@ -99,6 +100,9 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
   const handleCompactFiltersStateChange = React.useCallback((filtersActive: boolean, filteredEvents: EventData[]) => {
     setHasActiveFilters(filtersActive);
     setSearchResults(filteredEvents);
+    
+    // Enable persistent results when there are active filters
+    setShowPersistentResults(filtersActive);
   }, []);
 
   // Pagination for upcoming events
@@ -151,6 +155,7 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
     handleFilteredEventsChange(categoryFiltered);
     setHasActiveFilters(true);
     setSearchResults(categoryFiltered);
+    setShowPersistentResults(true);
 
     // Scroll to search results section when filters are active
     setTimeout(() => {
@@ -174,8 +179,8 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
         />
       )}
 
-      {/* Hero Section - hidden when compact search has active filters */}
-      {!(isSearchOpen && hasActiveFilters) && (
+      {/* Hero Section - hidden when compact search has active filters or showing persistent results */}
+      {!(isSearchOpen && hasActiveFilters) && !showPersistentResults && (
         <section className="bg-gradient-to-br from-[var(--primary)] to-purple-700 text-white py-20" data-test-id="hero-section">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6" data-test-id="hero-title">
@@ -268,6 +273,37 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
           </section>
         )}
 
+        {/* Persistent Search Results - show when search is closed but filters are active */}
+        {!isSearchOpen && showPersistentResults && searchResults.length > 0 && (
+          <section id="persistent-search-results-section" className="mb-12 sm:mb-16" data-test-id="persistent-search-results-section">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6" data-test-id="persistent-search-results-title">
+              Search Results ({searchResults.length})
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" data-test-id="persistent-search-results-grid">
+              {searchResults.map((event) => (
+                <div key={event.id} data-test-id={`persistent-search-result-${event.id}`}>
+                  <EventCard
+                    event={event}
+                    size="md"
+                    featured={event.featured}
+                    onClick={() => handleEventClick(event.id)}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Persistent No Search Results */}
+        {!isSearchOpen && showPersistentResults && searchResults.length === 0 && (
+          <section id="persistent-no-search-results-section" className="mb-12 sm:mb-16 text-center" data-test-id="persistent-no-search-results-section">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4">No Results Found</h2>
+            <p className="text-muted-foreground mb-6">
+              No events match your search or filter criteria. Try adjusting your search or clearing filters.
+            </p>
+          </section>
+        )}
+
         {/* Hero Search Results */}
         {!isSearchOpen && hasActiveFilters && searchResults.length > 0 && (
           <section id="search-results-section" className="mb-12 sm:mb-16" data-test-id="search-results-section">
@@ -301,10 +337,8 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
           </section>
         )}
 
-        {/* PERSISTENT NO SEARCH RESULTS TEMPORARILY REMOVED - causing infinite loops */}
-
-        {/* Featured Events - hidden when CompactSearchBar has active filters */}
-        {featuredEvents.length > 0 && !(isSearchOpen && hasActiveFilters) && (
+        {/* Featured Events - hidden when CompactSearchBar has active filters or showing persistent results */}
+        {featuredEvents.length > 0 && !(isSearchOpen && hasActiveFilters) && !showPersistentResults && (
           <section className="mb-12 sm:mb-16" data-test-id="featured-events-section">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
               <h2 className="text-xl sm:text-2xl font-bold text-foreground" data-test-id="featured-events-title">Featured Events</h2>
@@ -334,8 +368,8 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
           </section>
         )}
 
-        {/* Upcoming Events - hidden when CompactSearchBar has active filters */}
-        {!(isSearchOpen && hasActiveFilters) && (
+        {/* Upcoming Events - hidden when CompactSearchBar has active filters or showing persistent results */}
+        {!(isSearchOpen && hasActiveFilters) && !showPersistentResults && (
         <section id="upcoming-events" data-test-id="upcoming-events-section">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
             <h2 className="text-xl sm:text-2xl font-bold text-foreground" data-test-id="upcoming-events-title">Upcoming Events</h2>
@@ -400,8 +434,8 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
         </section>
         )}
 
-        {/* Past Events Section - hidden when CompactSearchBar has active filters */}
-        {pastEvents.length > 0 && !(isSearchOpen && hasActiveFilters) && (
+        {/* Past Events Section - hidden when CompactSearchBar has active filters or showing persistent results */}
+        {pastEvents.length > 0 && !(isSearchOpen && hasActiveFilters) && !showPersistentResults && (
           <section className="mt-12 sm:mt-16" data-test-id="past-events-section">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
               <h2 className="text-xl sm:text-2xl font-bold text-foreground" data-test-id="past-events-title">Past Events</h2>
