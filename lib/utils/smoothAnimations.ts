@@ -6,6 +6,7 @@
 export interface AnimationConfig {
   duration?: number;
   easing?: EasingFunction;
+  delay?: number;
   onComplete?: () => void;
   onUpdate?: (progress: number) => void;
 }
@@ -82,11 +83,12 @@ export const easings = {
 export function animateSmooth(
   startValue: number,
   endValue: number,
-  config: AnimationConfig = {}
+  config: AnimationConfig & { delay?: number } = {}
 ): Promise<void> {
   const {
     duration = 400,
     easing = easings.springGentle,
+    delay = 0,
     onComplete,
     onUpdate
   } = config;
@@ -94,9 +96,24 @@ export function animateSmooth(
   return new Promise((resolve) => {
     let startTime: number | null = null;
     let animationId: number;
+    let delayStartTime: number | null = null;
 
     const animate = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
+      // Handle delay
+      if (delay > 0) {
+        if (!delayStartTime) delayStartTime = timestamp;
+        const delayElapsed = timestamp - delayStartTime;
+        
+        if (delayElapsed < delay) {
+          animationId = requestAnimationFrame(animate);
+          return;
+        }
+        
+        // Delay completed, reset for main animation
+        if (!startTime) startTime = timestamp;
+      } else {
+        if (!startTime) startTime = timestamp;
+      }
       
       const elapsed = timestamp - startTime;
       const progress = Math.min(elapsed / duration, 1);
@@ -141,6 +158,7 @@ export function smoothScrollTo(
   return animateSmooth(startPosition, targetPosition, {
     ...config,
     easing: config.easing || easings.momentum,
+    delay: config.delay,
     onUpdate: (progress) => {
       const currentPosition = startPosition + ((targetPosition - startPosition) * progress);
       window.scrollTo(0, currentPosition);
@@ -209,31 +227,31 @@ export function calculateScrollTarget(
 export const animationPresets = {
   // Search bar closing - synchronized with UI element
   searchClose: {
-    duration: 350,
+    duration: 600, // Increased from 350ms to 600ms for slower animation
     easing: easings.momentum,
   },
   
   // Content navigation - scrolling to results
   contentNavigation: {
-    duration: 400,
+    duration: 700, // Increased from 400ms to 700ms for slower animation
     easing: easings.smoothEaseOut,
   },
   
   // Quick interactions - button clicks, toggles
   interaction: {
-    duration: 250,
+    duration: 400, // Increased from 250ms
     easing: easings.spring,
   },
   
   // Page transitions - major view changes
   pageTransition: {
-    duration: 500,
+    duration: 800, // Increased from 500ms
     easing: easings.springGentle,
   },
   
   // Micro-interactions - hover states, focus changes
   micro: {
-    duration: 150,
+    duration: 250, // Increased from 150ms
     easing: easings.decelerate,
   }
 };

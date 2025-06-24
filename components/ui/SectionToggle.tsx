@@ -20,7 +20,7 @@ export function SectionToggle({
   return (
     <button
       onClick={onToggle}
-      className={`text-muted-foreground hover:text-foreground font-medium text-left sm:text-right transition-colors ${className}`}
+      className={`text-sm text-muted-foreground hover:text-primary font-medium transition-colors ${className}`}
       data-testid="section-toggle-button"
     >
       {isVisible ? hideText : showText} {isVisible ? '↑' : '↓'}

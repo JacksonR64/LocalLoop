@@ -110,6 +110,13 @@ body {
       rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
   overflow-x: hidden;
   touch-action: manipulation; /* Prevents double-tap zoom while allowing pinch zoom */
+  
+  /* iOS Safari specific fixes */
+  -webkit-text-size-adjust: 100%;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
 }
 
 /* Custom scrollbar for better UX */
@@ -154,6 +161,16 @@ body {
   .touch-target {
     min-width: 44px;
     min-height: 44px;
+  }
+
+  /* iOS Safari specific fixes for search bar positioning */
+  @supports (-webkit-touch-callout: none) {
+    .compact-search-bar {
+      position: absolute;
+      transform: translateZ(0);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+    }
   }
 
   /* Smooth scrolling for mobile */
@@ -338,7 +355,11 @@ body {
 
 /* Modular Section Spacing System */
 .section-container {
-  @apply mb-12 sm:mb-16;
+  @apply mb-8 sm:mb-12;
+}
+
+.section-container-first {
+  @apply pt-2 sm:pt-3 mb-8 sm:mb-12;
 }
 
 .section-header {
@@ -346,7 +367,7 @@ body {
 }
 
 .section-header-row {
-  @apply flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2;
+  @apply flex flex-row items-center justify-between mb-4 sm:mb-6 gap-2;
 }
 
 .section-header-title {

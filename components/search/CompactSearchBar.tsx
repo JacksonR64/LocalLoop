@@ -74,7 +74,10 @@ export function CompactSearchBar({
     // Only animate if there's a meaningful difference
     if (Math.abs(currentScrollTop - targetScrollTop) > 5) {
       try {
-        await smoothScrollTo(targetScrollTop, animationPresets.searchClose);
+        await smoothScrollTo(targetScrollTop, {
+          ...animationPresets.searchClose,
+          delay: 500 // Add 0.5s delay before animation starts
+        });
       } catch {
         // Fallback to instant scroll if animation fails
         window.scrollTo(0, targetScrollTop);
@@ -162,12 +165,15 @@ export function CompactSearchBar({
       // Start collapse animation
       setExpandAnimationType('exit');
       setIsExpandAnimating(true);
-      setTimeout(() => {
+      
+      // Trigger collapse in next frame for smooth transition
+      requestAnimationFrame(() => {
         setIsExpanded(false);
-        setTimeout(() => {
-          setIsExpandAnimating(false);
-        }, 500);
-      }, 10);
+      });
+      
+      setTimeout(() => {
+        setIsExpandAnimating(false);
+      }, 500);
     } else {
       // Start expand animation
       setExpandAnimationType('enter');
@@ -232,7 +238,7 @@ export function CompactSearchBar({
       {/* Search Bar Container */}
       <div
         ref={searchBarRef}
-        className={`fixed top-16 left-0 right-0 z-40 bg-background border-b border-border shadow-lg md:shadow-sm ${
+        className={`compact-search-bar fixed top-16 left-0 right-0 z-40 bg-background border-b border-border shadow-lg md:shadow-sm ${
           searchAnimationType === 'enter' 
             ? 'animate-smooth-slide-in' 
             : 'animate-smooth-slide-out'
@@ -251,7 +257,7 @@ export function CompactSearchBar({
                   placeholder="Search events..."
                   value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 text-sm border border-border rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                  className="w-full pl-10 pr-4 py-2 text-base border border-border rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                   onKeyDown={(e) => e.key === 'Enter' && handleSearchEnter()}
                 />
               </div>

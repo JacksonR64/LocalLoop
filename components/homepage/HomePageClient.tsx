@@ -257,11 +257,16 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
         </section>
       )}
 
+      {/* Search Bar Spacer - only when search is open and hero section is hidden */}
+      {isSearchOpen && (showPersistentResults || hasActiveFilters) && (
+        <div className="h-16" />
+      )}
+
       {/* Main Content */}
-      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 ${isSearchOpen ? 'pt-32' : 'pt-16'}`} data-test-id="main-content">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 pt-4" data-test-id="main-content">
         {/* Search Results - unified section for both compact and hero search */}
         {(isSearchOpen || showPersistentResults) && hasActiveFilters && searchResults.length > 0 && (
-          <section id="search-results-section" className="section-container" data-test-id="search-results-section">
+          <section id="search-results-section" className="section-container-first" data-test-id="search-results-section">
             <h2 className="section-header" data-test-id="search-results-title">
               Search Results ({searchResults.length})
             </h2>
@@ -295,7 +300,7 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
 
         {/* No Search Results */}
         {(isSearchOpen || showPersistentResults) && hasActiveFilters && searchResults.length === 0 && (
-          <section id="no-search-results-section" className="section-container text-center" data-test-id="no-search-results-section">
+          <section id="no-search-results-section" className="section-container-first text-center" data-test-id="no-search-results-section">
             <h2 className="section-header">No Results Found</h2>
             <p className="text-muted-foreground mb-6">
               No events match your search or filter criteria. Try adjusting your search or clearing filters.
@@ -318,14 +323,14 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
 
         {/* Featured Events - hidden when showing persistent search results */}
         {featuredEvents.length > 0 && !showPersistentResults && (
-          <section className="section-container" data-test-id="featured-events-section">
+          <section className="section-container-first" data-test-id="featured-events-section">
             <div className="section-header-row">
               <h2 className="section-header-title" data-test-id="featured-events-title">Featured Events</h2>
               <SectionToggle
                 isVisible={showFeaturedEvents}
                 onToggle={() => setShowFeaturedEvents(!showFeaturedEvents)}
-                showText="Show Featured Events"
-                hideText="Hide Featured Events"
+                showText="Show"
+                hideText="Hide"
                 data-testid="toggle-featured-events-button"
               />
             </div>
@@ -349,14 +354,14 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
 
         {/* Upcoming Events - hidden when showing persistent search results */}
         {!showPersistentResults && (
-        <section id="upcoming-events" className="section-container" data-test-id="upcoming-events-section">
+        <section id="upcoming-events" className={featuredEvents.length > 0 ? "section-container" : "section-container-first"} data-test-id="upcoming-events-section">
           <div className="section-header-row">
             <h2 className="section-header-title" data-test-id="upcoming-events-title">Upcoming Events</h2>
             <SectionToggle
               isVisible={showUpcomingEvents}
               onToggle={() => setShowUpcomingEvents(!showUpcomingEvents)}
-              showText="Show Upcoming Events"
-              hideText="Hide Upcoming Events"
+              showText="Show"
+              hideText="Hide"
               data-testid="toggle-upcoming-events-button"
             />
           </div>
@@ -421,8 +426,8 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
               <SectionToggle
                 isVisible={showPastEvents}
                 onToggle={() => setShowPastEvents(!showPastEvents)}
-                showText="Show Past Events"
-                hideText="Hide Past Events"
+                showText="Show"
+                hideText="Hide"
                 data-testid="toggle-past-events-button"
               />
             </div>

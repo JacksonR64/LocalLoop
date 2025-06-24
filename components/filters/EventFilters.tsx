@@ -190,7 +190,7 @@ export function EventFilters({
                         onFocus={() => setIsSearchFocused(true)}
                         onBlur={() => setTimeout(() => setIsSearchFocused(false), 100)}
                         onKeyDown={handleSearchKeyDown}
-                        className={`block w-full pl-10 pr-3 ${isCompact ? 'py-1.5' : 'py-2'} border border-border rounded-md leading-5 bg-background placeholder:text-muted-foreground text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring text-sm`}
+                        className={`block w-full pl-10 pr-3 ${isCompact ? 'py-1.5' : 'py-2'} border border-border rounded-md leading-5 bg-background placeholder:text-muted-foreground text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring text-base`}
                         aria-autocomplete="list"
                         aria-controls={isSearchFocused && suggestions.length > 0 ? "search-suggestions" : undefined}
                         aria-activedescendant={highlightedIndex >= 0 ? `suggestion-${highlightedIndex}` : undefined}
