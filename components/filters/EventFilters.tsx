@@ -95,24 +95,29 @@ export function EventFilters({
         return [];
     }, []);
 
-    // Store callback in ref to avoid dependency issues
+    // Store callbacks in refs to avoid dependency issues
     const onFilteredEventsChangeRef = useRef(onFilteredEventsChange);
+    const onFiltersStateChangeRef = useRef(onFiltersStateChange);
 
-    // Update ref when callback changes
+    // Update refs when callbacks change
     useEffect(() => {
         onFilteredEventsChangeRef.current = onFilteredEventsChange;
     }, [onFilteredEventsChange]);
+    
+    useEffect(() => {
+        onFiltersStateChangeRef.current = onFiltersStateChange;
+    }, [onFiltersStateChange]);
 
     // Update parent component when filtered events change
     useEffect(() => {
         onFilteredEventsChangeRef.current(filteredEvents);
         
         // Also notify about filter state if callback provided
-        if (onFiltersStateChange) {
+        if (onFiltersStateChangeRef.current) {
             const filtersAreActive = hasActiveFilters({ ...filters, searchQuery });
-            onFiltersStateChange(filtersAreActive, filteredEvents);
+            onFiltersStateChangeRef.current(filtersAreActive, filteredEvents);
         }
-    }, [filteredEvents, filters, searchQuery, onFiltersStateChange]);
+    }, [filteredEvents, filters, searchQuery]);
 
     // Handle search input
     const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
