@@ -25,6 +25,13 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
     setFilteredEvents(events);
   }, []);
 
+  // Sort past events by most recent first (reverse chronological order)
+  const sortedPastEvents = React.useMemo(() => {
+    return [...pastEvents].sort((a, b) => {
+      return new Date(b.start_time).getTime() - new Date(a.start_time).getTime();
+    });
+  }, [pastEvents]);
+
   // Pagination for upcoming events
   const {
     paginatedData: paginatedUpcomingEvents,
@@ -41,7 +48,7 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
     loadMore: loadMorePast,
     state: pastPaginationState
   } = usePagination({
-    data: pastEvents,
+    data: sortedPastEvents,
     pageSize: 8
   });
 
