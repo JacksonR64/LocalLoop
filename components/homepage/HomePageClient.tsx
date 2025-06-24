@@ -2,11 +2,13 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { LoadingSpinner } from '@/components/ui';
+import { LoadingSpinner, SectionToggle } from '@/components/ui';
 import { EventCard, type EventData } from '@/components/events';
 import { EventFilters } from '@/components/filters/EventFilters';
+import { CompactSearchBar } from '@/components/search/CompactSearchBar';
 import { usePagination } from '@/lib/hooks/usePagination';
 import { useInfiniteScroll } from '@/lib/hooks/useInfiniteScroll';
+import { useSearch } from '@/lib/search-context';
 import { Footer } from '@/components/ui/Footer';
 
 interface HomePageClientProps {
@@ -17,12 +19,104 @@ interface HomePageClientProps {
 
 export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: HomePageClientProps) {
   const router = useRouter();
+  const { isSearchOpen, isSearchAnimating } = useSearch();
   const [filteredEvents, setFilteredEvents] = React.useState(upcomingEvents);
   const [showPastEvents, setShowPastEvents] = React.useState(false);
+  const [showFeaturedEvents, setShowFeaturedEvents] = React.useState(true);
+  const [showUpcomingEvents, setShowUpcomingEvents] = React.useState(true);
+  const [searchResults, setSearchResults] = React.useState<EventData[]>([]);
+  const [hasActiveFilters, setHasActiveFilters] = React.useState(false);
+  // Track if search results should persist after search box closes
+  const [showPersistentResults, setShowPersistentResults] = React.useState(false);
+
+
 
   // Memoize the filtered events setter to prevent infinite re-renders
   const handleFilteredEventsChange = React.useCallback((events: EventData[]) => {
     setFilteredEvents(events);
+    
+    // Check if filters are active by comparing filtered events with original upcoming events
+    // Use Set-based comparison to check if the exact same events are present
+    const filteredEventIds = new Set(events.map(e => e.id));
+    const originalEventIds = new Set(upcomingEvents.map(e => e.id));
+    
+    const filtersActive = events.length !== upcomingEvents.length || 
+                         !Array.from(filteredEventIds).every(id => originalEventIds.has(id)) ||
+                         !Array.from(originalEventIds).every(id => filteredEventIds.has(id));
+    
+    setHasActiveFilters(filtersActive);
+    
+    // Set search results when filters are active
+    if (filtersActive) {
+      setSearchResults(events);
+    } else {
+      setSearchResults([]);
+    }
+  }, [upcomingEvents]);
+
+  // Add a simpler handler that gets filter state directly from EventFilters
+  const handleFiltersStateChange = React.useCallback((filtersActive: boolean, filteredEvents: EventData[]) => {
+    setFilteredEvents(filteredEvents);
+    setHasActiveFilters(filtersActive);
+    
+    if (filtersActive) {
+      setSearchResults(filteredEvents);
+      setShowPersistentResults(true);
+    } else {
+      setSearchResults([]);
+      setShowPersistentResults(false);
+    }
+  }, []);
+
+  // Clear all filters and reset to default state
+  const handleClearFilters = React.useCallback(() => {
+    setSearchResults([]);
+    setHasActiveFilters(false);
+    setFilteredEvents(upcomingEvents);
+    setShowPersistentResults(false);
+    // Scroll to top to show the original hero section
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [upcomingEvents]);
+
+  // Scroll to search results or upcoming events section when Enter is pressed in search
+  const handleSearchEnter = React.useCallback(() => {
+    const targetSection = hasActiveFilters ? 
+      document.getElementById('search-results-section') || document.getElementById('no-search-results-section') :
+      document.getElementById('upcoming-events');
+    
+    if (targetSection) {
+      targetSection.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  }, [hasActiveFilters]);
+
+  // Compact search handlers - reuse the same state as hero search
+  const handleCompactFilteredEventsChange = React.useCallback((events: EventData[]) => {
+    setFilteredEvents(events);
+    setSearchResults(events);
+  }, []);
+
+  const handleCompactFiltersStateChange = React.useCallback((filtersActive: boolean, filteredEvents: EventData[]) => {
+    setHasActiveFilters(filtersActive);
+    setSearchResults(filteredEvents);
+    
+    // Enable persistent results when there are active filters
+    setShowPersistentResults(filtersActive);
+  }, []);
+
+  // Handle compact search close - maintain persistent results
+  const handleCompactSearchClose = React.useCallback((filtersActive: boolean, filteredEvents: EventData[]) => {
+    if (filtersActive) {
+      setShowPersistentResults(true);
+      setSearchResults(filteredEvents);
+      setHasActiveFilters(filtersActive);
+    } else {
+      setShowPersistentResults(false);
+      setSearchResults([]);
+      setHasActiveFilters(false);
+    }
   }, []);
 
   // Pagination for upcoming events
@@ -73,177 +167,269 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
       event.category && event.category.toLowerCase() === category.toLowerCase()
     );
     handleFilteredEventsChange(categoryFiltered);
+    setHasActiveFilters(true);
+    setSearchResults(categoryFiltered);
+    setShowPersistentResults(true);
 
-    // Scroll to upcoming events section
-    const upcomingSection = document.getElementById('upcoming-events');
-    if (upcomingSection) {
-      upcomingSection.scrollIntoView({ behavior: 'smooth' });
-    }
+    // Scroll to search results section when filters are active
+    setTimeout(() => {
+      const searchSection = document.getElementById('search-results-section') || 
+                          document.getElementById('no-search-results-section');
+      if (searchSection) {
+        searchSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
-  // View all events handler
-  const handleViewAll = () => {
-    handleFilteredEventsChange(upcomingEvents);
-    const upcomingSection = document.getElementById('upcoming-events');
-    if (upcomingSection) {
-      upcomingSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-[var(--primary)] to-purple-700 text-white py-20" data-test-id="hero-section">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6" data-test-id="hero-title">
-            Discover Local Events
-          </h1>
-          <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto" data-test-id="hero-description">
-            Connect with your community through amazing local events. From workshops to social gatherings, find your next adventure.
-          </p>
-          {/* EventFilters Integration */}
-          <div className="max-w-3xl mx-auto mb-6 sm:mb-8" data-test-id="event-filters-container">
-            <EventFilters
-              events={upcomingEvents}
-              onFilteredEventsChange={handleFilteredEventsChange}
-              showSearch={true}
-              showActiveFilters={true}
-              layout="horizontal"
-            />
+      {/* Compact Search Bar - appears when search is toggled open */}
+      {(isSearchOpen || isSearchAnimating) && (
+        <CompactSearchBar
+          events={upcomingEvents}
+          onFilteredEventsChange={handleCompactFilteredEventsChange}
+          onFiltersStateChange={handleCompactFiltersStateChange}
+          onSearchClose={handleCompactSearchClose}
+        />
+      )}
+
+      {/* Hero Section - hidden when compact search has active filters or showing persistent results */}
+      {!(isSearchOpen && hasActiveFilters) && !showPersistentResults && (
+        <section className="bg-gradient-to-br from-[var(--primary)] to-purple-700 text-white py-20" data-test-id="hero-section">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6" data-test-id="hero-title">
+              Discover Local Events
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto" data-test-id="hero-description">
+              Connect with your community through amazing local events. From workshops to social gatherings, find your next adventure.
+            </p>
+            {/* EventFilters Integration */}
+            <div className="max-w-3xl mx-auto mb-6 sm:mb-8" data-test-id="event-filters-container">
+              <EventFilters
+                events={upcomingEvents}
+                onFilteredEventsChange={handleFilteredEventsChange}
+                onFiltersStateChange={handleFiltersStateChange}
+                showSearch={true}
+                showActiveFilters={true}
+                layout="horizontal"
+                onSearchEnter={handleSearchEnter}
+              />
+            </div>
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-3 text-sm px-4" data-test-id="category-pills">
+              <button
+                onClick={() => handleCategoryFilter('workshop')}
+                className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
+                data-test-id="category-pill-workshop"
+              >
+                Workshop
+              </button>
+              <button
+                onClick={() => handleCategoryFilter('community')}
+                className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
+                data-test-id="category-pill-community"
+              >
+                Community
+              </button>
+              <button
+                onClick={() => handleCategoryFilter('arts')}
+                className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
+                data-test-id="category-pill-arts"
+              >
+                Arts
+              </button>
+              <button
+                onClick={() => handleCategoryFilter('business')}
+                className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
+                data-test-id="category-pill-business"
+              >
+                Business
+              </button>
+              <button
+                onClick={() => handleCategoryFilter('family')}
+                className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
+                data-test-id="category-pill-family"
+              >
+                Family
+              </button>
+            </div>
           </div>
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 text-sm px-4" data-test-id="category-pills">
-            <button
-              onClick={() => handleCategoryFilter('workshop')}
-              className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
-              data-test-id="category-pill-workshop"
-            >
-              Workshop
-            </button>
-            <button
-              onClick={() => handleCategoryFilter('community')}
-              className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
-              data-test-id="category-pill-community"
-            >
-              Community
-            </button>
-            <button
-              onClick={() => handleCategoryFilter('arts')}
-              className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
-              data-test-id="category-pill-arts"
-            >
-              Arts
-            </button>
-            <button
-              onClick={() => handleCategoryFilter('business')}
-              className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
-              data-test-id="category-pill-business"
-            >
-              Business
-            </button>
-            <button
-              onClick={() => handleCategoryFilter('family')}
-              className="bg-white/30 hover:bg-white/40 text-white px-2 sm:px-3 py-1 rounded-full transition-colors cursor-pointer font-medium"
-              data-test-id="category-pill-family"
-            >
-              Family
-            </button>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {/* Search Bar Spacer - only when search is open and hero section is hidden */}
+      {isSearchOpen && (showPersistentResults || hasActiveFilters) && (
+        <div className="h-16" />
+      )}
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12" data-test-id="main-content">
-        {/* Featured Events */}
-        {featuredEvents.length > 0 && (
-          <section className="mb-12 sm:mb-16" data-test-id="featured-events-section">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6" data-test-id="featured-events-title">Featured Events</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" data-test-id="featured-events-grid">
-              {featuredEvents.map((event) => (
-                <div key={event.id} data-test-id={`featured-event-${event.id}`}>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 pt-4" data-test-id="main-content">
+        {/* Search Results - unified section for both compact and hero search */}
+        {(isSearchOpen || showPersistentResults) && hasActiveFilters && searchResults.length > 0 && (
+          <section id="search-results-section" className="section-container-first" data-test-id="search-results-section">
+            <h2 className="section-header" data-test-id="search-results-title">
+              Search Results ({searchResults.length})
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" data-test-id="search-results-grid">
+              {searchResults.map((event) => (
+                <div key={event.id} data-test-id={`search-result-${event.id}`}>
                   <EventCard
                     event={event}
-                    size="lg"
-                    featured={true}
+                    size="md"
+                    featured={event.featured}
                     onClick={() => handleEventClick(event.id)}
                   />
                 </div>
               ))}
             </div>
+            
+            {/* Show All Events button - only when search is persistent (closed) */}
+            {!isSearchOpen && showPersistentResults && (
+              <div className="mt-8 text-center">
+                <button
+                  onClick={handleClearFilters}
+                  className="bg-primary text-primary-foreground px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                  data-test-id="show-all-events-button"
+                >
+                  Show All Events
+                </button>
+              </div>
+            )}
           </section>
         )}
 
-        {/* Upcoming Events */}
-        <section id="upcoming-events" data-test-id="upcoming-events-section">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground" data-test-id="upcoming-events-title">Upcoming Events</h2>
-            <button
-              onClick={handleViewAll}
-              className="text-primary hover:text-primary/80 font-medium text-left sm:text-right"
-              data-test-id="view-all-button"
-            >
-              View All →
-            </button>
-          </div>
+        {/* No Search Results */}
+        {(isSearchOpen || showPersistentResults) && hasActiveFilters && searchResults.length === 0 && (
+          <section id="no-search-results-section" className="section-container-first text-center" data-test-id="no-search-results-section">
+            <h2 className="section-header">No Results Found</h2>
+            <p className="text-muted-foreground mb-6">
+              No events match your search or filter criteria. Try adjusting your search or clearing filters.
+            </p>
+            
+            {/* Show All Events button - only when search is persistent (closed) */}
+            {!isSearchOpen && showPersistentResults && (
+              <div className="mt-6">
+                <button
+                  onClick={handleClearFilters}
+                  className="bg-primary text-primary-foreground px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                  data-test-id="show-all-events-button"
+                >
+                  Show All Events
+                </button>
+              </div>
+            )}
+          </section>
+        )}
 
-          {filteredEvents.length === 0 ? (
-            <div className="text-center py-12 sm:py-16 text-muted-foreground px-4" data-test-id="no-events-message">
-              <p className="mb-4 text-base sm:text-lg">No events match your search or filters.</p>
-              <button
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors mb-4"
-                onClick={handleViewAll}
-                data-test-id="show-all-events-button"
-              >
-                Show All Events
-              </button>
-              <p className="text-sm">Try adjusting your search or filter criteria to find more events.</p>
+        {/* Featured Events - hidden when showing persistent search results */}
+        {featuredEvents.length > 0 && !showPersistentResults && (
+          <section className="section-container-first" data-test-id="featured-events-section">
+            <div className="section-header-row">
+              <h2 className="section-header-title" data-test-id="featured-events-title">Featured Events</h2>
+              <SectionToggle
+                isVisible={showFeaturedEvents}
+                onToggle={() => setShowFeaturedEvents(!showFeaturedEvents)}
+                showText="Show"
+                hideText="Hide"
+                data-testid="toggle-featured-events-button"
+              />
             </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" data-test-id="upcoming-events-grid">
-                {paginatedUpcomingEvents.map((event) => (
-                  <div key={event.id} data-test-id={`upcoming-event-${event.id}`}>
+
+            {showFeaturedEvents && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" data-test-id="featured-events-grid">
+                {featuredEvents.map((event) => (
+                  <div key={event.id} data-test-id={`featured-event-${event.id}`}>
                     <EventCard
                       event={event}
-                      size="md"
+                      size="lg"
+                      featured={true}
                       onClick={() => handleEventClick(event.id)}
                     />
                   </div>
                 ))}
               </div>
+            )}
+          </section>
+        )}
 
-              {/* Infinite Scroll Loading Trigger */}
-              <div ref={loadingTriggerRef} className="mt-6 sm:mt-8" data-test-id="loading-trigger">
-                {paginationState.isLoading && (
-                  <div data-test-id="loading-spinner">
-                    <LoadingSpinner
-                      size="md"
-                      text="Loading more events..."
-                      className="py-6 sm:py-8"
-                    />
+        {/* Upcoming Events - hidden when showing persistent search results */}
+        {!showPersistentResults && (
+        <section id="upcoming-events" className={featuredEvents.length > 0 ? "section-container" : "section-container-first"} data-test-id="upcoming-events-section">
+          <div className="section-header-row">
+            <h2 className="section-header-title" data-test-id="upcoming-events-title">Upcoming Events</h2>
+            <SectionToggle
+              isVisible={showUpcomingEvents}
+              onToggle={() => setShowUpcomingEvents(!showUpcomingEvents)}
+              showText="Show"
+              hideText="Hide"
+              data-testid="toggle-upcoming-events-button"
+            />
+          </div>
+
+          {showUpcomingEvents && (
+            <>
+              {filteredEvents.length === 0 ? (
+                <div className="text-center py-12 sm:py-16 text-muted-foreground px-4" data-test-id="no-events-message">
+                  <p className="mb-4 text-base sm:text-lg">No events match your search or filters.</p>
+                  <button
+                    className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors mb-4"
+                    onClick={handleClearFilters}
+                    data-test-id="show-all-events-button"
+                  >
+                    Show All Events
+                  </button>
+                  <p className="text-sm">Try adjusting your search or filter criteria to find more events.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" data-test-id="upcoming-events-grid">
+                    {paginatedUpcomingEvents.map((event) => (
+                      <div key={event.id} data-test-id={`upcoming-event-${event.id}`}>
+                        <EventCard
+                          event={event}
+                          size="md"
+                          onClick={() => handleEventClick(event.id)}
+                        />
+                      </div>
+                    ))}
                   </div>
-                )}
-                {!paginationState.hasMore && paginatedUpcomingEvents.length > 0 && (
-                  <div className="text-center py-6 sm:py-8 text-gray-500" data-test-id="end-of-events-message">
-                    <p>You&apos;ve reached the end of the events list.</p>
+
+                  {/* Infinite Scroll Loading Trigger */}
+                  <div ref={loadingTriggerRef} className="mt-6 sm:mt-8" data-test-id="loading-trigger">
+                    {paginationState.isLoading && (
+                      <div data-test-id="loading-spinner">
+                        <LoadingSpinner
+                          size="md"
+                          text="Loading more events..."
+                          className="py-6 sm:py-8"
+                        />
+                      </div>
+                    )}
+                    {!paginationState.hasMore && paginatedUpcomingEvents.length > 0 && (
+                      <div className="text-center py-6 sm:py-8 text-gray-500" data-test-id="end-of-events-message">
+                        <p>You&apos;ve reached the end of the events list.</p>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                </>
+              )}
             </>
           )}
         </section>
+        )}
 
-        {/* Past Events Section */}
-        {pastEvents.length > 0 && (
-          <section className="mt-12 sm:mt-16" data-test-id="past-events-section">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground" data-test-id="past-events-title">Past Events</h2>
-              <button
-                onClick={() => setShowPastEvents(!showPastEvents)}
-                className="text-muted-foreground hover:text-foreground font-medium text-left sm:text-right transition-colors"
-                data-test-id="toggle-past-events-button"
-              >
-                {showPastEvents ? 'Hide Past Events' : 'Show Past Events'} {showPastEvents ? '↑' : '↓'}
-              </button>
+        {/* Past Events Section - hidden when showing persistent search results */}
+        {pastEvents.length > 0 && !showPersistentResults && (
+          <section className="section-container" data-test-id="past-events-section">
+            <div className="section-header-row">
+              <h2 className="section-header-title" data-test-id="past-events-title">Past Events</h2>
+              <SectionToggle
+                isVisible={showPastEvents}
+                onToggle={() => setShowPastEvents(!showPastEvents)}
+                showText="Show"
+                hideText="Hide"
+                data-testid="toggle-past-events-button"
+              />
             </div>
 
             {showPastEvents && (
