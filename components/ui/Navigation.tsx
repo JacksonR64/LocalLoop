@@ -4,9 +4,8 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { Menu, X, Shield, Settings, Search } from 'lucide-react'
+import { Menu, X, Shield, Settings } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
-import { useSearch } from '@/lib/search-context'
 import { useAuth as useAuthHook } from '@/lib/hooks/useAuth'
 import { ProfileDropdown } from '@/components/auth/ProfileDropdown'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
@@ -76,7 +75,6 @@ export function Navigation({
     const [menuAnimationType, setMenuAnimationType] = useState<'enter' | 'exit'>('enter')
     const { user, loading: authLoading } = useAuth()
     const { isStaff, isAdmin } = useAuthHook()
-    const { isSearchOpen, toggleSearch } = useSearch()
     const router = useRouter()
 
     // Handle navigation click for browse events
@@ -91,10 +89,6 @@ export function Navigation({
         }, 100)
     }
 
-    // Handle search toggle (keep mobile menu open)
-    const handleSearchToggle = () => {
-        toggleSearch()
-    }
 
     const handleMobileMenuToggle = () => {
         if (isMobileMenuOpen) {
@@ -204,31 +198,11 @@ export function Navigation({
                                 Browse Events
                             </button>
 
-                            {/* Search Toggle Button */}
-                            <button
-                                onClick={handleSearchToggle}
-                                className={`p-2 rounded-lg transition-colors ${
-                                    isSearchOpen 
-                                        ? 'bg-primary text-primary-foreground' 
-                                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                                }`}
-                                aria-label={isSearchOpen ? 'Close search' : 'Open search'}
-                                data-test-id="search-toggle-button"
-                            >
-                                <Search className="w-5 h-5" />
-                            </button>
 
                             <ThemeToggle />
                             {/* Auth state conditional rendering - Optimistic UI */}
                             {user ? (
-                                <ProfileDropdown 
-                                    testIdPrefix="desktop-" 
-                                    onOpenChange={(isOpen) => {
-                                        if (isOpen && isSearchOpen) {
-                                            toggleSearch()
-                                        }
-                                    }}
-                                />
+                                <ProfileDropdown testIdPrefix="desktop-" />
                             ) : (
                                 <Link
                                     href="/auth/login"
@@ -242,21 +216,8 @@ export function Navigation({
                             )}
                         </nav>
 
-                        {/* Mobile - Search, Profile and Menu Button */}
+                        {/* Mobile - Profile and Menu Button */}
                         <div className="md:hidden flex items-center gap-2">
-                            {/* Mobile Search Toggle Button - Always visible */}
-                            <button
-                                onClick={handleSearchToggle}
-                                className={`p-2 rounded-lg transition-colors ${
-                                    isSearchOpen 
-                                        ? 'bg-primary text-primary-foreground' 
-                                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                                }`}
-                                aria-label={isSearchOpen ? 'Close search' : 'Open search'}
-                                data-test-id="mobile-search-toggle-button"
-                            >
-                                <Search className="w-5 h-5" />
-                            </button>
 
                             {/* Theme Toggle for mobile */}
                             <ThemeToggle />
@@ -267,10 +228,7 @@ export function Navigation({
                                     testIdPrefix="mobile-" 
                                     mobileIconOnly={true}
                                     onOpenChange={(isOpen) => {
-                                        if (isOpen) {
-                                            setIsMobileMenuOpen(false)
-                                            if (isSearchOpen) toggleSearch()
-                                        }
+                                        if (isOpen) setIsMobileMenuOpen(false)
                                     }}
                                 />
                             ) : (

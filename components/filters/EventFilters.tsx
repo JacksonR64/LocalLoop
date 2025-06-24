@@ -23,39 +23,24 @@ import { ActiveFilters } from './ActiveFilters';
 interface EventFiltersProps {
     events: EventData[];
     onFilteredEventsChange: (filteredEvents: EventData[]) => void;
-    onFiltersStateChange?: (hasActiveFilters: boolean, filteredEvents: EventData[]) => void;
     className?: string;
     showSearch?: boolean;
     showActiveFilters?: boolean;
-    showFilters?: boolean;
     layout?: 'horizontal' | 'vertical';
-    onSearchEnter?: () => void;
-    externalSearchQuery?: string;
 }
 
 export function EventFilters({
     events,
     onFilteredEventsChange,
-    onFiltersStateChange,
     className = '',
     showSearch = true,
     showActiveFilters = true,
-    showFilters = true,
-    layout = 'horizontal',
-    onSearchEnter,
-    externalSearchQuery
+    layout = 'horizontal'
 }: EventFiltersProps) {
     const [filters, setFilters] = useState<EventFiltersType>(DEFAULT_FILTERS);
-    const [searchQuery, setSearchQuery] = useState(externalSearchQuery || '');
+    const [searchQuery, setSearchQuery] = useState('');
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
-
-    // Update search query when external search query changes
-    useEffect(() => {
-        if (externalSearchQuery !== undefined) {
-            setSearchQuery(externalSearchQuery);
-        }
-    }, [externalSearchQuery]);
 
     // Memoized calculations
     const categories = useMemo(() => getEventCategories(events), [events]);
@@ -95,29 +80,18 @@ export function EventFilters({
         return [];
     }, []);
 
-    // Store callbacks in refs to avoid dependency issues
+    // Store callback in ref to avoid dependency issues
     const onFilteredEventsChangeRef = useRef(onFilteredEventsChange);
-    const onFiltersStateChangeRef = useRef(onFiltersStateChange);
 
-    // Update refs when callbacks change
+    // Update ref when callback changes
     useEffect(() => {
         onFilteredEventsChangeRef.current = onFilteredEventsChange;
     }, [onFilteredEventsChange]);
-    
-    useEffect(() => {
-        onFiltersStateChangeRef.current = onFiltersStateChange;
-    }, [onFiltersStateChange]);
 
     // Update parent component when filtered events change
     useEffect(() => {
         onFilteredEventsChangeRef.current(filteredEvents);
-        
-        // Also notify about filter state if callback provided
-        if (onFiltersStateChangeRef.current) {
-            const filtersAreActive = hasActiveFilters({ ...filters, searchQuery });
-            onFiltersStateChangeRef.current(filtersAreActive, filteredEvents);
-        }
-    }, [filteredEvents, filters, searchQuery]);
+    }, [filteredEvents]);
 
     // Handle search input
     const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -134,28 +108,15 @@ export function EventFilters({
 
     // Keyboard navigation for suggestions
     const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            if (suggestions.length > 0 && highlightedIndex >= 0) {
-                // Select the highlighted suggestion
-                handleSuggestionSelect(suggestions[highlightedIndex]);
-                e.preventDefault();
-            } else {
-                // No suggestion highlighted or no suggestions - trigger scroll to events
-                if (onSearchEnter) {
-                    onSearchEnter();
-                }
-                e.preventDefault();
-            }
-            return;
-        }
-        
         if (!suggestions.length) return;
-        
         if (e.key === 'ArrowDown') {
             setHighlightedIndex(i => (i + 1) % suggestions.length);
             e.preventDefault();
         } else if (e.key === 'ArrowUp') {
             setHighlightedIndex(i => (i - 1 + suggestions.length) % suggestions.length);
+            e.preventDefault();
+        } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+            handleSuggestionSelect(suggestions[highlightedIndex]);
             e.preventDefault();
         }
     };
@@ -172,10 +133,9 @@ export function EventFilters({
     }, [events.length, filteredEvents.length, filters, searchQuery]);
 
     const isHorizontal = layout === 'horizontal';
-    const isCompact = className?.includes('compact-mode');
 
     return (
-        <div className={`${isCompact ? 'space-y-2' : 'space-y-4'} ${className}`}>
+        <div className={`space-y-4 ${className}`}>
             {/* Search Bar with Autocomplete */}
             {showSearch && (
                 <div className="relative">
@@ -190,7 +150,7 @@ export function EventFilters({
                         onFocus={() => setIsSearchFocused(true)}
                         onBlur={() => setTimeout(() => setIsSearchFocused(false), 100)}
                         onKeyDown={handleSearchKeyDown}
-                        className={`block w-full pl-10 pr-3 ${isCompact ? 'py-1.5' : 'py-2'} border border-border rounded-md leading-5 bg-background placeholder:text-muted-foreground text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring text-base`}
+                        className="block w-full pl-10 pr-3 py-2 border border-border rounded-md leading-5 bg-background placeholder:text-muted-foreground text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring text-sm"
                         aria-autocomplete="list"
                         aria-controls={isSearchFocused && suggestions.length > 0 ? "search-suggestions" : undefined}
                         aria-activedescendant={highlightedIndex >= 0 ? `suggestion-${highlightedIndex}` : undefined}
@@ -220,35 +180,33 @@ export function EventFilters({
             )}
 
             {/* Filter Controls */}
-            {showFilters && (
-                <div className={`${isCompact ? 'flex flex-wrap gap-1 sm:gap-2' : isHorizontal ? 'flex flex-col sm:flex-row sm:flex-wrap gap-1 sm:gap-3' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3'}`}>
-                    <CategoryFilter
-                        selectedCategories={filters.categories}
-                        onChange={(categories) => updateFilters({ categories })}
-                        availableCategories={categories}
-                        className={isHorizontal ? 'w-full sm:min-w-[200px] sm:flex-1' : ''}
-                    />
+            <div className={`${isHorizontal ? 'flex flex-col sm:flex-row sm:flex-wrap gap-3' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3'}`}>
+                <CategoryFilter
+                    selectedCategories={filters.categories}
+                    onChange={(categories) => updateFilters({ categories })}
+                    availableCategories={categories}
+                    className={isHorizontal ? 'w-full sm:min-w-[200px] sm:flex-1' : ''}
+                />
 
-                    <DateFilter
-                        selectedRange={filters.dateRange}
-                        onRangeChange={(dateRange) => updateFilters({ dateRange })}
-                        className={isHorizontal ? 'w-full sm:min-w-[180px] sm:flex-1' : ''}
-                    />
+                <DateFilter
+                    selectedRange={filters.dateRange}
+                    onRangeChange={(dateRange) => updateFilters({ dateRange })}
+                    className={isHorizontal ? 'w-full sm:min-w-[180px] sm:flex-1' : ''}
+                />
 
-                    <PriceFilter
-                        selectedPrice={filters.priceType}
-                        onPriceChange={(priceType) => updateFilters({ priceType })}
-                        eventCounts={priceCounts}
-                        className={isHorizontal ? 'w-full sm:min-w-[140px] sm:flex-1' : ''}
-                    />
+                <PriceFilter
+                    selectedPrice={filters.priceType}
+                    onPriceChange={(priceType) => updateFilters({ priceType })}
+                    eventCounts={priceCounts}
+                    className={isHorizontal ? 'w-full sm:min-w-[140px] sm:flex-1' : ''}
+                />
 
-                    <SortControl
-                        sortBy={filters.sortBy}
-                        onSortChange={(sortBy) => updateFilters({ sortBy })}
-                        className={isHorizontal ? 'w-full sm:min-w-[180px] sm:flex-1' : ''}
-                    />
-                </div>
-            )}
+                <SortControl
+                    sortBy={filters.sortBy}
+                    onSortChange={(sortBy) => updateFilters({ sortBy })}
+                    className={isHorizontal ? 'w-full sm:min-w-[180px] sm:flex-1' : ''}
+                />
+            </div>
 
             {/* Active Filters */}
             {showActiveFilters && (

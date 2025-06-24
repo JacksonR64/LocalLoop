@@ -109,14 +109,6 @@ body {
       transparent,
       rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
   overflow-x: hidden;
-  touch-action: manipulation; /* Prevents double-tap zoom while allowing pinch zoom */
-  
-  /* iOS Safari specific fixes */
-  -webkit-text-size-adjust: 100%;
-  -webkit-overflow-scrolling: touch;
-  position: relative;
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
 }
 
 /* Custom scrollbar for better UX */
@@ -161,16 +153,6 @@ body {
   .touch-target {
     min-width: 44px;
     min-height: 44px;
-  }
-
-  /* iOS Safari specific fixes for search bar positioning */
-  @supports (-webkit-touch-callout: none) {
-    .compact-search-bar {
-      position: absolute;
-      transform: translateZ(0);
-      -webkit-backface-visibility: hidden;
-      backface-visibility: hidden;
-    }
   }
 
   /* Smooth scrolling for mobile */
@@ -237,16 +219,15 @@ body {
   }
 }
 
-/* Animation Configuration Variables */
+/* Animation Variables */
 :root {
-  /* Timing Variables - Made slower with delay support */
-  --animation-duration-fast: 300ms;
-  --animation-duration-medium: 500ms;
-  --animation-duration-slow: 700ms;
-  --animation-delay-base: 500ms;
+  /* Timing Variables */
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
   
-  /* Easing Functions - Natural and Smooth */
-  --ease-momentum: cubic-bezier(0.25, 0.1, 0.25, 1); /* iOS-style momentum */
+  /* Easing Variables */
+  --ease-smooth-in: cubic-bezier(0.4, 0, 1, 1); /* Smooth acceleration */
   --ease-smooth-out: cubic-bezier(0.16, 1, 0.3, 1); /* Smooth deceleration */
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* Gentle spring */
   --ease-natural: cubic-bezier(0.4, 0, 0.2, 1); /* Material Design standard */
@@ -313,63 +294,4 @@ body {
     opacity: 0;
     transform: scale(var(--scale-factor)) translateY(calc(-1 * var(--slide-distance) / 2));
   }
-}
-
-/* Enhanced Filter Expand Animations with Smooth Momentum and Delay */
-.filter-expand-enter {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height var(--animation-duration-medium) var(--ease-smooth-out) var(--animation-delay-base);
-}
-
-.filter-expand-enter-active {
-  max-height: 200px;
-}
-
-.filter-expand-exit {
-  max-height: 200px;
-  overflow: hidden;
-  transition: max-height var(--animation-duration-medium) var(--ease-momentum) var(--animation-delay-base);
-}
-
-.filter-expand-exit-active {
-  max-height: 0;
-}
-
-/* Smooth Animation Utility Classes */
-.animate-smooth-slide-in {
-  animation: slideInFromTop var(--animation-duration-medium) var(--ease-smooth-out) forwards;
-}
-
-.animate-smooth-slide-out {
-  animation: slideOutToTop var(--animation-duration-medium) var(--ease-momentum) forwards;
-}
-
-.animate-momentum-fade-in {
-  animation: fadeInScale var(--animation-duration-medium) var(--ease-spring) forwards;
-}
-
-.animate-momentum-fade-out {
-  animation: scaleOutFade var(--animation-duration-medium) var(--ease-momentum) forwards;
-}
-
-/* Modular Section Spacing System */
-.section-container {
-  @apply mb-8 sm:mb-12;
-}
-
-.section-container-first {
-  @apply pt-2 sm:pt-3 mb-8 sm:mb-12;
-}
-
-.section-header {
-  @apply text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6;
-}
-
-.section-header-row {
-  @apply flex flex-row items-center justify-between mb-4 sm:mb-6 gap-2;
-}
-
-.section-header-title {
-  @apply text-xl sm:text-2xl font-bold text-foreground;
 }
