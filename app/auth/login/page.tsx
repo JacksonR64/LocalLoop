@@ -11,6 +11,8 @@ export default function LoginPage() {
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+    const [showAppleMessage, setShowAppleMessage] = useState(false)
+    const [messageTimerRef, setMessageTimerRef] = useState<NodeJS.Timeout | null>(null)
 
     const {
         user,
@@ -107,6 +109,30 @@ export default function LoginPage() {
             window.location.reload()
         } catch (error: unknown) {
             setError(error instanceof Error ? error.message : 'Failed to clear auth data')
+        }
+    }
+
+    const showAppleMessageTemporarily = () => {
+        // Clear existing timer if any
+        if (messageTimerRef) {
+            clearTimeout(messageTimerRef)
+        }
+        
+        setShowAppleMessage(true)
+        // Set timer to revert after 10 seconds
+        const newTimer = setTimeout(() => {
+            setShowAppleMessage(false)
+        }, 10000)
+        setMessageTimerRef(newTimer)
+    }
+
+    const handleDebugButtonAction = () => {
+        if (showAppleMessage) {
+            // If showing Apple message, execute the clear auth action
+            handleClearAuthData()
+        } else {
+            // Otherwise show Apple message
+            showAppleMessageTemporarily()
         }
     }
 
@@ -207,13 +233,13 @@ export default function LoginPage() {
                             {/* Apple Auth Button */}
                             <button
                                 onClick={handleAppleLogin}
+                                onMouseEnter={!isAppleAuthEnabled ? showAppleMessageTemporarily : undefined}
                                 type="button"
                                 disabled={!isAppleAuthEnabled}
                                 className={`w-full inline-flex justify-center items-center py-3 px-4 border rounded-md shadow-sm text-base font-medium transition-colors min-h-[44px] ${isAppleAuthEnabled
                                     ? 'border-border bg-background text-muted-foreground hover:bg-accent'
-                                    : 'border-border bg-muted text-muted-foreground cursor-not-allowed relative group'
+                                    : 'border-border bg-muted text-muted-foreground cursor-not-allowed'
                                     }`}
-                                title={!isAppleAuthEnabled ? 'Apple Sign-in coming soon! We\'re working on getting an Apple Developer account.' : ''}
                             >
                                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
@@ -222,27 +248,24 @@ export default function LoginPage() {
                                 {!isAppleAuthEnabled && (
                                     <span className="ml-1 text-xs text-muted-foreground">(Soon)</span>
                                 )}
-                                {/* Custom hover tooltip for disabled state */}
-                                {!isAppleAuthEnabled && (
-                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                                        Apple Sign-in coming soon! We're working on getting an Apple Developer account.
-                                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-                                    </div>
-                                )}
                             </button>
                         </div>
 
                     </div>
                 </form>
 
-                {/* Debug: Clear stale auth data button */}
+                {/* Debug: Clear stale auth data button / Apple message */}
                 <div className="mt-6 pt-4 border-t border-border">
                     <button
-                        onClick={handleClearAuthData}
+                        onClick={handleDebugButtonAction}
+                        onMouseEnter={showAppleMessageTemporarily}
                         type="button"
                         className="w-full text-xs text-muted-foreground hover:text-foreground underline decoration-dotted underline-offset-4 transition-colors"
                     >
-                        Having login issues? Clear authentication data
+                        {showAppleMessage 
+                            ? "Apple Sign-in coming soon! We're working on getting an Apple Developer account."
+                            : "Having login issues? Clear authentication data"
+                        }
                     </button>
                 </div>
             </div>
