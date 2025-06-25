@@ -211,7 +211,7 @@ export default function LoginPage() {
                                 disabled={!isAppleAuthEnabled}
                                 className={`w-full inline-flex justify-center items-center py-3 px-4 border rounded-md shadow-sm text-base font-medium transition-colors min-h-[44px] ${isAppleAuthEnabled
                                     ? 'border-border bg-background text-muted-foreground hover:bg-accent'
-                                    : 'border-border bg-muted text-muted-foreground cursor-not-allowed relative'
+                                    : 'border-border bg-muted text-muted-foreground cursor-not-allowed relative group'
                                     }`}
                                 title={!isAppleAuthEnabled ? 'Apple Sign-in coming soon! We\'re working on getting an Apple Developer account.' : ''}
                             >
@@ -221,6 +221,13 @@ export default function LoginPage() {
                                 <span>Apple</span>
                                 {!isAppleAuthEnabled && (
                                     <span className="ml-1 text-xs text-muted-foreground">(Soon)</span>
+                                )}
+                                {/* Custom hover tooltip for disabled state */}
+                                {!isAppleAuthEnabled && (
+                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                                        Apple Sign-in coming soon! We're working on getting an Apple Developer account.
+                                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                                    </div>
                                 )}
                             </button>
                         </div>
