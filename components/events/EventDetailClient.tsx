@@ -111,6 +111,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                         width={800}
                                         height={256}
                                         className="w-full h-64 object-cover rounded-lg"
+                                        style={{ width: 'auto', height: 'auto' }}
                                         priority
                                     />
                                 </div>
@@ -122,11 +123,21 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                     <p className="text-lg text-muted-foreground mb-4" data-test-id="event-short-description">{event.short_description}</p>
                                 </div>
                                 <div className="flex gap-2" data-test-id="event-actions">
-                                    <button className="p-2 rounded-lg border border-border hover:bg-accent transition-colors" data-test-id="share-button">
-                                        <Share2 className="w-5 h-5 text-muted-foreground" />
+                                    <button 
+                                        className="p-2 rounded-lg border border-border hover:bg-accent transition-colors" 
+                                        data-test-id="share-button"
+                                        aria-label={`Share ${event.title} event`}
+                                        title={`Share ${event.title}`}
+                                    >
+                                        <Share2 className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
                                     </button>
-                                    <button className="p-2 rounded-lg border border-border hover:bg-accent transition-colors" data-test-id="favorite-button">
-                                        <Heart className="w-5 h-5 text-muted-foreground" />
+                                    <button 
+                                        className="p-2 rounded-lg border border-border hover:bg-accent transition-colors" 
+                                        data-test-id="favorite-button"
+                                        aria-label={`Add ${event.title} to favorites`}
+                                        title={`Add to favorites`}
+                                    >
+                                        <Heart className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
                                     </button>
                                 </div>
                             </div>

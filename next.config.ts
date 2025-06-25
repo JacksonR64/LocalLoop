@@ -86,7 +86,9 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), gyroscope=(), magnetometer=(), payment=()'
+            value: process.env.NODE_ENV === 'development' 
+              ? 'camera=(), microphone=(), geolocation=(), gyroscope=(), magnetometer=(), payment=*'
+              : 'camera=(), microphone=(), geolocation=(), gyroscope=(), magnetometer=(), payment=(self)'
           },
           {
             key: 'Strict-Transport-Security',

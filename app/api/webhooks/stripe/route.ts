@@ -886,6 +886,39 @@ export async function POST(request: NextRequest) {
                 }
             }
 
+            case 'charge.updated': {
+                try {
+                    const charge = event.data.object
+                    console.log(`🔄 [${webhookId}] Charge updated: ${charge.id} - Status: ${charge.status}`)
+                    
+                    // Log charge update details for monitoring
+                    console.log(`📊 [${webhookId}] Charge update details:`, {
+                        charge_id: charge.id,
+                        status: charge.status,
+                        payment_intent: charge.payment_intent,
+                        amount: charge.amount,
+                        currency: charge.currency,
+                        paid: charge.paid,
+                        refunded: charge.refunded
+                    })
+
+                    // For charge updates, we mainly log for monitoring
+                    // The important events (succeeded, failed, refunded) are handled separately
+                    return NextResponse.json({
+                        received: true,
+                        webhookId,
+                        chargeId: charge.id,
+                        message: 'Charge update logged'
+                    })
+                } catch (error) {
+                    console.error('❌ Charge updated webhook error:', error)
+                    return NextResponse.json(
+                        { error: 'Charge updated webhook failed' },
+                        { status: 500 }
+                    )
+                }
+            }
+
             default:
                 console.log(`Unhandled event type: ${event.type}`)
         }

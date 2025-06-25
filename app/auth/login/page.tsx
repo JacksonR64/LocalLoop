@@ -90,7 +90,7 @@ export default function LoginPage() {
 
     const handleAppleLogin = async () => {
         if (!isAppleAuthEnabled) {
-            setError('Apple authentication is coming soon! We need an Apple Developer account to enable this feature.')
+            showAppleMessageTemporarily()
             return
         }
 
@@ -127,13 +127,8 @@ export default function LoginPage() {
     }
 
     const handleDebugButtonAction = () => {
-        if (showAppleMessage) {
-            // If showing Apple message, execute the clear auth action
-            handleClearAuthData()
-        } else {
-            // Otherwise show Apple message
-            showAppleMessageTemporarily()
-        }
+        // Always clear auth data when clicked, regardless of message state
+        handleClearAuthData()
     }
 
     return (
@@ -160,7 +155,12 @@ export default function LoginPage() {
 
                     <div className="space-y-4">
                         <div>
+                            <label htmlFor="login-email" className="sr-only">
+                                Email address
+                            </label>
                             <input
+                                id="login-email"
+                                name="email"
                                 type="email"
                                 required
                                 value={email}
@@ -168,10 +168,16 @@ export default function LoginPage() {
                                 className="block w-full px-4 py-3 border border-border placeholder-muted-foreground text-foreground bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-base"
                                 placeholder="Email address"
                                 data-testid="email-input"
+                                autoComplete="email"
                             />
                         </div>
                         <div>
+                            <label htmlFor="login-password" className="sr-only">
+                                Password
+                            </label>
                             <input
+                                id="login-password"
+                                name="password"
                                 type="password"
                                 required
                                 value={password}
@@ -179,6 +185,7 @@ export default function LoginPage() {
                                 className="block w-full px-4 py-3 border border-border placeholder-muted-foreground text-foreground bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-base"
                                 placeholder="Password"
                                 data-testid="password-input"
+                                autoComplete="current-password"
                             />
                         </div>
                     </div>
@@ -233,20 +240,19 @@ export default function LoginPage() {
                             {/* Apple Auth Button */}
                             <button
                                 onClick={handleAppleLogin}
-                                onMouseEnter={!isAppleAuthEnabled ? showAppleMessageTemporarily : undefined}
                                 type="button"
-                                disabled={!isAppleAuthEnabled}
-                                className={`w-full inline-flex justify-center items-center py-3 px-4 border rounded-md shadow-sm text-base font-medium transition-colors min-h-[44px] ${isAppleAuthEnabled
+                                className={`w-full inline-flex justify-center items-center py-3 px-4 border rounded-md shadow-sm text-base font-medium transition-all duration-200 min-h-[44px] ${isAppleAuthEnabled
                                     ? 'border-border bg-background text-muted-foreground hover:bg-accent'
-                                    : 'border-border bg-muted text-muted-foreground cursor-not-allowed'
+                                    : 'border-border/50 bg-background/60 text-muted-foreground/60 hover:bg-accent/50 cursor-pointer opacity-60 hover:opacity-80'
                                     }`}
+                                title={!isAppleAuthEnabled ? "Apple Sign-in coming soon! Click to learn more." : undefined}
                             >
                                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
                                 </svg>
                                 <span>Apple</span>
                                 {!isAppleAuthEnabled && (
-                                    <span className="ml-1 text-xs text-muted-foreground">(Soon)</span>
+                                    <Lock className="ml-2 w-4 h-4 text-gray-400" />
                                 )}
                             </button>
                         </div>
@@ -258,9 +264,15 @@ export default function LoginPage() {
                 <div className="mt-6 pt-4 border-t border-border">
                     <button
                         onClick={handleDebugButtonAction}
-                        onMouseEnter={showAppleMessageTemporarily}
                         type="button"
-                        className="w-full text-xs text-muted-foreground hover:text-foreground underline decoration-dotted underline-offset-4 transition-colors"
+                        className={`w-full text-xs underline decoration-dotted underline-offset-4 transition-all duration-500 rounded-md px-3 py-2 ${
+                            showAppleMessage 
+                                ? 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800/50 shadow-lg animate-pulse'
+                                : 'text-muted-foreground hover:text-foreground bg-transparent border border-transparent'
+                        }`}
+                        style={{
+                            animation: showAppleMessage ? 'flash-highlight 0.6s ease-out' : undefined
+                        }}
                     >
                         {showAppleMessage 
                             ? "Apple Sign-in coming soon! We're working on getting an Apple Developer account."
@@ -268,6 +280,47 @@ export default function LoginPage() {
                         }
                     </button>
                 </div>
+
+                {/* Custom animation keyframes */}
+                <style jsx>{`
+                    @keyframes flash-highlight {
+                        0% { 
+                            background-color: rgb(219 234 254 / 0.1);
+                            box-shadow: 0 0 0 rgb(59 130 246 / 0.5);
+                            transform: scale(1);
+                        }
+                        50% { 
+                            background-color: rgb(219 234 254 / 0.15);
+                            box-shadow: 0 0 20px rgb(59 130 246 / 0.3);
+                            transform: scale(1.02);
+                        }
+                        100% { 
+                            background-color: rgb(219 234 254 / 0.1);
+                            box-shadow: 0 0 0 rgb(59 130 246 / 0.5);
+                            transform: scale(1);
+                        }
+                    }
+
+                    @media (prefers-color-scheme: dark) {
+                        @keyframes flash-highlight {
+                            0% { 
+                                background-color: rgb(30 58 138 / 0.1);
+                                box-shadow: 0 0 0 rgb(147 197 253 / 0.3);
+                                transform: scale(1);
+                            }
+                            50% { 
+                                background-color: rgb(30 58 138 / 0.2);
+                                box-shadow: 0 0 15px rgb(147 197 253 / 0.2);
+                                transform: scale(1.02);
+                            }
+                            100% { 
+                                background-color: rgb(30 58 138 / 0.1);
+                                box-shadow: 0 0 0 rgb(147 197 253 / 0.3);
+                                transform: scale(1);
+                            }
+                        }
+                    }
+                `}</style>
             </div>
         </div>
     )

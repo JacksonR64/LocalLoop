@@ -5,10 +5,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 ### Core Development
-- `npm run dev` - Start development server
+- `claude run tmux-dev` - Start development server in tmux with Stripe webhooks (recommended)
+- `npm run dev:with-stripe` - Start development server with Stripe webhooks
+- `npm run dev` - Start development server (basic, no Stripe)
 - `npm run build` - Production build with type checking
 - `npm run lint` - ESLint checking
 - `npm run type-check` - TypeScript validation
+
+**🔄 After Code Changes:**
+1. **Always restart dev server** before testing: `claude run tmux-dev` (kills old session, starts fresh with Stripe)
+2. Verify changes are reflected on localhost:3000
+3. Check tmux logs for any startup errors
+4. Ensure Stripe webhooks are working (important for payments)
 
 ### 🔍 Local CI Verification (CRITICAL for avoiding CI failures)
 - `npm run ci:local` - **Run this before every commit/push** - Comprehensive local CI check that matches GitHub Actions exactly
@@ -28,6 +36,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Clean install with `npm ci --legacy-peer-deps` (matches GitHub Actions)
 - Same ESLint rules and TypeScript config as CI
 - Tests run in CI mode (`--ci --coverage --watchAll=false`)
+
+### Browser Tools (AgentDeskAI MCP)
+**Before using browser automation tools, run the global command:**
+```bash
+# Start browser tools server (global command)
+claude run browser-tools-start
+```
 
 ### Testing Suite
 - `npm test` - Unit tests with Jest

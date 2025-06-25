@@ -248,8 +248,14 @@ export default function TicketSelection({
                                     <div className="space-y-3" data-test-id="quantity-controls">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm font-medium">Quantity:</span>
-                                                <div className="flex items-center gap-2">
+                                                <label 
+                                                    id={`quantity-label-${ticket.id}`}
+                                                    htmlFor={`quantity-${ticket.id}`}
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Quantity:
+                                                </label>
+                                                <div className="flex items-center gap-2" role="group" aria-labelledby={`quantity-label-${ticket.id}`}>
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
@@ -257,10 +263,14 @@ export default function TicketSelection({
                                                         disabled={quantity <= 0}
                                                         className="h-8 w-8 p-0"
                                                         data-test-id="decrease-quantity-button"
+                                                        aria-label={`Decrease quantity for ${ticket.name}`}
+                                                        aria-controls={`quantity-${ticket.id}`}
                                                     >
-                                                        <Minus className="h-4 w-4" />
+                                                        <Minus className="h-4 w-4" aria-hidden="true" />
                                                     </Button>
                                                     <Input
+                                                        id={`quantity-${ticket.id}`}
+                                                        name={`quantity-${ticket.id}`}
                                                         type="number"
                                                         min="0"
                                                         max={available}
@@ -268,6 +278,8 @@ export default function TicketSelection({
                                                         onChange={(e) => updateQuantity(ticket.id, parseInt(e.target.value) || 0)}
                                                         className="w-16 text-center"
                                                         data-test-id="quantity-input"
+                                                        aria-label={`Quantity for ${ticket.name}`}
+                                                        aria-describedby={`quantity-help-${ticket.id}`}
                                                     />
                                                     <Button
                                                         variant="outline"
@@ -276,9 +288,17 @@ export default function TicketSelection({
                                                         disabled={quantity >= available}
                                                         className="h-8 w-8 p-0"
                                                         data-test-id="increase-quantity-button"
+                                                        aria-label={`Increase quantity for ${ticket.name}`}
+                                                        aria-controls={`quantity-${ticket.id}`}
                                                     >
-                                                        <Plus className="h-4 w-4" />
+                                                        <Plus className="h-4 w-4" aria-hidden="true" />
                                                     </Button>
+                                                    <span 
+                                                        id={`quantity-help-${ticket.id}`} 
+                                                        className="sr-only"
+                                                    >
+                                                        Use + and - buttons or type to select quantity. Maximum {available} tickets available.
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
