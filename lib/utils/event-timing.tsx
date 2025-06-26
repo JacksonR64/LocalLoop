@@ -50,7 +50,19 @@ export function getEventTimingBadge(startTime: string): React.ReactElement {
         return (
             <Badge variant="default" className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-100 dark:border-green-700">
                 Tomorrow
-        </Badge>
+            </Badge>
+        )
+    }
+    
+    // Check if event is soon (within 7 days, excluding today and tomorrow)
+    const daysDifference = Math.ceil((eventDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    const isSoon = daysDifference <= 7 && daysDifference >= 2
+    
+    if (isSoon) {
+        return (
+            <Badge variant="default" className="bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900 dark:text-orange-100 dark:border-orange-700">
+                Soon
+            </Badge>
         )
     }
     

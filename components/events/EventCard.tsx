@@ -166,7 +166,7 @@ export function EventCard({
 // Default Card Style (same as current homepage implementation)
 function DefaultCard({ event, size, featured, showImage, className, onClick, spotsRemaining, isUpcoming, hasPrice, lowestPrice, isSoon }: Readonly<CardComponentProps>) {
     const cardId = `event-card-${event.id}`
-    const urgencyClass = isSoon ? 'border-orange-200' : ''
+    const urgencyClass = ''
     
 
     return (
@@ -293,7 +293,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
 
 // Preview List Style - Compact horizontal layout for list views
 function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowestPrice, isSoon }: Readonly<CardComponentProps>) {
-    const urgencyClass = isSoon ? 'border-orange-200' : ''
+    const urgencyClass = ''
     return (
         <Card
             variant="outlined"
@@ -361,7 +361,7 @@ function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowe
 
 // Full List Style - Detailed view with all information
 function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, hasPrice, lowestPrice, isSoon }: Readonly<CardComponentProps>) {
-    const urgencyClass = isSoon ? 'border-orange-200' : ''
+    const urgencyClass = ''
     return (
         <Card
             variant="default"
@@ -489,7 +489,7 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
 
 // Compact Card Style - Minimal information for dense layouts
 function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcoming, isSoon }: Readonly<CardComponentProps>) {
-    const urgencyClass = isSoon ? 'border-l-orange-600' : 'border-l-blue-600'
+    const urgencyClass = 'border-l-blue-600'
     return (
         <Card
             size="sm"
@@ -534,7 +534,7 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpco
     const eventDate = new Date(event.start_time);
     const day = eventDate.getDate();
     const month = eventDate.toLocaleDateString('en-US', { month: 'short' });
-    const urgencyClass = isSoon ? 'border-orange-200' : ''
+    const urgencyClass = ''
 
     return (
         <Card

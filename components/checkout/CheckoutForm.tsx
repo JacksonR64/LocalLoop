@@ -527,7 +527,8 @@ export default function CheckoutForm({
         )
     }
 
-    const stripeOptions = {
+    // Memoize stripe options to prevent clientSecret mutation warnings
+    const stripeOptions = useMemo(() => ({
         clientSecret,
         appearance: {
             theme: 'stripe' as const,
@@ -541,7 +542,7 @@ export default function CheckoutForm({
                 borderRadius: '6px',
             },
         },
-    }
+    }), [clientSecret])
 
     return (
         <div className="max-w-2xl mx-auto">

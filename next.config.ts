@@ -87,8 +87,8 @@ const nextConfig: NextConfig = {
           {
             key: 'Permissions-Policy',
             value: process.env.NODE_ENV === 'development' 
-              ? 'camera=(), microphone=(), geolocation=(), gyroscope=(), magnetometer=(), payment=*'
-              : 'camera=(), microphone=(), geolocation=(), gyroscope=(), magnetometer=(), payment=(self)'
+              ? 'camera=(), microphone=(), geolocation=(), gyroscope=(), magnetometer=(), payment=(self "http://localhost:3000" "https://js.stripe.com" "https://checkout.stripe.com" "https://api.stripe.com" "https://hooks.stripe.com")'
+              : 'camera=(), microphone=(), geolocation=(), gyroscope=(), magnetometer=(), payment=(self "https://js.stripe.com" "https://checkout.stripe.com" "https://api.stripe.com" "https://hooks.stripe.com")'
           },
           {
             key: 'Strict-Transport-Security',
