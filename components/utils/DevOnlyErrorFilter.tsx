@@ -9,10 +9,30 @@ import { useEffect } from 'react'
  * IMPORTANT: Only suppresses truly unfixable external library warnings.
  * Our application code is clean and doesn't generate these violations.
  * 
- * SUPPRESSED VIOLATIONS (External Libraries Only):
- * 1. hCaptcha - non-passive event listeners (external captcha service)
- * 2. Stripe - non-passive event listeners (external payment service)
- * 3. Stripe - HTTPS development warnings (expected in dev mode)
+ * SUPPRESSED VIOLATIONS (External Libraries Only - Verified via Investigation):
+ * 1. Stripe - HTTPS development warnings (expected in dev mode)
+ * 
+ * INVESTIGATION COMPLETED: Our application code is clean:
+ * - No touchstart/touchmove/wheel event listeners in our code
+ * - Uses IntersectionObserver instead of scroll listeners
+ * - Uses scrollIntoView() for programmatic scrolling
+ * - No React onTouch/onWheel handlers
+ * 
+ * PASSIVE EVENT LISTENER VIOLATIONS - FIXED:
+ * - Implemented default-passive-events library (imported in app/layout.tsx)
+ * - This automatically makes all touchstart/touchmove/wheel/mousewheel events passive
+ * - No more suppressions needed - violations are properly fixed at source
+ * 
+ * TO INVESTIGATE NEW VIOLATIONS:
+ * 1. Check browser console for full stack trace
+ * 2. Look for library names in the stack trace 
+ * 3. Search codebase: grep -r "addEventListener.*touchstart\|wheel\|touchmove"
+ * 4. If found in our code, add { passive: true } option
+ * 
+ * ARIA-HIDDEN ACCESSIBILITY WARNING (External Component):
+ * If you see "Blocked aria-hidden on an element because its descendant retained focus"
+ * with CodePuncher component, this is from Stripe's payment verification input.
+ * This is an external component accessibility issue that we cannot fix in our code.
  * 
  * STRIPE PAYMENT METHOD WARNINGS:
  * If you see "payment method types are not activated" warnings, these are 
@@ -55,16 +75,6 @@ export function DevOnlyErrorFilter() {
                 return // Silently ignore - this is expected in development
             }
 
-            // Suppress third-party passive event listener violations (unfixable - external libraries)
-            // NOTE: Our application code is clean - these violations come from external libraries only
-            if ((message.includes('[Violation] Added non-passive event listener') && 
-                 (message.includes('hcaptcha.html') || message.includes('shared-e864a3e608739') || message.includes('stripe'))) ||
-                message.includes('Consider marking event handler as \'passive\'') && 
-                 (message.includes('hcaptcha.html') || message.includes('shared-e864a3e608739') || message.includes('stripe')) ||
-                message.includes('setTimeout\' handler took') && 
-                 (message.includes('shared-e864a3e608739') || message.includes('hcaptcha'))) {
-                return // Silently ignore - these are from hCaptcha/Stripe (external libraries)
-            }
 
             // Call original for all other warnings
             originalWarn.apply(console, args)
@@ -74,13 +84,6 @@ export function DevOnlyErrorFilter() {
         console.info = (...args) => {
             const message = args[0]?.toString() || ''
             
-            // Suppress third-party passive event listener violations (external libraries only)
-            if ((message.includes('[Violation] Added non-passive event listener') && 
-                 (message.includes('hcaptcha.html') || message.includes('shared-e864a3e608739') || message.includes('stripe'))) ||
-                (message.includes('Consider marking event handler as \'passive\'') && 
-                 (message.includes('hcaptcha.html') || message.includes('shared-e864a3e608739') || message.includes('stripe')))) {
-                return // Silently ignore - these are from external libraries only
-            }
 
             // Call original for all other info messages
             originalInfo.apply(console, args)
