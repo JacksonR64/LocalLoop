@@ -85,6 +85,23 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
         }
     }, [searchParams, router]);
 
+    // Auto-scroll to payment success card when it becomes visible
+    useEffect(() => {
+        if (showPaymentSuccess) {
+            // Wait a moment for the card to render, then scroll to it
+            setTimeout(() => {
+                const successCard = document.querySelector('[data-test-id="payment-success-card"]');
+                if (successCard) {
+                    successCard.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start',
+                        inline: 'nearest'
+                    });
+                }
+            }, 200);
+        }
+    }, [showPaymentSuccess]);
+
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-US', {
             weekday: 'long',

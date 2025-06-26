@@ -5,6 +5,19 @@ import { useEffect } from 'react'
 /**
  * Filters out development-only console messages that cannot be fixed
  * Only active in development mode and only suppresses specific known dev-only warnings
+ * 
+ * IMPORTANT: Only suppresses truly unfixable external library warnings.
+ * Our application code is clean and doesn't generate these violations.
+ * 
+ * SUPPRESSED VIOLATIONS (External Libraries Only):
+ * 1. hCaptcha - non-passive event listeners (external captcha service)
+ * 2. Stripe - non-passive event listeners (external payment service)
+ * 3. Stripe - HTTPS development warnings (expected in dev mode)
+ * 
+ * STRIPE PAYMENT METHOD WARNINGS:
+ * If you see "payment method types are not activated" warnings, these are 
+ * CONFIGURATION issues in your Stripe Dashboard, not code issues. 
+ * Go to: Stripe Dashboard > Settings > Payment methods to activate needed methods.
  */
 export function DevOnlyErrorFilter() {
     useEffect(() => {
@@ -43,11 +56,13 @@ export function DevOnlyErrorFilter() {
             }
 
             // Suppress third-party passive event listener violations (unfixable - external libraries)
-            if (message.includes('[Violation] Added non-passive event listener') ||
-                message.includes('Consider marking event handler as \'passive\'') ||
-                message.includes('hcaptcha.html') ||
-                message.includes('shared-e864a3e608739f9df23f774b6d751e03.js') ||
-                message.includes('setTimeout\' handler took')) {
+            // NOTE: Our application code is clean - these violations come from external libraries only
+            if ((message.includes('[Violation] Added non-passive event listener') && 
+                 (message.includes('hcaptcha.html') || message.includes('shared-e864a3e608739') || message.includes('stripe'))) ||
+                message.includes('Consider marking event handler as \'passive\'') && 
+                 (message.includes('hcaptcha.html') || message.includes('shared-e864a3e608739') || message.includes('stripe')) ||
+                message.includes('setTimeout\' handler took') && 
+                 (message.includes('shared-e864a3e608739') || message.includes('hcaptcha'))) {
                 return // Silently ignore - these are from hCaptcha/Stripe (external libraries)
             }
 
@@ -59,12 +74,12 @@ export function DevOnlyErrorFilter() {
         console.info = (...args) => {
             const message = args[0]?.toString() || ''
             
-            // Suppress third-party passive event listener violations
-            if (message.includes('[Violation] Added non-passive event listener') ||
-                message.includes('Consider marking event handler as \'passive\'') ||
-                message.includes('hcaptcha.html') ||
-                message.includes('shared-e864a3e608739f9df23f774b6d751e03.js')) {
-                return // Silently ignore - these are from external libraries
+            // Suppress third-party passive event listener violations (external libraries only)
+            if ((message.includes('[Violation] Added non-passive event listener') && 
+                 (message.includes('hcaptcha.html') || message.includes('shared-e864a3e608739') || message.includes('stripe'))) ||
+                (message.includes('Consider marking event handler as \'passive\'') && 
+                 (message.includes('hcaptcha.html') || message.includes('shared-e864a3e608739') || message.includes('stripe')))) {
+                return // Silently ignore - these are from external libraries only
             }
 
             // Call original for all other info messages
