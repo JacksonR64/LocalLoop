@@ -94,11 +94,39 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Auth routes (redirect if already logged in)
+  // Auth routes - handle stale authentication state
   const authRoutes = ['/auth/login', '/auth/signup']
   const isAuthRoute = authRoutes.includes(request.nextUrl.pathname)
 
   if (isAuthRoute && user) {
+    // Check if this is a forced logout request (user manually navigated to login)
+    const forceLogout = request.nextUrl.searchParams.get('force_logout')
+    const isManualNavigation = !request.headers.get('referer')?.includes('/auth/') 
+    
+    // If user manually navigates to login page, force clear their session
+    // This handles cases where cookies are stale but middleware thinks user is authenticated
+    if (forceLogout === 'true' || isManualNavigation) {
+      // Clear all Supabase auth cookies
+      const authCookies = request.cookies.getAll().filter(cookie => 
+        cookie.name.includes('sb-') || cookie.name.includes('supabase')
+      )
+      
+      const response = NextResponse.next({ request })
+      authCookies.forEach(cookie => {
+        response.cookies.set(cookie.name, '', {
+          expires: new Date(0),
+          path: '/',
+          httpOnly: false,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax'
+        })
+      })
+      
+      // Allow access to login page with cleared cookies
+      return response
+    }
+    
+    // Normal redirect for valid authenticated users
     const url = request.nextUrl.clone()
     url.pathname = '/'
     return NextResponse.redirect(url)

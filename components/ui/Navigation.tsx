@@ -207,7 +207,7 @@ export function Navigation({
                                 <ProfileDropdown testIdPrefix="desktop-" />
                             ) : (
                                 <Link
-                                    href="/auth/login"
+                                    href="/auth/login?force_logout=true"
                                     className={`bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-all duration-200 ${
                                         authLoading ? 'opacity-75 pointer-events-none' : 'opacity-100'
                                     }`}
@@ -235,7 +235,7 @@ export function Navigation({
                                 />
                             ) : (
                                 <Link
-                                    href="/auth/login"
+                                    href="/auth/login?force_logout=true"
                                     className={`bg-primary text-primary-foreground px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-all duration-200 text-sm ${
                                         authLoading ? 'opacity-75 pointer-events-none' : 'opacity-100'
                                     }`}
