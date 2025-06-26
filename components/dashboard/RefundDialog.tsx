@@ -239,12 +239,12 @@ export default function RefundDialog({
                     </div>
 
                     {/* Refund Policy */}
-                    <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-lg p-4">
+                    <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-lg p-4">
                         <div className="flex items-start gap-2">
-                            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                            <AlertTriangle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                             <div className="text-sm">
-                                <div className="font-medium text-amber-800 dark:text-amber-200 mb-1">Refund Policy</div>
-                                <div className="text-amber-700 dark:text-amber-300">
+                                <div className="font-medium text-foreground mb-1">Refund Policy</div>
+                                <div className="text-muted-foreground">
                                     {isEventCancelled ? (
                                         "Since this event was cancelled, you're eligible for a full refund with no processing fees."
                                     ) : (
