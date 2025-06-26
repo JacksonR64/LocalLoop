@@ -231,6 +231,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                                 eventId={event.id}
                                                 selectedTickets={selectedTickets}
                                                 onTicketsChange={handleTicketsChange}
+                                                eventCapacity={event.capacity}
                                             />
                                         </div>
 
@@ -290,6 +291,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                         capacity={event.capacity}
                                         currentRSVPs={event.rsvp_count}
                                         isRegistrationOpen={true}
+                                        isPaidEvent={event.is_paid}
                                     />
                                 </div>
                             )}
@@ -310,12 +312,16 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                             </div>
                                         )}
                                         <div className="flex justify-between" data-test-id="event-rsvp-count">
-                                            <span className="text-muted-foreground">RSVPs:</span>
+                                            <span className="text-muted-foreground">
+                                                {event.is_paid ? 'Tickets Sold:' : 'RSVPs:'}
+                                            </span>
                                             <span className="text-foreground">{event.rsvp_count}</span>
                                         </div>
                                         {event.capacity && (
                                             <div className="flex justify-between" data-test-id="event-available-spots">
-                                                <span className="text-muted-foreground">Available:</span>
+                                                <span className="text-muted-foreground">
+                                                    {event.is_paid ? 'Tickets Left:' : 'Available:'}
+                                                </span>
                                                 <span className="text-foreground">{event.capacity - event.rsvp_count}</span>
                                             </div>
                                         )}

@@ -47,12 +47,14 @@ interface TicketSelectionProps {
     eventId: string
     selectedTickets: TicketSelection[]
     onTicketsChange: (tickets: TicketSelection[]) => void
+    eventCapacity?: number
 }
 
 export default function TicketSelection({
     eventId,
     selectedTickets = [],
-    onTicketsChange
+    onTicketsChange,
+    eventCapacity
 }: TicketSelectionProps) {
     const [ticketTypes, setTicketTypes] = useState<TicketType[]>([])
     const [loading, setLoading] = useState(true)
@@ -94,12 +96,32 @@ export default function TicketSelection({
         }
     }, [eventId, selectedTickets])
 
+    // Calculate total tickets sold across all types for capacity management
+    const totalTicketsSold = ticketTypes.reduce((total, ticket) => {
+        return total + (ticket.sold_count || 0);
+    }, 0);
+
+    // Calculate remaining event capacity (if event capacity is set)
+    const remainingEventCapacity = eventCapacity ? Math.max(0, eventCapacity - totalTicketsSold) : null;
+
     // Update quantities and notify parent
     const updateQuantity = (ticketTypeId: string, newQuantity: number) => {
         const ticketType = ticketTypes.find(t => t.id === ticketTypeId)
         if (!ticketType) return
 
-        const maxQuantity = Math.max(0, ticketType.capacity - ticketType.sold_count)
+        // Calculate max based on ticket type capacity
+        const ticketTypeAvailable = Math.max(0, ticketType.capacity - ticketType.sold_count)
+        
+        // Factor in overall event capacity if set
+        let maxQuantity = ticketTypeAvailable
+        if (remainingEventCapacity !== null) {
+            // Current quantity selected for this ticket type
+            const currentQuantity = quantities[ticketTypeId] || 0
+            // Available capacity = remaining event capacity + current selection for this type
+            const availableCapacity = remainingEventCapacity + currentQuantity
+            maxQuantity = Math.min(ticketTypeAvailable, availableCapacity)
+        }
+
         const validQuantity = Math.max(0, Math.min(newQuantity, maxQuantity))
 
         const newQuantities = {
@@ -194,7 +216,14 @@ export default function TicketSelection({
                         // Handle undefined sold_count gracefully
                         const soldCount = ticket.sold_count || 0
                         const capacity = ticket.capacity || 1000
-                        const available = Math.max(0, capacity - soldCount)
+                        const ticketTypeAvailable = Math.max(0, capacity - soldCount)
+                        
+                        // Calculate actual availability considering event capacity
+                        let available = ticketTypeAvailable
+                        if (remainingEventCapacity !== null) {
+                            available = Math.min(ticketTypeAvailable, remainingEventCapacity)
+                        }
+                        
                         const quantity = quantities[ticket.id] || 0
                         const isAvailable = available > 0
 

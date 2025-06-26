@@ -65,7 +65,14 @@ async function getEventData(eventId: string): Promise<EventData | null> {
       image_url,
       organizer_id,
       users!events_organizer_id_fkey(display_name),
-      rsvps(user_id)
+      rsvps(user_id),
+      orders(
+        id,
+        status,
+        total_amount,
+        refund_amount,
+        tickets(quantity)
+      )
     `)
         .eq(queryField, queryValue)
         .eq('published', true)
@@ -81,6 +88,23 @@ async function getEventData(eventId: string): Promise<EventData | null> {
         display_name: string
     }
 
+    // Calculate attendance based on event type
+    const rsvpCount = event.rsvps?.length || 0;
+    
+    // Calculate ticket sales from completed orders (excluding refunded tickets)
+    const ticketCount = event.orders
+        ?.filter(order => 
+            order.status === 'completed' && 
+            (order.refund_amount === 0 || order.refund_amount < order.total_amount)
+        )
+        .reduce((total, order) => {
+            const orderTickets = order.tickets?.reduce((sum, ticket) => sum + ticket.quantity, 0) || 0;
+            return total + orderTickets;
+        }, 0) || 0;
+
+    // For paid events, use ticket count; for free events, use RSVP count
+    const totalAttendance = event.is_paid ? ticketCount : rsvpCount;
+
     return {
         id: event.slug || eventId, // Use slug if available, otherwise the provided ID
         database_id: event.id, // Real database UUID for API calls
@@ -94,7 +118,8 @@ async function getEventData(eventId: string): Promise<EventData | null> {
         is_paid: event.is_paid,
         featured: event.featured,
         capacity: event.capacity,
-        rsvp_count: event.rsvps?.length || 0,
+        rsvp_count: totalAttendance,
+        tickets_sold: ticketCount, // New field for ticket count
         image_url: event.image_url,
         organizer: {
             display_name: (Array.isArray(event.users)

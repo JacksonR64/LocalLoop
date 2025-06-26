@@ -242,10 +242,20 @@ export async function GET(request: NextRequest) {
             actualEventId = event.id;
         }
 
-        // Fetch ticket types from database using the actual UUID
+        // Fetch ticket types and calculate sold counts from orders
         const { data: tickets, error } = await supabase
             .from('ticket_types')
-            .select('*')
+            .select(`
+                *,
+                tickets!tickets_ticket_type_id_fkey(
+                    quantity,
+                    orders!tickets_order_id_fkey(
+                        status,
+                        refund_amount,
+                        total_amount
+                    )
+                )
+            `)
             .eq('event_id', actualEventId)
             .order('sort_order', { ascending: true });
 
@@ -257,11 +267,26 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Add sold_count field for frontend compatibility (set to 0 for now)
-        const ticketsWithSoldCount = (tickets || []).map(ticket => ({
-            ...ticket,
-            sold_count: 0 // TODO: Calculate actual sold count from orders
-        }));
+        // Calculate sold counts from completed, non-refunded orders
+        const ticketsWithSoldCount = (tickets || []).map(ticket => {
+            const soldCount = (ticket.tickets || []).reduce((total, ticketRecord) => {
+                const order = ticketRecord.orders;
+                // Only count tickets from completed orders that haven't been fully refunded
+                if (order && 
+                    order.status === 'completed' && 
+                    (order.refund_amount === 0 || order.refund_amount < order.total_amount)) {
+                    return total + (ticketRecord.quantity || 0);
+                }
+                return total;
+            }, 0);
+
+            return {
+                ...ticket,
+                sold_count: soldCount,
+                // Remove the nested relationship data from response
+                tickets: undefined
+            };
+        });
 
         return NextResponse.json({ ticket_types: ticketsWithSoldCount });
 
