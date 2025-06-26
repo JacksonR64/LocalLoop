@@ -136,9 +136,9 @@ export default function RefundDialog({
     if (step === 'success') {
         return (
             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className="sm:max-w-md" data-testid="refund-success-dialog">
+                <DialogContent className="sm:max-w-md p-6" data-testid="refund-success-dialog">
                     <div className="text-center py-6">
-                        <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                        <CheckCircle2 className="w-16 h-16 text-green-700 dark:text-green-400 mx-auto mb-4" />
                         <h3 className="text-lg font-semibold text-foreground mb-2" data-testid="refund-success-title">Refund Processed</h3>
                         <p className="text-muted-foreground" data-testid="refund-success-message">Your refund has been submitted and will appear in your account within 5-10 business days.</p>
                     </div>
@@ -152,7 +152,7 @@ export default function RefundDialog({
             if (!open) resetDialog()
             onOpenChange(open)
         }}>
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <DollarSign className="w-5 h-5" />
@@ -163,15 +163,15 @@ export default function RefundDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="py-4 space-y-6">
+                <div className="space-y-6">
                     {/* Error Message */}
                     {errorMessage && (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-4" data-testid="refund-error-message">
+                        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4" data-testid="refund-error-message">
                             <div className="flex items-start gap-2">
-                                <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                                <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
                                 <div className="text-sm">
-                                    <div className="font-medium text-red-800 mb-1">Refund Failed</div>
-                                    <div className="text-red-700" data-testid="refund-error-text">{errorMessage}</div>
+                                    <div className="font-medium text-destructive mb-1">Refund Failed</div>
+                                    <div className="text-destructive/90" data-testid="refund-error-text">{errorMessage}</div>
                                 </div>
                             </div>
                         </div>
@@ -227,33 +227,33 @@ export default function RefundDialog({
                     </div>
 
                     {/* Refund Summary */}
-                    <div className="bg-blue-50 rounded-lg p-4">
-                        <h4 className="font-medium text-gray-900 mb-3">Refund Summary</h4>
+                    <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+                        <h4 className="font-medium text-foreground mb-3">Refund Summary</h4>
                         <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
-                                <span className="text-gray-600">Original Amount:</span>
+                                <span className="text-muted-foreground">Original Amount:</span>
                                 <span className="font-medium">{formatPrice(order.total_amount)}</span>
                             </div>
                             {!isEventCancelled && (
                                 <div className="flex justify-between">
-                                    <span className="text-gray-600">Processing Fee:</span>
-                                    <span className="font-medium text-red-600">-{formatPrice(refundCalculation.stripeFee)}</span>
+                                    <span className="text-muted-foreground">Processing Fee:</span>
+                                    <span className="font-medium text-destructive">-{formatPrice(refundCalculation.stripeFee)}</span>
                                 </div>
                             )}
                             <div className="border-t pt-2 flex justify-between font-semibold">
                                 <span>Refund Amount:</span>
-                                <span className="text-green-600">{formatPrice(refundCalculation.netRefund)}</span>
+                                <span className="text-green-700 dark:text-green-400">{formatPrice(refundCalculation.netRefund)}</span>
                             </div>
                         </div>
                     </div>
 
                     {/* Refund Policy */}
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
                         <div className="flex items-start gap-2">
-                            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                            <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
                             <div className="text-sm">
-                                <div className="font-medium text-amber-800 mb-1">Refund Policy</div>
-                                <div className="text-amber-700">
+                                <div className="font-medium text-yellow-800 dark:text-yellow-200 mb-1">Refund Policy</div>
+                                <div className="text-yellow-700 dark:text-yellow-300">
                                     {isEventCancelled ? (
                                         "Since this event was cancelled, you're eligible for a full refund with no processing fees."
                                     ) : (
@@ -267,7 +267,7 @@ export default function RefundDialog({
                     {/* Reason (for customer requests) */}
                     {!isEventCancelled && step === 'review' && (
                         <div>
-                            <label htmlFor="refund-reason" className="block text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="refund-reason" className="block text-sm font-medium text-foreground mb-2">
                                 Reason for Refund (Optional)
                             </label>
                             <textarea
@@ -275,12 +275,12 @@ export default function RefundDialog({
                                 value={refundReason}
                                 onChange={(e) => setRefundReason(e.target.value)}
                                 placeholder="Please let us know why you're requesting a refund..."
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full p-3 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-ring transition-colors"
                                 rows={3}
                                 maxLength={500}
                                 data-testid="refund-reason-textarea"
                             />
-                            <div className="text-xs text-gray-500 mt-1">
+                            <div className="text-xs text-muted-foreground mt-1">
                                 {refundReason.length}/500 characters
                             </div>
                         </div>
@@ -288,12 +288,12 @@ export default function RefundDialog({
 
                     {/* Confirmation step */}
                     {step === 'confirm' && (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
                             <div className="flex items-start gap-2">
-                                <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                                <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
                                 <div className="text-sm">
-                                    <div className="font-medium text-red-800 mb-1">Confirm Refund</div>
-                                    <div className="text-red-700">
+                                    <div className="font-medium text-destructive mb-1">Confirm Refund</div>
+                                    <div className="text-destructive/90">
                                         This action cannot be undone. Your refund of {formatPrice(refundCalculation.netRefund)} will be processed immediately.
                                     </div>
                                 </div>
@@ -317,7 +317,7 @@ export default function RefundDialog({
                                     setErrorMessage('')
                                     setStep('confirm')
                                 }}
-                                className="bg-blue-600 hover:bg-blue-700"
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground"
                                 data-testid="refund-continue-button"
                             >
                                 Continue
@@ -338,7 +338,7 @@ export default function RefundDialog({
                             <Button
                                 onClick={handleRefundSubmit}
                                 disabled={isProcessing}
-                                className="bg-red-600 hover:bg-red-700"
+                                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                                 data-testid="refund-confirm-button"
                             >
                                 {isProcessing ? (
@@ -356,7 +356,7 @@ export default function RefundDialog({
                     {step === 'processing' && (
                         <div className="flex items-center justify-center py-2">
                             <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                            <span className="text-gray-600">Processing your refund...</span>
+                            <span className="text-muted-foreground">Processing your refund...</span>
                         </div>
                     )}
                 </DialogFooter>
