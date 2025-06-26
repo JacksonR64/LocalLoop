@@ -77,6 +77,21 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [activeTab, setActiveTab] = useState('overview')
+    const [searchTerm, setSearchTerm] = useState('')
+    const [showFilter, setShowFilter] = useState(false)
+    const [filterStatus, setFilterStatus] = useState('all')
+
+    // Close filter dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as Element
+            if (showFilter && !target.closest('.filter-dropdown')) {
+                setShowFilter(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [showFilter])
 
     const fetchDashboardData = useCallback(async () => {
         try {
@@ -178,6 +193,21 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
             </div>
         )
     }
+
+    // Filter and search events
+    const filteredEvents = events.filter(event => {
+        const matchesSearch = searchTerm === '' || 
+            event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (event.location && event.location.toLowerCase().includes(searchTerm.toLowerCase()))
+        
+        const matchesFilter = filterStatus === 'all' || 
+            (filterStatus === 'active' && !event.cancelled) ||
+            (filterStatus === 'cancelled' && event.cancelled) ||
+            (filterStatus === 'upcoming' && new Date(event.start_time) > new Date()) ||
+            (filterStatus === 'past' && new Date(event.start_time) < new Date())
+        
+        return matchesSearch && matchesFilter
+    })
 
     return (
         <div className="max-w-7xl mx-auto p-6">
@@ -357,7 +387,33 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
                                         View Analytics
                                     </Link>
                                 </Button>
-                                <Button variant="outline" className="w-full justify-start">
+                                <Button 
+                                    variant="outline" 
+                                    className="w-full justify-start"
+                                    onClick={() => {
+                                        // Simple CSV export of events data
+                                        const csvData = events.map(event => ({
+                                            title: event.title,
+                                            date: event.start_time,
+                                            location: event.location || 'TBD',
+                                            attendees: event.rsvp_count,
+                                            status: event.cancelled ? 'Cancelled' : 'Active'
+                                        }));
+                                        
+                                        const csvContent = [
+                                            ['Title', 'Date', 'Location', 'Attendees', 'Status'],
+                                            ...csvData.map(row => [row.title, row.date, row.location, row.attendees.toString(), row.status])
+                                        ].map(row => row.join(',')).join('\n');
+                                        
+                                        const blob = new Blob([csvContent], { type: 'text/csv' });
+                                        const url = window.URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = `events-export-${new Date().toISOString().split('T')[0]}.csv`;
+                                        a.click();
+                                        window.URL.revokeObjectURL(url);
+                                    }}
+                                >
                                     <Download className="w-4 h-4 mr-2" />
                                     Export Data
                                 </Button>
@@ -371,13 +427,17 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
                                                 Administrator Tools
                                             </p>
                                         </div>
-                                        <Button variant="outline" className="w-full justify-start">
-                                            <Settings className="w-4 h-4 mr-2" />
-                                            System Settings
+                                        <Button variant="outline" className="w-full justify-start" asChild>
+                                            <Link href="/admin/settings">
+                                                <Settings className="w-4 h-4 mr-2" />
+                                                System Settings
+                                            </Link>
                                         </Button>
-                                        <Button variant="outline" className="w-full justify-start">
-                                            <Users className="w-4 h-4 mr-2" />
-                                            User Management
+                                        <Button variant="outline" className="w-full justify-start" asChild>
+                                            <Link href="/admin/users">
+                                                <Users className="w-4 h-4 mr-2" />
+                                                User Management
+                                            </Link>
                                         </Button>
                                     </>
                                 )}
@@ -405,24 +465,59 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
                             )}
                         </div>
                         <div className="flex items-center gap-3">
-                            <Button variant="outline" size="sm">
-                                <Filter className="w-4 h-4 mr-2" />
-                                Filter
-                            </Button>
-                            <Button variant="outline" size="sm">
-                                <Search className="w-4 h-4 mr-2" />
-                                Search
-                            </Button>
+                            <div className="relative filter-dropdown">
+                                <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => setShowFilter(!showFilter)}
+                                >
+                                    <Filter className="w-4 h-4 mr-2" />
+                                    Filter
+                                </Button>
+                                {showFilter && (
+                                    <div className="absolute top-full mt-2 right-0 bg-background border border-border rounded-lg shadow-lg p-3 z-10 min-w-48">
+                                        <div className="space-y-2">
+                                            <p className="text-sm font-medium">Filter by Status</p>
+                                            <select 
+                                                value={filterStatus} 
+                                                onChange={(e) => setFilterStatus(e.target.value)}
+                                                className="w-full p-2 text-sm border border-border rounded bg-background"
+                                            >
+                                                <option value="all">All Events</option>
+                                                <option value="active">Active</option>
+                                                <option value="cancelled">Cancelled</option>
+                                                <option value="upcoming">Upcoming</option>
+                                                <option value="past">Past</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Search events..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-9 pr-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring w-64"
+                                />
+                                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                            </div>
                         </div>
                     </div>
 
-                    {events.length === 0 ? (
+                    {filteredEvents.length === 0 ? (
                         <Card className="p-12">
                             <div className="text-center">
                                 <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                                <h3 className="text-lg font-medium text-foreground mb-2">No events yet</h3>
+                                <h3 className="text-lg font-medium text-foreground mb-2">
+                                    {events.length === 0 ? 'No events yet' : 'No events match your filters'}
+                                </h3>
                                 <p className="text-muted-foreground mb-6">
-                                    Get started by creating your first event.
+                                    {events.length === 0 
+                                        ? 'Get started by creating your first event.'
+                                        : 'Try adjusting your search terms or filters to find events.'
+                                    }
                                 </p>
                                 <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white">
                                     <Link href="/staff/events/create">
@@ -434,7 +529,7 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
                         </Card>
                     ) : (
                         <div className="space-y-4">
-                            {events.map((event) => (
+                            {filteredEvents.map((event) => (
                                 <Card key={event.id} className="p-6">
                                     <div className="flex items-center justify-between">
                                         <div className="flex-1">
