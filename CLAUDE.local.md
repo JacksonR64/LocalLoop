@@ -163,3 +163,24 @@
 
 ### 📊 **Current Accessibility Score**: 75/100 (up from previous baseline)
 ### 🎯 **Target**: 90+ for WCAG compliance
+
+## Anti-Reward-Hacking Guidelines
+
+🛠️ Anti-reward-hacking guidelines:
+
+- **High-quality, general-purpose solutions** only – no test-case shortcuts, special‑casing, or hard‑coding of values.
+- **If tests are broken, impossible, or unreasonable**, do not hack around them – instead *raise an alert*. Explain why it's infeasible.
+- **Do not suppress or ignore warnings or errors silently.** If a warning/error arises, identify and fix the root cause—not hide it.
+- Think through all edge cases; ensure solutions handle both common and unexpected inputs.
+- **No quick fixes to get past tests or prototypes.** Favour correctness and maintainability.
+- If an implementation requires assumptions, declare them explicitly and validate with comments and/or runtime checks.
+
+## Thinking and Problem-Solving Strategy
+
+🧠 Always use ultra-thinking mode
+
+- **Always begin thinking using "ultrathink".** This triggers maximum thinking budget before responding.
+- **Never shortcut reasoning.** Avoid quick fixes, suppressed errors, or warnings—take the time to deeply analyse.
+- **Explicit planning step required.** Use "ultrathink" to outline approach, evaluate edge cases, and iterate before coding.
+- **Errors/warnings exposed, not hidden.** If anything fails, include the explanation and next steps.
+- **Document assumptions and validate.** Use runtime checks or comments to make assumptions clear.

@@ -221,11 +221,11 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
     const filteredEvents = events.filter(event => {
         const matchesSearch = searchTerm === '' || 
             event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (event.location && event.location.toLowerCase().includes(searchTerm.toLowerCase()))
+            ((event as any).location && (event as any).location.toLowerCase().includes(searchTerm.toLowerCase()))
         
         const matchesFilter = filterStatus === 'all' || 
-            (filterStatus === 'active' && !event.cancelled) ||
-            (filterStatus === 'cancelled' && event.cancelled) ||
+            (filterStatus === 'active' && !(event as any).cancelled) ||
+            (filterStatus === 'cancelled' && (event as any).cancelled) ||
             (filterStatus === 'upcoming' && new Date(event.start_time) > new Date()) ||
             (filterStatus === 'past' && new Date(event.start_time) < new Date())
         
@@ -446,9 +446,9 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
                                         const csvData = events.map(event => ({
                                             title: event.title,
                                             date: event.start_time,
-                                            location: event.location || 'TBD',
+                                            location: (event as any).location || 'TBD',
                                             attendees: event.rsvp_count,
-                                            status: event.cancelled ? 'Cancelled' : 'Active'
+                                            status: (event as any).cancelled ? 'Cancelled' : 'Active'
                                         }));
                                         
                                         const csvContent = [
@@ -594,16 +594,16 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <Users className="w-4 h-4" />
-                                                    <span>{event.rsvp_count} {event.is_paid === true ? 'attendees' : 'RSVPs'}</span>
+                                                    <span>{event.rsvp_count} {(event as any).is_paid === true ? 'attendees' : 'RSVPs'}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <DollarSign className="w-4 h-4" />
-                                                    <span>{event.is_paid === true ? formatCurrency(event.total_revenue) : 'N/A'}</span>
+                                                    <span>{(event as any).is_paid === true ? formatCurrency(event.total_revenue) : 'N/A'}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <FileText className="w-4 h-4" />
                                                     <span>
-                                                        {event.is_paid === true
+                                                        {(event as any).is_paid === true
                                                             ? `${event.ticket_sales || 0} tickets sold`
                                                             : 'Free RSVP'
                                                         }

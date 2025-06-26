@@ -59,7 +59,7 @@ export function LoadingProvider({
     return loadingOperations.has(id)
   }, [loadingOperations])
 
-  const withLoading = useCallback(async <T>(promise: Promise<T>, id: string = 'default'): Promise<T> => {
+  const withLoading = useCallback(async function<T>(promise: Promise<T>, id: string = 'default'): Promise<T> {
     startLoading(id)
     try {
       const result = await promise

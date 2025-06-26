@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Calendar, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import type { EventData } from '@/components/events/EventCard'
@@ -51,7 +51,7 @@ function useGoogleCalendarStatus() {
     const [isLoading, setIsLoading] = useState(true)
     const { user, loading: authLoading } = useAuth()
 
-    const checkStatus = async () => {
+    const checkStatus = useCallback(async () => {
         // Don't check Google Calendar status if user isn't authenticated
         if (!user) {
             setIsConnected(false)
@@ -98,14 +98,14 @@ function useGoogleCalendarStatus() {
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [user])
 
     useEffect(() => {
         // Wait for auth loading to complete before checking status
         if (!authLoading) {
             checkStatus()
         }
-    }, [user, authLoading])
+    }, [user, authLoading, checkStatus])
 
     return { isConnected, isLoading, refresh: checkStatus }
 }

@@ -276,8 +276,17 @@ export async function GET(request: NextRequest) {
         }
 
         // Calculate sold counts from completed, non-refunded orders
+        interface TicketRecord {
+            quantity?: number;
+            orders?: {
+                status: string;
+                refund_amount: number;
+                total_amount: number;
+            };
+        }
+        
         const ticketsWithSoldCount = (tickets || []).map(ticket => {
-            const soldCount = (ticket.tickets || []).reduce((total, ticketRecord) => {
+            const soldCount = (ticket.tickets || []).reduce((total: number, ticketRecord: TicketRecord) => {
                 const order = ticketRecord.orders;
                 // Only count tickets from completed orders that haven't been fully refunded
                 if (order && 

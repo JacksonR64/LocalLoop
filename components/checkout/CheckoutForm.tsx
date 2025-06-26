@@ -290,32 +290,32 @@ function PaymentForm({
                         </Alert>
                     )}
 
-                    <div className="flex gap-3 mt-6">
+                    <div className="flex flex-col sm:flex-row gap-3 mt-6">
                         <Button
                             type="button"
                             variant="outline"
                             onClick={onCancel}
                             disabled={processing}
-                            className="flex-1"
+                            className="flex-1 min-w-0"
                         >
-                            <ArrowLeft className="h-4 w-4 mr-2" />
-                            Back to Tickets
+                            <ArrowLeft className="h-4 w-4 mr-2 flex-shrink-0" />
+                            <span className="truncate">Back to Tickets</span>
                         </Button>
 
                         <Button
                             type="submit"
                             disabled={!stripe || processing || !customerDetails.email || !customerDetails.name}
-                            className="flex-1"
+                            className="flex-1 min-w-0"
                         >
                             {processing ? (
                                 <>
-                                    <LoadingSpinner size="sm" className="mr-2" />
-                                    Processing...
+                                    <LoadingSpinner size="sm" className="mr-2 flex-shrink-0" />
+                                    <span className="truncate">Processing...</span>
                                 </>
                             ) : (
                                 <>
-                                    <CreditCard className="h-4 w-4 mr-2" />
-                                    Pay {formatPrice(orderDetails.amount)}
+                                    <CreditCard className="h-4 w-4 mr-2 flex-shrink-0" />
+                                    <span className="truncate">Pay {formatPrice(orderDetails.amount)}</span>
                                 </>
                             )}
                         </Button>
@@ -366,16 +366,18 @@ function PaymentSuccess({
                     Please save this email as it contains important information for event entry.
                 </div>
 
-                <GoogleCalendarAddButton
-                    eventTitle={orderDetails.event.title}
-                    eventTime={orderDetails.event.start_time}
-                    eventLocation={orderDetails.event.location || 'Online Event'}
-                    className="mb-6"
-                />
+                <div className="overflow-hidden mb-6">
+                    <GoogleCalendarAddButton
+                        eventTitle={orderDetails.event.title}
+                        eventTime={orderDetails.event.start_time}
+                        eventLocation={orderDetails.event.location || 'Online Event'}
+                        className="w-full max-w-full"
+                    />
+                </div>
 
-                <Button onClick={onContinue} className="w-full">
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Continue to Event
+                <Button onClick={onContinue} className="w-full min-w-0">
+                    <CheckCircle className="h-4 w-4 mr-2 flex-shrink-0" />
+                    <span className="truncate">Continue to Event</span>
                 </Button>
             </CardContent>
         </Card>
@@ -404,7 +406,7 @@ export default function CheckoutForm({
     }), [guestInfo?.email, guestInfo?.name, user?.email, user?.user_metadata?.full_name, user?.user_metadata?.name])
 
     // Get current theme for Stripe appearance
-    const { theme, resolvedTheme } = useTheme()
+    const { resolvedTheme } = useTheme()
     const isDark = resolvedTheme === 'dark'
 
     // Memoize stripe options to prevent clientSecret mutation warnings
@@ -413,21 +415,23 @@ export default function CheckoutForm({
         appearance: {
             theme: isDark ? 'night' as const : 'stripe' as const,
             variables: {
-                colorPrimary: '#4f46e5',
-                colorBackground: isDark ? '#0f0f23' : '#ffffff',
-                colorText: isDark ? '#e5e7eb' : '#1f2937',
-                colorTextSecondary: isDark ? '#9ca3af' : '#6b7280',
+                colorPrimary: '#475569', // Use slate-600 to match site theme better
+                colorBackground: isDark ? '#020817' : '#ffffff',
+                colorText: isDark ? '#f8fafc' : '#1f2937',
+                colorTextSecondary: isDark ? '#94a3b8' : '#6b7280',
                 colorDanger: '#dc2626',
                 fontFamily: 'system-ui, sans-serif',
                 spacingUnit: '4px',
-                borderRadius: '6px',
-                // Dark mode specific variables
+                borderRadius: '8px',
+                // Dark mode specific variables to match site theme
                 ...(isDark && {
-                    colorBackgroundDeemphasized: '#1a1a2e',
-                    colorInputBackground: '#16213e',
-                    colorInputBorder: '#2a3441',
-                    colorInputText: '#e5e7eb',
-                    colorInputPlaceholder: '#9ca3af',
+                    colorPrimary: '#64748b', // Use slate-500 for dark mode
+                    colorBackgroundDeemphasized: '#0f172a',
+                    colorInputBackground: '#1e293b',
+                    colorInputBorder: '#334155',
+                    colorInputText: '#f8fafc',
+                    colorInputPlaceholder: '#64748b',
+                    colorBackgroundText: '#1e293b',
                 }),
             },
         },

@@ -160,14 +160,14 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                 </div>
                             )}
 
-                            <div className="flex items-start justify-between mb-4">
-                                <div>
-                                    <h1 className="text-3xl font-bold text-foreground mb-2" data-test-id="event-title">{event.title}</h1>
-                                    <p className="text-lg text-muted-foreground mb-4" data-test-id="event-short-description">{event.short_description}</p>
+                            <div className="flex items-start justify-between gap-4 mb-4">
+                                <div className="min-w-0 flex-1">
+                                    <h1 className="text-3xl font-bold text-foreground mb-2 break-words" data-test-id="event-title">{event.title}</h1>
+                                    <p className="text-lg text-muted-foreground mb-4 break-words" data-test-id="event-short-description">{event.short_description}</p>
                                 </div>
-                                <div className="flex gap-2" data-test-id="event-actions">
+                                <div className="flex gap-2 flex-shrink-0" data-test-id="event-actions">
                                     <button 
-                                        className="p-2 rounded-lg border border-border hover:bg-accent transition-colors" 
+                                        className="p-2 rounded-lg border border-border hover:bg-accent transition-colors min-w-[40px] min-h-[40px]" 
                                         data-test-id="share-button"
                                         aria-label={`Share ${event.title} event`}
                                         title={`Share ${event.title}`}
@@ -175,7 +175,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                         <Share2 className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
                                     </button>
                                     <button 
-                                        className="p-2 rounded-lg border border-border hover:bg-accent transition-colors" 
+                                        className="p-2 rounded-lg border border-border hover:bg-accent transition-colors min-w-[40px] min-h-[40px]" 
                                         data-test-id="favorite-button"
                                         aria-label={`Add ${event.title} to favorites`}
                                         title={`Add to favorites`}
@@ -339,10 +339,10 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                                     </div>
                                                     <button
                                                         onClick={handleProceedToCheckout}
-                                                        className="w-full bg-primary text-primary-foreground py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors"
+                                                        className="w-full min-w-0 bg-primary text-primary-foreground py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors overflow-hidden"
                                                         data-test-id="proceed-to-checkout-button"
                                                     >
-                                                        Proceed to Checkout
+                                                        <span className="truncate block">Proceed to Checkout</span>
                                                     </button>
                                                 </CardContent>
                                             </Card>
@@ -375,6 +375,16 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                         </div>
                                     </div>
                                 )
+                            ) : event.is_paid ? (
+                                // Show loading state for paid events while fetching ticket types
+                                <Card data-test-id="ticket-loading">
+                                    <CardContent className="p-6 text-center">
+                                        <div className="flex items-center justify-center space-x-2">
+                                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                                            <span className="text-muted-foreground">Loading ticket options...</span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             ) : (
                                 <div data-test-id="rsvp-section">
                                     <RSVPTicketSection

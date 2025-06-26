@@ -4,8 +4,8 @@ import React from 'react';
 import Image from 'next/image';
 import { Calendar, MapPin, Users, Clock, Tag, ExternalLink, ImageIcon } from 'lucide-react';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui';
-import { formatDateTime, formatPrice, truncateText, getEventCardDescription, formatLocationForCard } from '@/lib/utils';
-import { getEventTimingInfo, getEventTimingBadge } from '@/lib/utils/event-timing';
+import { formatDateTime, truncateText, getEventCardDescription, formatLocationForCard } from '@/lib/utils';
+import { getEventTimingInfo } from '@/lib/utils/event-timing';
 import { EventBadges } from '@/lib/utils/event-badges';
 
 // Event interface (simplified from database types)
@@ -65,7 +65,6 @@ interface CardComponentProps {
     isUpcoming: boolean;
     hasPrice: boolean;
     lowestPrice: number;
-    isSoon: boolean;
 }
 
 // Safe Image component with error handling
@@ -138,7 +137,7 @@ export function EventCard({
     
     // Use shared timing logic
     const timingInfo = getEventTimingInfo(event.start_time);
-    const { isUpcoming, isSoon } = timingInfo;
+    const { isUpcoming } = timingInfo;
 
     const commonProps: CardComponentProps = {
         event,
@@ -151,7 +150,6 @@ export function EventCard({
         isUpcoming,
         hasPrice,
         lowestPrice,
-        isSoon
     };
 
     // Render based on style
@@ -170,7 +168,7 @@ export function EventCard({
 }
 
 // Default Card Style (same as current homepage implementation)
-function DefaultCard({ event, size, featured, showImage, className, onClick, spotsRemaining, isUpcoming, hasPrice, lowestPrice, isSoon }: Readonly<CardComponentProps>) {
+function DefaultCard({ event, size, featured, showImage, className, onClick, spotsRemaining, isUpcoming, hasPrice, lowestPrice }: Readonly<CardComponentProps>) {
     const cardId = `event-card-${event.id}`
     const urgencyClass = ''
     
@@ -287,7 +285,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
 }
 
 // Preview List Style - Compact horizontal layout for list views
-function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowestPrice, isSoon }: Readonly<CardComponentProps>) {
+function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowestPrice }: Readonly<CardComponentProps>) {
     const urgencyClass = ''
     return (
         <Card
@@ -348,7 +346,7 @@ function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowe
 }
 
 // Full List Style - Detailed view with all information
-function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, hasPrice, lowestPrice, isSoon }: Readonly<CardComponentProps>) {
+function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, hasPrice, lowestPrice }: Readonly<CardComponentProps>) {
     const urgencyClass = ''
     return (
         <Card
@@ -383,7 +381,6 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
                     event={event}
                     isUpcoming={isUpcoming}
                     priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
-                    variant="full"
                     className="flex gap-2"
                 />
             </div>
@@ -474,7 +471,7 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
 }
 
 // Compact Card Style - Minimal information for dense layouts
-function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcoming, isSoon }: Readonly<CardComponentProps>) {
+function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcoming }: Readonly<CardComponentProps>) {
     const urgencyClass = 'border-l-blue-600'
     return (
         <Card
@@ -511,7 +508,7 @@ function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcom
 }
 
 // Timeline Card Style - Vertical timeline layout
-function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpcoming, isSoon }: Readonly<CardComponentProps>) {
+function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpcoming }: Readonly<CardComponentProps>) {
     const eventDate = new Date(event.start_time);
     const day = eventDate.getDate();
     const month = eventDate.toLocaleDateString('en-US', { month: 'short' });

@@ -10,7 +10,6 @@ import {
     Loader2,
     MapPin,
     Clock,
-    DollarSign,
     Ticket,
     CheckCircle2
 } from 'lucide-react'

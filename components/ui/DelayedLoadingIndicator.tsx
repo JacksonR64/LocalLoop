@@ -118,7 +118,7 @@ export function useDelayedLoading(delay: number = 1000) {
     setIsLoading,
     showLoading,
     // Convenience method for async operations
-    withLoading: async <T>(promise: Promise<T>): Promise<T> => {
+    withLoading: async function<T>(promise: Promise<T>): Promise<T> {
       setIsLoading(true)
       try {
         const result = await promise

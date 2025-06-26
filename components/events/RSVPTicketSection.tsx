@@ -22,7 +22,6 @@ import {
 import { createClient } from '@/utils/supabase/client';
 import { cn } from '@/lib/utils';
 import { useLoading } from '@/lib/loading-context';
-import { DelayedLoadingIndicator } from '@/components/ui/DelayedLoadingIndicator';
 
 // Types
 interface RSVPTicketSectionProps {
@@ -182,7 +181,7 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
                 };
 
             // Use global loading indicator for the RSVP submission
-            await withLoading(async () => {
+            await withLoading((async () => {
                 const response = await fetch('/api/rsvps', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -202,7 +201,7 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
                 if (!user) {
                     (e.target as HTMLFormElement).reset();
                 }
-            }, 'rsvp-submit');
+            })(), 'rsvp-submit');
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
         } finally {

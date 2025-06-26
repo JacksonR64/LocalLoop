@@ -86,7 +86,7 @@ export function DevOnlyErrorFilter() {
 
         // Override console.info to catch violation messages that might come through info
         console.info = (...args) => {
-            const message = args[0]?.toString() || ''
+            // const message = args[0]?.toString() || ''
             
 
             // Call original for all other info messages
