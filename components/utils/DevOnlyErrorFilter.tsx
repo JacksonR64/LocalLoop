@@ -14,6 +14,7 @@ export function DevOnlyErrorFilter() {
         // Store original console methods
         const originalLog = console.log
         const originalWarn = console.warn
+        const originalError = console.error
 
         // Override console.log to filter Stripe development warnings
         console.log = (...args) => {
@@ -43,10 +44,25 @@ export function DevOnlyErrorFilter() {
             originalWarn.apply(console, args)
         }
 
+        // Override console.error to filter expected 401s from Google Calendar
+        console.error = (...args) => {
+            const message = args[0]?.toString() || ''
+            
+            // Suppress expected 401 errors from Google Calendar API for unauthenticated users
+            if (message.includes('GET http://localhost:3000/api/auth/google/status 401') ||
+                message.includes('api/auth/google/status 401')) {
+                return // Silently ignore - this is expected for guest users
+            }
+
+            // Call original for all other errors
+            originalError.apply(console, args)
+        }
+
         // Cleanup function
         return () => {
             console.log = originalLog
             console.warn = originalWarn
+            console.error = originalError
         }
     }, [])
 
