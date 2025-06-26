@@ -24,6 +24,8 @@ interface OrderTicket {
     }
     quantity: number
     confirmation_code: string
+    attendee_name?: string
+    attendee_email?: string
 }
 
 interface OrderWithTickets {
@@ -205,6 +207,19 @@ export default function RefundDialog({
                                             <div className="text-sm text-muted-foreground">
                                                 Quantity: {ticket.quantity} • {formatPrice(ticket.ticket_type.price)} each
                                             </div>
+                                            {ticket.attendee_name && (
+                                                <div className="text-sm text-muted-foreground">
+                                                    Attendee: {ticket.attendee_name}
+                                                </div>
+                                            )}
+                                            {ticket.attendee_email && (
+                                                <div className="text-sm text-muted-foreground">
+                                                    Email: {ticket.attendee_email}
+                                                </div>
+                                            )}
+                                            <div className="text-sm text-muted-foreground">
+                                                Confirmation: {ticket.confirmation_code}
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="text-right">
@@ -246,9 +261,9 @@ export default function RefundDialog({
                                 <div className="font-medium text-foreground mb-1">Refund Policy</div>
                                 <div className="text-muted-foreground">
                                     {isEventCancelled ? (
-                                        "Since this event was cancelled, you're eligible for a full refund with no processing fees."
+                                        "Since this event was cancelled, you're eligible for a full refund with no processing fees. The refund will be credited back to your original payment method."
                                     ) : (
-                                        "Customer-requested refunds are subject to a $0.30 processing fee. Refunds typically take 5-10 business days to appear in your account."
+                                        "Customer-requested refunds are subject to a $0.30 processing fee. The refund will be credited back to your original payment method and typically takes 5-10 business days to appear in your account."
                                     )}
                                 </div>
                             </div>

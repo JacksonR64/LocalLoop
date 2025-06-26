@@ -150,11 +150,10 @@ export default function UserDashboard({ user }: UserDashboardProps) {
 
         try {
             setRefreshing(true)
+            // Remove custom auth header - rely on server-side Supabase session
             const response = await fetch('/api/orders', {
                 method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${user.id}`, // Using user ID as auth
-                }
+                credentials: 'include', // Include cookies for session
             })
 
             if (!response.ok) {
@@ -178,8 +177,10 @@ export default function UserDashboard({ user }: UserDashboardProps) {
 
         try {
             setRsvpLoading(true)
+            // Include credentials for session - was missing before!
             const response = await fetch('/api/rsvps', {
                 method: 'GET',
+                credentials: 'include', // Include cookies for session
             })
 
             if (!response.ok) {
@@ -351,7 +352,9 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                     price: ticket.unit_price
                 },
                 quantity: ticket.quantity,
-                confirmation_code: ticket.confirmation_code
+                confirmation_code: ticket.confirmation_code,
+                attendee_name: ticket.attendee_name,
+                attendee_email: ticket.attendee_email
             })),
             event: {
                 id: order.events.id,
@@ -529,6 +532,16 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                                                         <div className="text-sm text-muted-foreground mt-1">
                                                                             Confirmation: {ticket.confirmation_code}
                                                                         </div>
+                                                                        {ticket.attendee_name && (
+                                                                            <div className="text-sm text-muted-foreground mt-1">
+                                                                                Name: {ticket.attendee_name}
+                                                                            </div>
+                                                                        )}
+                                                                        {ticket.attendee_email && (
+                                                                            <div className="text-sm text-muted-foreground mt-1">
+                                                                                Email: {ticket.attendee_email}
+                                                                            </div>
+                                                                        )}
                                                                         <div className="text-sm text-muted-foreground mt-1">
                                                                             Purchased: {formatEventDateTime(order.created_at, true)}
                                                                         </div>
@@ -676,6 +689,16 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                                                                         <div className="text-sm text-muted-foreground mt-1">
                                                                                             Confirmation: {ticket.confirmation_code}
                                                                                         </div>
+                                                                                        {ticket.attendee_name && (
+                                                                                            <div className="text-sm text-muted-foreground mt-1">
+                                                                                                Name: {ticket.attendee_name}
+                                                                                            </div>
+                                                                                        )}
+                                                                                        {ticket.attendee_email && (
+                                                                                            <div className="text-sm text-muted-foreground mt-1">
+                                                                                                Email: {ticket.attendee_email}
+                                                                                            </div>
+                                                                                        )}
                                                                                         <div className="text-sm text-muted-foreground mt-1">
                                                                                             Purchased: {formatEventDateTime(order.created_at, true)}
                                                                                         </div>

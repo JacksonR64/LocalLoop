@@ -133,7 +133,7 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
 
         // Add timeout to prevent infinite loading
         const timeoutId = setTimeout(() => {
-            console.warn('Auth initialization timeout, setting loading to false');
+            // Auth initialization timeout - gracefully handle slow auth
             setLoading(false);
         }, 5000); // 5 second timeout
 

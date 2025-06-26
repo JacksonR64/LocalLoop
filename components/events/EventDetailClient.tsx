@@ -104,14 +104,14 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                         {/* Event Header */}
                         <div data-test-id="event-header">
                             {event.image_url && (
-                                <div className="mb-6" data-test-id="event-image">
+                                <div className="mb-6 relative w-full h-64" data-test-id="event-image">
                                     <Image
                                         src={event.image_url}
                                         alt={event.title}
-                                        width={800}
-                                        height={256}
-                                        className="w-full h-64 object-cover rounded-lg"
+                                        fill
+                                        className="object-cover rounded-lg"
                                         priority
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                     />
                                 </div>
                             )}
