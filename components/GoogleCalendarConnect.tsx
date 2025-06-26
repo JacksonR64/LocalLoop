@@ -44,12 +44,21 @@ function useOAuthCallback() {
 
 /**
  * Hook to fetch Google Calendar connection status
+ * Only checks status if user is authenticated
  */
 function useGoogleCalendarStatus() {
     const [isConnected, setIsConnected] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
+    const { user, loading: authLoading } = useAuth()
 
     const checkStatus = async () => {
+        // Don't check Google Calendar status if user isn't authenticated
+        if (!user) {
+            setIsConnected(false)
+            setIsLoading(false)
+            return
+        }
+
         try {
             // Extract user ID from OAuth callback URL parameters
             const urlParams = new URLSearchParams(window.location.search)
@@ -92,8 +101,11 @@ function useGoogleCalendarStatus() {
     }
 
     useEffect(() => {
-        checkStatus()
-    }, [])
+        // Wait for auth loading to complete before checking status
+        if (!authLoading) {
+            checkStatus()
+        }
+    }, [user, authLoading])
 
     return { isConnected, isLoading, refresh: checkStatus }
 }
@@ -418,6 +430,29 @@ export function GoogleCalendarConnectWithStatus({
                     <span className="text-sm text-gray-500">
                         {authLoading ? 'Loading...' : 'Checking Google Calendar connection...'}
                     </span>
+                </div>
+            </div>
+        )
+    }
+
+    // If user is not authenticated, show sign-in prompt
+    if (!authLoading && !user) {
+        return (
+            <div className={`p-4 sm:p-6 border border-border rounded-lg bg-card shadow-sm ${className}`}>
+                <div className="text-center space-y-3">
+                    <Calendar className="w-8 h-8 text-muted-foreground mx-auto" />
+                    <div>
+                        <h3 className="font-medium text-foreground">Add to Google Calendar</h3>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Sign in to your LocalLoop account to connect with Google Calendar and add events directly to your calendar.
+                        </p>
+                    </div>
+                    <Link
+                        href={`/auth/login?force_logout=true&return_url=${encodeURIComponent(returnUrl || window.location.href)}`}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm"
+                    >
+                        Sign In to Connect Calendar
+                    </Link>
                 </div>
             </div>
         )
