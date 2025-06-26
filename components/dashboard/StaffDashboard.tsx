@@ -564,18 +564,18 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <Users className="w-4 h-4" />
-                                                    <span>{event.rsvp_count} {event.is_paid ? 'attendees' : 'RSVPs'}</span>
+                                                    <span>{event.rsvp_count} {event.is_paid === true ? 'attendees' : 'RSVPs'}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <DollarSign className="w-4 h-4" />
-                                                    <span>{event.is_paid ? formatCurrency(event.total_revenue) : 'N/A'}</span>
+                                                    <span>{event.is_paid === true ? formatCurrency(event.total_revenue) : 'N/A'}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <FileText className="w-4 h-4" />
                                                     <span>
-                                                        {event.is_paid 
-                                                            ? `${event.ticket_sales} tickets sold`
-                                                            : 'Free RSVP Event'
+                                                        {event.is_paid === true
+                                                            ? `${event.ticket_sales || 0} tickets sold`
+                                                            : 'Free RSVP'
                                                         }
                                                     </span>
                                                 </div>
