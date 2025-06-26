@@ -23,6 +23,7 @@ import {
     User,
     Receipt
 } from 'lucide-react'
+import { useTheme } from 'next-themes'
 import GoogleCalendarAddButton from './GoogleCalendarAddButton'
 
 // Initialize Stripe
@@ -402,22 +403,35 @@ export default function CheckoutForm({
         name: guestInfo?.name || user?.user_metadata?.full_name || user?.user_metadata?.name || ''
     }), [guestInfo?.email, guestInfo?.name, user?.email, user?.user_metadata?.full_name, user?.user_metadata?.name])
 
+    // Get current theme for Stripe appearance
+    const { theme, resolvedTheme } = useTheme()
+    const isDark = resolvedTheme === 'dark'
+
     // Memoize stripe options to prevent clientSecret mutation warnings
     const stripeOptions = useMemo(() => ({
         clientSecret: clientSecret || undefined,
         appearance: {
-            theme: 'stripe' as const,
+            theme: isDark ? 'night' as const : 'stripe' as const,
             variables: {
                 colorPrimary: '#4f46e5',
-                colorBackground: '#ffffff',
-                colorText: '#1f2937',
+                colorBackground: isDark ? '#0f0f23' : '#ffffff',
+                colorText: isDark ? '#e5e7eb' : '#1f2937',
+                colorTextSecondary: isDark ? '#9ca3af' : '#6b7280',
                 colorDanger: '#dc2626',
                 fontFamily: 'system-ui, sans-serif',
                 spacingUnit: '4px',
                 borderRadius: '6px',
+                // Dark mode specific variables
+                ...(isDark && {
+                    colorBackgroundDeemphasized: '#1a1a2e',
+                    colorInputBackground: '#16213e',
+                    colorInputBorder: '#2a3441',
+                    colorInputText: '#e5e7eb',
+                    colorInputPlaceholder: '#9ca3af',
+                }),
             },
         },
-    }), [clientSecret])
+    }), [clientSecret, isDark])
 
     // Create checkout session
     useEffect(() => {
