@@ -207,6 +207,26 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
             (filterStatus === 'past' && new Date(event.start_time) < new Date())
         
         return matchesSearch && matchesFilter
+    }).sort((a, b) => {
+        const now = new Date()
+        const aDate = new Date(a.start_time)
+        const bDate = new Date(b.start_time)
+        
+        const aIsUpcoming = aDate > now
+        const bIsUpcoming = bDate > now
+        
+        // If both are upcoming, sort by date ascending (soonest first)
+        if (aIsUpcoming && bIsUpcoming) {
+            return aDate.getTime() - bDate.getTime()
+        }
+        
+        // If both are past, sort by date descending (newest first)
+        if (!aIsUpcoming && !bIsUpcoming) {
+            return bDate.getTime() - aDate.getTime()
+        }
+        
+        // Upcoming events always come before past events
+        return aIsUpcoming ? -1 : 1
     })
 
     return (
