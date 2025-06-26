@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -75,12 +76,33 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
         upcoming_events: 0,
         draft_events: 0
     })
+    const router = useRouter()
+    const searchParams = useSearchParams()
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [activeTab, setActiveTab] = useState('overview')
+    const [activeTab, setActiveTab] = useState(() => {
+        // Initialize from URL parameter or default to 'overview'
+        return searchParams.get('tab') || 'overview'
+    })
     const [searchTerm, setSearchTerm] = useState('')
     const [showFilter, setShowFilter] = useState(false)
     const [filterStatus, setFilterStatus] = useState('all')
+
+    // Handle tab changes and update URL
+    const handleTabChange = useCallback((newTab: string) => {
+        setActiveTab(newTab)
+        // Update URL without full page refresh
+        const newUrl = newTab === 'overview' ? '/staff' : `/staff?tab=${newTab}`
+        router.push(newUrl, { scroll: false })
+    }, [router])
+
+    // Sync activeTab with URL parameter changes
+    useEffect(() => {
+        const currentTab = searchParams.get('tab') || 'overview'
+        if (currentTab !== activeTab) {
+            setActiveTab(currentTab)
+        }
+    }, [searchParams, activeTab])
 
     // Close filter dropdown when clicking outside
     useEffect(() => {
@@ -329,7 +351,7 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
             </div>
 
             {/* Navigation Tabs */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="overview" className="flex items-center gap-2">
                         <BarChart3 className="w-4 h-4" />
@@ -361,8 +383,12 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
                         <Card className="p-6">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-lg font-semibold text-foreground">Recent Events</h3>
-                                <Button variant="outline" size="sm" asChild>
-                                    <Link href="?tab=events">View All</Link>
+                                <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handleTabChange('events')}
+                                >
+                                    View All
                                 </Button>
                             </div>
                             <div className="space-y-4">
@@ -396,17 +422,21 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
                                         Create New Event
                                     </Link>
                                 </Button>
-                                <Button variant="outline" className="w-full justify-start" asChild>
-                                    <Link href="/staff?tab=attendees">
-                                        <Users className="w-4 h-4 mr-2" />
-                                        Manage Attendees
-                                    </Link>
+                                <Button 
+                                    variant="outline" 
+                                    className="w-full justify-start"
+                                    onClick={() => handleTabChange('attendees')}
+                                >
+                                    <Users className="w-4 h-4 mr-2" />
+                                    Manage Attendees
                                 </Button>
-                                <Button variant="outline" className="w-full justify-start" asChild>
-                                    <Link href="/staff?tab=analytics">
-                                        <BarChart3 className="w-4 h-4 mr-2" />
-                                        View Analytics
-                                    </Link>
+                                <Button 
+                                    variant="outline" 
+                                    className="w-full justify-start"
+                                    onClick={() => handleTabChange('analytics')}
+                                >
+                                    <BarChart3 className="w-4 h-4 mr-2" />
+                                    View Analytics
                                 </Button>
                                 <Button 
                                     variant="outline" 
