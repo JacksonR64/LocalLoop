@@ -550,12 +550,11 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
                     ) : (
                         <div className="space-y-4">
                             {filteredEvents.map((event) => (
-                                <Card key={event.id} className="p-6">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-3 mb-2">
+                                <Card key={event.id} className="p-6 relative">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1 pr-4">
+                                            <div className="mb-2">
                                                 <h4 className="text-lg font-semibold text-foreground">{event.title}</h4>
-                                                {getEventStatusBadge(event)}
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm text-muted-foreground">
                                                 <div className="flex items-center gap-1">
@@ -581,7 +580,30 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2 ml-4">
+                                        
+                                        {/* Badges in top-right corner */}
+                                        <div className="absolute top-4 right-4 flex flex-wrap gap-2 justify-end">
+                                            {event.featured && (
+                                                <Badge variant="default" className="bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900 dark:text-purple-100 dark:border-purple-700">
+                                                    Featured
+                                                </Badge>
+                                            )}
+                                            {event.is_paid === true ? (
+                                                <Badge variant="default" className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900 dark:text-blue-100 dark:border-blue-700">
+                                                    Paid
+                                                </Badge>
+                                            ) : (
+                                                <Badge variant="default" className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-100 dark:border-green-700">
+                                                    Free
+                                                </Badge>
+                                            )}
+                                            {getEventStatusBadge(event)}
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Action buttons */}
+                                    <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border">
+                                        <div className="flex items-center gap-2">
                                             <Button variant="outline" size="sm" asChild>
                                                 <Link href={`/events/${event.slug}`}>
                                                     <Eye className="w-4 h-4 mr-2" />
