@@ -88,11 +88,17 @@ const nextConfig: NextConfig = {
             key: 'Permissions-Policy',
             value: process.env.NODE_ENV === 'development' 
               ? 'camera=(), microphone=(), geolocation=(), gyroscope=(), magnetometer=(), payment=*'
-              : 'camera=(), microphone=(), geolocation=(), gyroscope=(), magnetometer=(), payment=(self "https://js.stripe.com" "https://checkout.stripe.com" "https://api.stripe.com" "https://hooks.stripe.com")'
+              : 'camera=(), microphone=(), geolocation=(), gyroscope=(), magnetometer=(), payment=(self "https://js.stripe.com" "https://checkout.stripe.com" "https://api.stripe.com" "https://hooks.stripe.com" "https://r.stripe.com")'
           },
           {
             key: 'Strict-Transport-Security',
             value: 'max-age=63072000; includeSubDomains; preload'
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: process.env.NODE_ENV === 'development' 
+              ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com; connect-src 'self' https://api.stripe.com https://r.stripe.com https://m.stripe.com https://js.stripe.com https://merchant-ui-api.stripe.com; frame-src 'self' https://js.stripe.com https://hooks.stripe.com; style-src 'self' 'unsafe-inline' https://js.stripe.com; img-src 'self' data: https:; font-src 'self' data: https://js.stripe.com;"
+              : "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com; connect-src 'self' https://api.stripe.com https://r.stripe.com https://m.stripe.com https://js.stripe.com https://merchant-ui-api.stripe.com; frame-src 'self' https://js.stripe.com https://hooks.stripe.com; style-src 'self' 'unsafe-inline' https://js.stripe.com; img-src 'self' data: https:; font-src 'self' data: https://js.stripe.com;"
           }
         ],
       },
