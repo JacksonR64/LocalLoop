@@ -2,24 +2,30 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { z } from 'zod'
 
-// Map event slugs to their corresponding numeric IDs for sample events
+// Map event slugs to their corresponding UUIDs  
 function getEventIdFromSlugOrId(eventIdOrSlug: string): string | null {
-    const slugToIdMap: { [key: string]: string } = {
-        'local-business-networking': '2',
-        'kids-art-workshop': '3',
-        'startup-pitch-night': '7',
-        'food-truck-festival': '9',
+    const slugToUuidMap: { [key: string]: string } = {
+        'local-business-networking': '00000000-0000-0000-0000-000000000002',
+        'kids-art-workshop': '00000000-0000-0000-0000-000000000003', 
+        'startup-pitch-night': '00000000-0000-0000-0000-000000000007',
+        'food-truck-festival': '00000000-0000-0000-0000-000000000009',
         // Add more mappings as needed
     };
 
-    // If it's already a numeric ID or UUID, return as is
-    if (/^\d+$/.test(eventIdOrSlug) || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventIdOrSlug)) {
+    // If it's already a UUID, return as is
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventIdOrSlug)) {
         return eventIdOrSlug;
     }
 
-    // If it's a sample event slug, map it to the numeric ID
-    // Otherwise, return the original slug to allow database lookup
-    return slugToIdMap[eventIdOrSlug] || eventIdOrSlug;
+    // If it's a numeric ID, convert to UUID format
+    if (/^\d+$/.test(eventIdOrSlug)) {
+        const num = parseInt(eventIdOrSlug);
+        return `00000000-0000-0000-0000-${num.toString().padStart(12, '0')}`;
+    }
+
+    // If it's a known slug, map it to UUID
+    // Otherwise, return the original slug to allow database lookup by slug
+    return slugToUuidMap[eventIdOrSlug] || eventIdOrSlug;
 }
 
 // Custom datetime validation for datetime-local inputs
@@ -201,8 +207,10 @@ export async function GET(request: NextRequest) {
         // Map slug to ID if needed, or keep as is if already valid
         const eventId = getEventIdFromSlugOrId(eventIdOrSlug);
 
+        // DISABLED: Sample tickets functionality - use database instead
         // For development/demo: Check for sample events first
-        if (eventId) {
+        const ENABLE_SAMPLE_TICKETS = false; // Set to true only for testing
+        if (ENABLE_SAMPLE_TICKETS && eventId) {
             const sampleTickets = getSampleTicketTypes(eventId);
             if (sampleTickets) {
                 return NextResponse.json({ ticket_types: sampleTickets });

@@ -28,6 +28,82 @@ function getEventIdFromSlugOrId(eventIdOrSlug: string): string {
     return slugToIdMap[eventIdOrSlug] || eventIdOrSlug;
 }
 
+// Sample ticket types for development/demo events
+// DISABLED: All sample data has been migrated to live Supabase database
+// Set ENABLE_SAMPLE_TICKETS = true only for testing/development
+const ENABLE_SAMPLE_TICKETS = false;
+
+function getSampleTicketTypes(eventId: string) {
+    if (!ENABLE_SAMPLE_TICKETS) {
+        return null; // Use database instead
+    }
+    
+    const sampleTickets: { [key: string]: Record<string, unknown>[] } = {
+        '2': [ // Local Business Networking Mixer
+            {
+                id: '00000002-0001-0000-0000-000000000000',
+                event_id: eventId,
+                name: 'General Admission',
+                description: 'Access to networking event and refreshments',
+                price: 1500, // £15.00 in cents
+                capacity: 40,
+                sold_count: 12,
+                sort_order: 0,
+                sale_start: '2025-01-15T00:00:00.000Z',
+                sale_end: '2026-05-12T16:00:00.000Z',
+                created_at: '2025-01-10T00:00:00.000Z',
+                updated_at: '2025-01-10T00:00:00.000Z'
+            },
+            {
+                id: '00000002-0002-0000-0000-000000000000',
+                event_id: eventId,
+                name: 'Premium Pass',
+                description: 'Includes private mixer with featured speakers',
+                price: 3500, // £35.00 in cents
+                capacity: 10,
+                sold_count: 3,
+                sort_order: 1,
+                sale_start: '2025-01-15T00:00:00.000Z',
+                sale_end: '2026-05-12T16:00:00.000Z',
+                created_at: '2025-01-10T00:00:00.000Z',
+                updated_at: '2025-01-10T00:00:00.000Z'
+            }
+        ],
+        '9': [ // Food Truck Festival
+            {
+                id: 'ticket-9-1',
+                event_id: eventId,
+                name: 'Entry Pass',
+                description: 'Festival entry and welcome drink',
+                price: 1000, // £10.00 in cents
+                capacity: 500,
+                sold_count: 234,
+                sort_order: 0,
+                sale_start: '2025-03-01T00:00:00.000Z',
+                sale_end: '2026-04-10T20:00:00.000Z',
+                created_at: '2025-02-20T00:00:00.000Z',
+                updated_at: '2025-02-20T00:00:00.000Z'
+            },
+            {
+                id: 'ticket-9-2',
+                event_id: eventId,
+                name: 'Food Package',
+                description: 'Entry plus $20 food voucher',
+                price: 2500, // £25.00 in cents
+                capacity: 200,
+                sold_count: 89,
+                sort_order: 1,
+                sale_start: '2025-03-01T00:00:00.000Z',
+                sale_end: '2026-04-10T20:00:00.000Z',
+                created_at: '2025-02-20T00:00:00.000Z',
+                updated_at: '2025-02-20T00:00:00.000Z'
+            }
+        ]
+    };
+
+    return sampleTickets[eventId] || null;
+}
+
 // Initialize Stripe with proper error handling
 const getStripeInstance = () => {
     const secretKey = process.env.STRIPE_SECRET_KEY
@@ -108,14 +184,15 @@ export async function POST(request: NextRequest) {
         console.log('[DEBUG] Final actualEventId:', actualEventId)
         console.log('[DEBUG] Requested ticket IDs:', ticketItems.map(item => item.ticket_type_id))
 
-        // Validate and fetch ticket types from database
+        // Fetch ticket types from Supabase database
+        // NOTE: Sample ticket data functionality has been DISABLED and migrated to database
         const { data: ticketTypes, error: ticketTypesError } = await supabase
             .from('ticket_types')
             .select('*')
             .in('id', ticketItems.map(item => item.ticket_type_id))
             .eq('event_id', actualEventId)
 
-        console.log('[DEBUG] Query filters:', {
+        console.log('[DEBUG] Database query filters:', {
             ticket_ids: ticketItems.map(item => item.ticket_type_id),
             event_id: actualEventId
         })
