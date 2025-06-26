@@ -1,14 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-    DialogDescription
-} from '@/components/ui/dialog'
+import { LightweightModal } from '@/components/ui/LightweightModal'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -135,33 +128,31 @@ export default function RefundDialog({
     // Success state
     if (step === 'success') {
         return (
-            <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className="sm:max-w-md p-6" data-testid="refund-success-dialog">
-                    <div className="text-center py-6">
-                        <CheckCircle2 className="w-16 h-16 text-green-700 dark:text-green-400 mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-foreground mb-2" data-testid="refund-success-title">Refund Processed</h3>
-                        <p className="text-muted-foreground" data-testid="refund-success-message">Your refund has been submitted and will appear in your account within 5-10 business days.</p>
-                    </div>
-                </DialogContent>
-            </Dialog>
+            <LightweightModal 
+                open={open} 
+                onOpenChange={onOpenChange}
+                title="Refund Processed"
+                maxWidth="md"
+            >
+                <div className="text-center py-6" data-testid="refund-success-dialog">
+                    <CheckCircle2 className="w-16 h-16 text-green-700 dark:text-green-400 mx-auto mb-4" />
+                    <p className="text-muted-foreground" data-testid="refund-success-message">Your refund has been submitted and will appear in your account within 5-10 business days.</p>
+                </div>
+            </LightweightModal>
         )
     }
 
     return (
-        <Dialog open={open} onOpenChange={(open) => {
-            if (!open) resetDialog()
-            onOpenChange(open)
-        }}>
-            <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                        <DollarSign className="w-5 h-5" />
-                        Request Refund
-                    </DialogTitle>
-                    <DialogDescription>
-                        Review the refund details below before proceeding.
-                    </DialogDescription>
-                </DialogHeader>
+        <LightweightModal 
+            open={open} 
+            onOpenChange={(open) => {
+                if (!open) resetDialog()
+                onOpenChange(open)
+            }}
+            title="Request Refund"
+            description="Review the refund details below before proceeding."
+            maxWidth="2xl"
+        >
 
                 <div className="space-y-6">
                     {/* Error Message */}
@@ -302,7 +293,8 @@ export default function RefundDialog({
                     )}
                 </div>
 
-                <DialogFooter className="gap-2">
+                {/* Action buttons */}
+                <div className="flex justify-end gap-2 pt-6 border-t border-border/20">
                     {step === 'review' && (
                         <>
                             <Button
@@ -359,8 +351,7 @@ export default function RefundDialog({
                             <span className="text-muted-foreground">Processing your refund...</span>
                         </div>
                     )}
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                </div>
+        </LightweightModal>
     )
 } 
