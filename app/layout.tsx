@@ -6,7 +6,6 @@ import { PerformanceMonitor } from "@/components/analytics/PerformanceMonitor";
 import { ThemeProvider } from 'next-themes';
 import { Navigation } from '@/components/ui/Navigation';
 import { DevOnlyErrorFilter } from '@/components/utils/DevOnlyErrorFilter';
-import 'default-passive-events';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

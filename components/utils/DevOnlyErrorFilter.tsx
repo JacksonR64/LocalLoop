@@ -18,10 +18,13 @@ import { useEffect } from 'react'
  * - Uses scrollIntoView() for programmatic scrolling
  * - No React onTouch/onWheel handlers
  * 
- * PASSIVE EVENT LISTENER VIOLATIONS - FIXED:
- * - Implemented default-passive-events library (imported in app/layout.tsx)
- * - This automatically makes all touchstart/touchmove/wheel/mousewheel events passive
- * - No more suppressions needed - violations are properly fixed at source
+ * PASSIVE EVENT LISTENER VIOLATIONS - UNFIXABLE:
+ * - Violations come from hCaptcha loaded inside Stripe's secure iframe
+ * - Cross-origin security prevents us from modifying iframe behavior
+ * - Stripe loads hCaptcha for fraud prevention during checkout
+ * - These are external library violations beyond our control
+ * - Attempted fixes: default-passive-events library, addEventListener monkey patching
+ * - Result: All attempts failed due to iframe isolation
  * 
  * TO INVESTIGATE NEW VIOLATIONS:
  * 1. Check browser console for full stack trace
@@ -74,6 +77,7 @@ export function DevOnlyErrorFilter() {
                 message.includes('However, live Stripe.js integrations must use HTTPS')) {
                 return // Silently ignore - this is expected in development
             }
+
 
 
             // Call original for all other warnings
