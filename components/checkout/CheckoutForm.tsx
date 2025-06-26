@@ -546,14 +546,20 @@ export default function CheckoutForm({
 
     return (
         <div className="max-w-2xl mx-auto">
-            <Elements stripe={stripePromise} options={stripeOptions}>
-                <PaymentForm
-                    orderDetails={orderDetails}
-                    customerInfo={customerInfo}
-                    onSuccess={handlePaymentSuccess}
-                    onCancel={onCancel}
-                />
-            </Elements>
+            {clientSecret && (
+                <Elements 
+                    stripe={stripePromise} 
+                    options={stripeOptions}
+                    key={clientSecret} // Force remount when clientSecret changes
+                >
+                    <PaymentForm
+                        orderDetails={orderDetails}
+                        customerInfo={customerInfo}
+                        onSuccess={handlePaymentSuccess}
+                        onCancel={onCancel}
+                    />
+                </Elements>
+            )}
         </div>
     )
 } 
