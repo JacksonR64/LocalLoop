@@ -39,7 +39,7 @@ export function getEventTimingBadge(startTime: string): React.ReactElement {
     // Check if event is today
     if (eventDay.getTime() === today.getTime()) {
         return (
-            <Badge variant="default" className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900 dark:text-blue-100 dark:border-blue-700">
+            <Badge variant="default" className="bg-blue-100 text-blue-800 border-blue-200">
                 Today
             </Badge>
         )
@@ -48,7 +48,7 @@ export function getEventTimingBadge(startTime: string): React.ReactElement {
     // Check if event is tomorrow
     if (eventDay.getTime() === tomorrow.getTime()) {
         return (
-            <Badge variant="default" className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-100 dark:border-green-700">
+            <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
                 Tomorrow
             </Badge>
         )
@@ -60,7 +60,7 @@ export function getEventTimingBadge(startTime: string): React.ReactElement {
     
     if (isSoon) {
         return (
-            <Badge variant="default" className="bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900 dark:text-orange-100 dark:border-orange-700">
+            <Badge variant="default" className="bg-yellow-100 text-yellow-800 border-yellow-200">
                 Soon
             </Badge>
         )
@@ -68,7 +68,7 @@ export function getEventTimingBadge(startTime: string): React.ReactElement {
     
     // Default to upcoming
     return (
-        <Badge variant="default" className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900 dark:text-blue-100 dark:border-blue-700">
+        <Badge variant="default" className="bg-blue-100 text-blue-800 border-blue-200">
             Upcoming
         </Badge>
     )

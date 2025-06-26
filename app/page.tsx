@@ -14,6 +14,7 @@ interface EventData {
   featured: boolean
   capacity?: number
   rsvp_count: number
+  tickets_sold?: number
   image_url?: string
   organizer: {
     display_name: string
@@ -41,7 +42,14 @@ async function getEventsData(): Promise<EventData[]> {
       image_url,
       organizer_id,
       users!events_organizer_id_fkey(display_name),
-      rsvps(user_id)
+      rsvps(user_id),
+      orders(
+        id,
+        status,
+        total_amount,
+        refund_amount,
+        tickets(quantity)
+      )
     `)
     .eq('published', true)
     .order('start_time', { ascending: true });
@@ -52,24 +60,44 @@ async function getEventsData(): Promise<EventData[]> {
   }
 
   // Transform data to match EventData interface
-  return events?.map(event => ({
-    id: event.id,
-    title: event.title,
-    description: event.description,
-    short_description: event.short_description,
-    start_time: event.start_time,
-    end_time: event.end_time,
-    location: event.location,
-    category: event.category,
-    is_paid: event.is_paid,
-    featured: event.featured,
-    capacity: event.capacity,
-    rsvp_count: event.rsvps?.length || 0,
-    image_url: event.image_url,
-    organizer: {
-      display_name: (event.users as { display_name?: string })?.display_name || 'Unknown Organizer'
-    }
-  })) || [];
+  return events?.map(event => {
+    // Calculate attendance based on event type (same logic as event details page)
+    const rsvpCount = event.rsvps?.length || 0;
+    
+    // Calculate ticket sales from completed orders (excluding refunded tickets)
+    const ticketCount = event.orders
+      ?.filter(order => 
+        order.status === 'completed' && 
+        (order.refund_amount === 0 || order.refund_amount < order.total_amount)
+      )
+      .reduce((total, order) => {
+        const orderTickets = order.tickets?.reduce((sum, ticket) => sum + ticket.quantity, 0) || 0;
+        return total + orderTickets;
+      }, 0) || 0;
+
+    // For paid events, use ticket count; for free events, use RSVP count
+    const totalAttendance = event.is_paid ? ticketCount : rsvpCount;
+
+    return {
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      short_description: event.short_description,
+      start_time: event.start_time,
+      end_time: event.end_time,
+      location: event.location,
+      category: event.category,
+      is_paid: event.is_paid,
+      featured: event.featured,
+      capacity: event.capacity,
+      rsvp_count: totalAttendance,
+      tickets_sold: ticketCount,
+      image_url: event.image_url,
+      organizer: {
+        display_name: (event.users as { display_name?: string })?.display_name || 'Unknown Organizer'
+      }
+    };
+  }) || [];
 }
 
 // Main Page Component - Server Component that renders the full page

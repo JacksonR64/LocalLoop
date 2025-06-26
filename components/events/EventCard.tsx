@@ -96,8 +96,11 @@ function SafeImage({
 
     if (hasError || !src) {
         return (
-            <div className={`bg-muted flex items-center justify-center ${className}`} role="img" aria-label="Event image unavailable">
-                <ImageIcon className="w-8 h-8 text-muted-foreground" aria-hidden="true" />
+            <div className={`bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center ${className}`} role="img" aria-label="Event image unavailable">
+                <div className="text-center">
+                    <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" aria-hidden="true" />
+                    <p className="text-xs text-gray-500">Image unavailable</p>
+                </div>
             </div>
         );
     }
@@ -112,6 +115,8 @@ function SafeImage({
             placeholder={placeholder}
             blurDataURL={blurDataURL}
             onError={() => setHasError(true)}
+            priority={false}
+            quality={75}
             {...props}
         />
     );
@@ -174,7 +179,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
         <Card
             size={size}
             variant={featured ? 'elevated' : 'default'}
-            className={`hover:shadow-lg transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
+            className={`relative hover:shadow-lg transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
             onClick={onClick}
             role="article"
             aria-labelledby={`${cardId}-title`}
@@ -182,7 +187,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
             data-test-id={`event-card-${event.id}`}
         >
             {showImage && event.image_url && (
-                <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
+                <div className="relative w-full h-48 overflow-hidden rounded-t-lg bg-gray-100">
                     <SafeImage
                         src={event.image_url}
                         alt={event.image_alt_text || event.title}
@@ -206,21 +211,25 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                 </div>
             )}
 
+            {/* Badges positioned to overlap image and content */}
+            <div className={`absolute ${size === 'lg' ? 'right-6' : 'right-4'} z-10`} style={{ top: 'calc(12rem + 8px)' }}>
+                <EventBadges 
+                    event={event}
+                    isUpcoming={isUpcoming}
+                    priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
+                    className="flex gap-2"
+                />
+            </div>
+
             <CardHeader>
                 <div className="flex items-start justify-between">
                     <CardTitle 
                         as={featured ? 'h2' : 'h3'} 
-                        className={`${featured ? 'text-lg' : 'text-base'} line-clamp-2 min-h-[3rem] leading-relaxed pr-2`}
+                        className={`${featured ? 'text-lg' : 'text-base'} line-clamp-2 min-h-[3rem] leading-relaxed pr-2 pt-6`}
                         id={`${cardId}-title`}
                     >
                         {event.title}
                     </CardTitle>
-                    <EventBadges 
-                        event={event}
-                        isUpcoming={isUpcoming}
-                        priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
-                        className="flex gap-2"
-                    />
                 </div>
                 <CardDescription 
                     className="min-h-[3rem] line-clamp-2 text-sm leading-relaxed"
@@ -246,7 +255,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                         <Users className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
                         <span>
                             {event.is_paid 
-                                ? `${event.rsvp_count} tickets sold`
+                                ? `${event.tickets_sold || event.rsvp_count} tickets sold`
                                 : `${event.rsvp_count} attending`
                             }
                             {spotsRemaining && spotsRemaining > 0 && ` • ${spotsRemaining} ${event.is_paid ? 'tickets' : 'spots'} left`}
@@ -303,7 +312,7 @@ function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowe
 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-semibold text-base text-foreground line-clamp-2 min-h-[3rem] leading-relaxed pr-2">
+                        <h3 className="font-semibold text-base text-foreground line-clamp-2 min-h-[3rem] leading-relaxed pr-2 pt-4">
                             {event.title}
                         </h3>
                         <EventBadges 
@@ -345,11 +354,11 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
         <Card
             variant="default"
             size="lg"
-            className={`hover:shadow-lg transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
+            className={`relative hover:shadow-lg transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
             onClick={onClick}
         >
             {event.image_url && (
-                <div className="relative w-full h-56 overflow-hidden rounded-t-lg">
+                <div className="relative w-full h-56 overflow-hidden rounded-t-lg bg-gray-100">
                     <SafeImage
                         src={event.image_url}
                         alt={event.image_alt_text || event.title}
@@ -368,18 +377,22 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
                 </div>
             )}
 
+            {/* Badges positioned to overlap image and content */}
+            <div className="absolute right-4 z-10" style={{ top: 'calc(14rem + 8px)' }}>
+                <EventBadges 
+                    event={event}
+                    isUpcoming={isUpcoming}
+                    priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
+                    variant="full"
+                    className="flex gap-2"
+                />
+            </div>
+
             <CardHeader>
                 <div className="flex items-start justify-between">
-                    <CardTitle as="h2" className="text-xl">
+                    <CardTitle as="h2" className="text-xl pt-4">
                         {event.title}
                     </CardTitle>
-                    <EventBadges 
-                        event={event}
-                        isUpcoming={isUpcoming}
-                        priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
-                        variant="full"
-                        className="flex gap-2"
-                    />
                 </div>
                 <CardDescription className="text-base line-clamp-2 min-h-[3rem] leading-relaxed">
                     {getEventCardDescription(event.description, event.short_description)}
@@ -472,7 +485,7 @@ function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcom
         >
             <div className="flex items-center justify-between p-3">
                 <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-sm text-foreground truncate">
+                    <h4 className="font-medium text-sm text-foreground truncate pt-4">
                         {event.title}
                     </h4>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
@@ -520,7 +533,7 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpco
                 {/* Event Details */}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-semibold text-base text-foreground group-hover:text-blue-600 transition-colors line-clamp-2 min-h-[3rem] leading-relaxed">
+                        <h3 className="font-semibold text-base text-foreground group-hover:text-blue-600 transition-colors line-clamp-2 min-h-[3rem] leading-relaxed pt-4">
                             {event.title}
                         </h3>
                         <EventBadges 

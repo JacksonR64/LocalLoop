@@ -402,6 +402,23 @@ export default function CheckoutForm({
         name: guestInfo?.name || user?.user_metadata?.full_name || user?.user_metadata?.name || ''
     }), [guestInfo?.email, guestInfo?.name, user?.email, user?.user_metadata?.full_name, user?.user_metadata?.name])
 
+    // Memoize stripe options to prevent clientSecret mutation warnings
+    const stripeOptions = useMemo(() => ({
+        clientSecret,
+        appearance: {
+            theme: 'stripe' as const,
+            variables: {
+                colorPrimary: '#4f46e5',
+                colorBackground: '#ffffff',
+                colorText: '#1f2937',
+                colorDanger: '#dc2626',
+                fontFamily: 'system-ui, sans-serif',
+                spacingUnit: '4px',
+                borderRadius: '6px',
+            },
+        },
+    }), [clientSecret])
+
     // Create checkout session
     useEffect(() => {
         const createCheckoutSession = async () => {
@@ -526,23 +543,6 @@ export default function CheckoutForm({
             </Card>
         )
     }
-
-    // Memoize stripe options to prevent clientSecret mutation warnings
-    const stripeOptions = useMemo(() => ({
-        clientSecret,
-        appearance: {
-            theme: 'stripe' as const,
-            variables: {
-                colorPrimary: '#4f46e5',
-                colorBackground: '#ffffff',
-                colorText: '#1f2937',
-                colorDanger: '#dc2626',
-                fontFamily: 'system-ui, sans-serif',
-                spacingUnit: '4px',
-                borderRadius: '6px',
-            },
-        },
-    }), [clientSecret])
 
     return (
         <div className="max-w-2xl mx-auto">

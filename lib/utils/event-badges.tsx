@@ -1,13 +1,10 @@
 import React from 'react'
-import { getEventTimingBadge } from './event-timing'
 
 export interface EventBadgeProps {
     event: {
         is_paid?: boolean
-        featured?: boolean
         start_time: string
     }
-    showPrice?: boolean
     priceInfo?: {
         hasPrice: boolean
         lowestPrice: number
@@ -16,90 +13,125 @@ export interface EventBadgeProps {
 }
 
 /**
- * Get Free/Paid badge with consistent styling across the app
+ * Clean, consistent badge styling with distinct colors and normal font weight
  */
-export function getEventPriceBadge(
-    isPaid: boolean, 
-    isUpcoming: boolean = true,
-    priceInfo?: { hasPrice: boolean; lowestPrice: number },
-    variant: 'default' | 'full' = 'default'
-): React.ReactElement | null {
-    const isFullVariant = variant === 'full'
-    const sizeClasses = isFullVariant 
-        ? "text-sm px-3 py-1 font-medium" 
-        : "text-xs px-2 py-1"
+const getBadgeClasses = () => "px-2 py-1 rounded-full text-xs font-normal"
+
+/**
+ * Get timing status of an event
+ */
+function getEventTiming(startTime: string) {
+    const eventDate = new Date(startTime)
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const tomorrow = new Date(today)
+    tomorrow.setDate(today.getDate() + 1)
+    const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate())
     
-    if (!isPaid && isUpcoming) {
-        return (
-            <span 
-                className={`bg-green-100 text-green-800 rounded-full dark:bg-green-900 dark:text-green-100 ${sizeClasses}`}
-                aria-label="Free event"
-                data-test-id="free-badge"
-            >
-                {isFullVariant ? 'Free Event' : 'Free'}
-            </span>
-        )
+    const oneDayAfterEvent = new Date(eventDate)
+    oneDayAfterEvent.setDate(eventDate.getDate() + 1)
+    
+    if (now >= oneDayAfterEvent) {
+        return 'past'
     }
     
-    if (isPaid) {
-        const displayText = priceInfo?.hasPrice 
-            ? `$${priceInfo.lowestPrice}` 
-            : (isFullVariant ? 'Paid Event' : 'Paid')
-            
-        return (
-            <span 
-                className={`bg-blue-100 text-blue-800 rounded-full dark:bg-blue-900 dark:text-blue-100 ${sizeClasses}`}
-                aria-label={`Paid event${priceInfo?.hasPrice ? `, starting at $${priceInfo.lowestPrice}` : ''}`}
-                data-test-id="paid-badge"
-            >
-                {displayText}
-            </span>
-        )
+    if (eventDay.getTime() === today.getTime()) {
+        return 'today'
     }
     
-    return null
+    if (eventDay.getTime() === tomorrow.getTime()) {
+        return 'tomorrow'
+    }
+    
+    const daysDifference = Math.ceil((eventDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    if (daysDifference <= 7 && daysDifference >= 2) {
+        return 'soon'
+    }
+    
+    return 'upcoming'
 }
 
 /**
- * Get Featured badge with consistent styling
+ * Get color classes for timing badges
  */
-export function getFeaturedBadge(isFeatured: boolean): React.ReactElement | null {
-    if (!isFeatured) return null
-    
-    return (
-        <span 
-            className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-medium"
-            aria-label="Featured event"
-            data-test-id="featured-badge"
-        >
-            Featured
-        </span>
-    )
+function getTimingColors(status: string): string {
+    switch (status) {
+        case 'today':
+            return 'bg-red-50 text-red-700'
+        case 'tomorrow':
+            return 'bg-emerald-50 text-emerald-700'
+        case 'soon':
+            return 'bg-yellow-50 text-yellow-700'
+        case 'past':
+            return 'bg-gray-50 text-gray-600'
+        default:
+            return 'bg-blue-50 text-blue-700'
+    }
 }
 
 /**
- * Get all event badges in a consistent container
+ * Get label for timing status
+ */
+function getTimingLabel(status: string): string {
+    switch (status) {
+        case 'today':
+            return 'Today'
+        case 'tomorrow':
+            return 'Tomorrow'
+        case 'soon':
+            return 'Soon'
+        case 'past':
+            return 'Past'
+        default:
+            return 'Upcoming'
+    }
+}
+
+/**
+ * Render all event badges with consistent styling and distinct colors
  */
 export function EventBadges({ 
     event, 
-    showPrice = true, 
     priceInfo,
     isUpcoming = true,
-    className = "flex gap-2",
-    variant = 'default'
-}: EventBadgeProps & { className?: string; variant?: 'default' | 'full' }): React.ReactElement {
+    className = "flex gap-2"
+}: EventBadgeProps & { className?: string }): React.ReactElement {
+    const timingStatus = getEventTiming(event.start_time)
+    const timingColors = getTimingColors(timingStatus)
+    const timingLabel = getTimingLabel(timingStatus)
+    
+    const priceText = priceInfo?.hasPrice ? `$${priceInfo.lowestPrice}` : 'Paid'
+    const priceAriaLabel = priceInfo?.hasPrice 
+        ? `Paid event, starting at $${priceInfo.lowestPrice}`
+        : 'Paid event'
+    
     return (
         <div className={className}>
-            {getFeaturedBadge(event.featured || false)}
-            {showPrice && getEventPriceBadge(event.is_paid || false, isUpcoming, priceInfo, variant)}
-            {getEventTimingBadge(event.start_time)}
+            {/* Price Badge */}
+            {event.is_paid && (
+                <span 
+                    className={`${getBadgeClasses()} bg-purple-50 text-purple-700`}
+                    aria-label={priceAriaLabel}
+                >
+                    {priceText}
+                </span>
+            )}
+            {!event.is_paid && isUpcoming && (
+                <span 
+                    className={`${getBadgeClasses()} bg-green-50 text-green-700`}
+                    aria-label="Free event"
+                >
+                    Free
+                </span>
+            )}
+            
+            {/* Timing Badge */}
+            <span 
+                className={`${getBadgeClasses()} ${timingColors}`}
+                aria-label={`Event timing: ${timingLabel}`}
+            >
+                {timingLabel}
+            </span>
         </div>
     )
-}
-
-/**
- * Format price for display in badges
- */
-export function formatPrice(price: number): string {
-    return price.toFixed(2)
 }

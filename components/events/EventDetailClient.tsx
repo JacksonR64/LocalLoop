@@ -111,7 +111,6 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                         width={800}
                                         height={256}
                                         className="w-full h-64 object-cover rounded-lg"
-                                        style={{ width: 'auto', height: 'auto' }}
                                         priority
                                     />
                                 </div>
@@ -315,14 +314,18 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                             <span className="text-muted-foreground">
                                                 {event.is_paid ? 'Tickets Sold:' : 'RSVPs:'}
                                             </span>
-                                            <span className="text-foreground">{event.rsvp_count}</span>
+                                            <span className="text-foreground">
+                                                {event.is_paid ? (event.tickets_sold || event.rsvp_count) : event.rsvp_count}
+                                            </span>
                                         </div>
                                         {event.capacity && (
                                             <div className="flex justify-between" data-test-id="event-available-spots">
                                                 <span className="text-muted-foreground">
                                                     {event.is_paid ? 'Tickets Left:' : 'Available:'}
                                                 </span>
-                                                <span className="text-foreground">{event.capacity - event.rsvp_count}</span>
+                                                <span className="text-foreground">
+                                                    {event.capacity - (event.is_paid ? (event.tickets_sold || event.rsvp_count) : event.rsvp_count)}
+                                                </span>
                                             </div>
                                         )}
                                     </div>
