@@ -544,15 +544,20 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <Users className="w-4 h-4" />
-                                                    <span>{event.rsvp_count} attendees</span>
+                                                    <span>{event.rsvp_count} {event.is_paid ? 'attendees' : 'RSVPs'}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <DollarSign className="w-4 h-4" />
-                                                    <span>{formatCurrency(event.total_revenue)}</span>
+                                                    <span>{event.is_paid ? formatCurrency(event.total_revenue) : 'N/A'}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <FileText className="w-4 h-4" />
-                                                    <span>{event.ticket_sales} tickets sold</span>
+                                                    <span>
+                                                        {event.is_paid 
+                                                            ? `${event.ticket_sales} tickets sold`
+                                                            : 'Free RSVP Event'
+                                                        }
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
