@@ -97,8 +97,8 @@ const nextConfig: NextConfig = {
           {
             key: 'Content-Security-Policy',
             value: process.env.NODE_ENV === 'development' 
-              ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com; connect-src 'self' https://api.stripe.com https://r.stripe.com https://m.stripe.com https://js.stripe.com https://merchant-ui-api.stripe.com; frame-src 'self' https://js.stripe.com https://hooks.stripe.com; style-src 'self' 'unsafe-inline' https://js.stripe.com; img-src 'self' data: https:; font-src 'self' data: https://js.stripe.com;"
-              : "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com; connect-src 'self' https://api.stripe.com https://r.stripe.com https://m.stripe.com https://js.stripe.com https://merchant-ui-api.stripe.com; frame-src 'self' https://js.stripe.com https://hooks.stripe.com; style-src 'self' 'unsafe-inline' https://js.stripe.com; img-src 'self' data: https:; font-src 'self' data: https://js.stripe.com;"
+              ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://va.vercel-scripts.com; connect-src 'self' https://api.stripe.com https://r.stripe.com https://m.stripe.com https://js.stripe.com https://merchant-ui-api.stripe.com https://vitals.vercel-insights.com https://va.vercel-scripts.com; frame-src 'self' https://js.stripe.com https://hooks.stripe.com; style-src 'self' 'unsafe-inline' https://js.stripe.com; img-src 'self' data: https:; font-src 'self' data: https://js.stripe.com;"
+              : "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://va.vercel-scripts.com; connect-src 'self' https://api.stripe.com https://r.stripe.com https://m.stripe.com https://js.stripe.com https://merchant-ui-api.stripe.com https://vitals.vercel-insights.com https://va.vercel-scripts.com; frame-src 'self' https://js.stripe.com https://hooks.stripe.com; style-src 'self' 'unsafe-inline' https://js.stripe.com; img-src 'self' data: https:; font-src 'self' data: https://js.stripe.com;"
           }
         ],
       },

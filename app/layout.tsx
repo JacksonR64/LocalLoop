@@ -5,6 +5,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import { PerformanceMonitor } from "@/components/analytics/PerformanceMonitor";
 import { ThemeProvider } from 'next-themes';
 import { Navigation } from '@/components/ui/Navigation';
+import { DevOnlyErrorFilter } from '@/components/utils/DevOnlyErrorFilter';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -112,6 +113,7 @@ export default function RootLayout({
           enableSystem
         >
           <AuthProvider>
+            <DevOnlyErrorFilter />
             <Navigation />
             <main className="pt-16">
               {children}
