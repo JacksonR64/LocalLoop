@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Calendar, Clock, MapPin, User, DollarSign, Share2, Heart, ArrowLeft } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui';
 import { EventData } from '@/components/events';
@@ -32,9 +33,13 @@ interface EventDetailClientProps {
 }
 
 export function EventDetailClient({ event }: EventDetailClientProps) {
+    const searchParams = useSearchParams();
+    const router = useRouter();
     const [ticketTypes, setTicketTypes] = useState<TicketType[]>([]);
     const [selectedTickets, setSelectedTickets] = useState<TicketSelectionItem[]>([]);
     const [checkoutStep, setCheckoutStep] = useState<'tickets' | 'checkout'>('tickets');
+    const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
+    const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
 
     // Fetch ticket types for paid events
     useEffect(() => {
@@ -57,6 +62,28 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
             fetchTicketTypes();
         }
     }, [event.id, event.database_id, event.is_paid]);
+
+    // Check for payment success from redirect (e.g., PayPal)
+    useEffect(() => {
+        const paymentStatus = searchParams.get('payment');
+        const paymentIntentParam = searchParams.get('payment_intent');
+        
+        if (paymentStatus === 'success') {
+            setShowPaymentSuccess(true);
+            if (paymentIntentParam) {
+                setPaymentIntentId(paymentIntentParam);
+            }
+            
+            // Clean up URL parameters after 100ms to avoid flash
+            setTimeout(() => {
+                const url = new URL(window.location.href);
+                url.searchParams.delete('payment');
+                url.searchParams.delete('payment_intent');
+                url.searchParams.delete('payment_intent_client_secret');
+                router.replace(url.pathname + url.search, { scroll: false });
+            }, 100);
+        }
+    }, [searchParams, router]);
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -221,9 +248,61 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                     {/* Sidebar */}
                     <div className="lg:col-span-1" data-test-id="event-sidebar">
                         <div className="sticky top-24 space-y-6">
-                            {/* Registration/Ticket Section */}
-                            {event.is_paid && ticketTypes.length > 0 ? (
-                                checkoutStep === 'tickets' ? (
+                            {/* Payment Success Message */}
+                            {showPaymentSuccess ? (
+                                <Card data-test-id="payment-success-card">
+                                    <CardContent className="text-center py-8">
+                                        <div className="mb-4">
+                                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <h2 className="text-2xl font-bold text-green-700 mb-2">
+                                            Payment Successful!
+                                        </h2>
+                                        <p className="text-muted-foreground mb-6">
+                                            Your tickets have been purchased successfully.
+                                        </p>
+                                        
+                                        <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6 text-left">
+                                            <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">Order Details</h3>
+                                            <div className="space-y-1 text-sm text-green-700 dark:text-green-300">
+                                                {paymentIntentId && <div>Payment ID: {paymentIntentId}</div>}
+                                                <div>Event: {event.title}</div>
+                                                <div>Date: {formatDate(event.start_time)}</div>
+                                                <div>Time: {formatTime(event.start_time)}</div>
+                                            </div>
+                                        </div>
+
+                                        <div className="text-sm text-muted-foreground mb-6">
+                                            A confirmation email with your tickets has been sent to your email address.
+                                            Please save this email as it contains important information for event entry.
+                                        </div>
+
+                                        <GoogleCalendarConnectWithStatus
+                                            action="create_event"
+                                            returnUrl={`/events/${event.id}`}
+                                            eventData={{
+                                                id: event.id,
+                                                title: event.title,
+                                                description: event.description,
+                                                start_time: event.start_time,
+                                                end_time: event.end_time,
+                                                location: event.location,
+                                                is_paid: event.is_paid,
+                                                rsvp_count: event.rsvp_count,
+                                                organizer: event.organizer
+                                            }}
+                                        />
+                                    </CardContent>
+                                </Card>
+                            ) : (
+                                <>
+                                    {/* Registration/Ticket Section */}
+                                    {event.is_paid && ticketTypes.length > 0 ? (
+                                        checkoutStep === 'tickets' ? (
                                     <div className="space-y-4" data-test-id="ticket-section">
                                         <div data-test-id="ticket-selection-component">
                                             <TicketSelection
@@ -295,29 +374,29 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                 </div>
                             )}
 
-                            {/* Event Stats */}
-                            <Card data-test-id="event-stats-card">
-                                <CardContent>
-                                    <h3 className="text-lg font-semibold mb-4 text-foreground" data-test-id="event-stats-title">Event Details</h3>
-                                    <div className="bg-muted p-4 rounded-lg space-y-3" data-test-id="event-stats-list">
-                                        <div className="flex justify-between" data-test-id="event-category">
-                                            <span className="text-muted-foreground">Category:</span>
-                                            <span className="text-foreground capitalize">{event.category}</span>
-                                        </div>
-                                        {event.capacity && (
-                                            <div className="flex justify-between" data-test-id="event-capacity">
-                                                <span className="text-muted-foreground">Capacity:</span>
-                                                <span className="text-foreground">{event.capacity}</span>
-                                            </div>
-                                        )}
-                                        <div className="flex justify-between" data-test-id="event-rsvp-count">
-                                            <span className="text-muted-foreground">
-                                                {event.is_paid ? 'Tickets Sold:' : 'RSVPs:'}
-                                            </span>
-                                            <span className="text-foreground">
-                                                {event.is_paid ? (event.tickets_sold || event.rsvp_count) : event.rsvp_count}
-                                            </span>
-                                        </div>
+                                    {/* Event Stats */}
+                                    <Card data-test-id="event-stats-card">
+                                        <CardContent>
+                                            <h3 className="text-lg font-semibold mb-4 text-foreground" data-test-id="event-stats-title">Event Details</h3>
+                                            <div className="bg-muted p-4 rounded-lg space-y-3" data-test-id="event-stats-list">
+                                                <div className="flex justify-between" data-test-id="event-category">
+                                                    <span className="text-muted-foreground">Category:</span>
+                                                    <span className="text-foreground capitalize">{event.category}</span>
+                                                </div>
+                                                {event.capacity && (
+                                                    <div className="flex justify-between" data-test-id="event-capacity">
+                                                        <span className="text-muted-foreground">Capacity:</span>
+                                                        <span className="text-foreground">{event.capacity}</span>
+                                                    </div>
+                                                )}
+                                                <div className="flex justify-between" data-test-id="event-rsvp-count">
+                                                    <span className="text-muted-foreground">
+                                                        {event.is_paid ? 'Tickets Sold:' : 'RSVPs:'}
+                                                    </span>
+                                                    <span className="text-foreground">
+                                                        {event.is_paid ? (event.tickets_sold || event.rsvp_count) : event.rsvp_count}
+                                                    </span>
+                                                </div>
                                         {event.capacity && (
                                             <div className="flex justify-between" data-test-id="event-available-spots">
                                                 <span className="text-muted-foreground">
@@ -331,6 +410,8 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                     </div>
                                 </CardContent>
                             </Card>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

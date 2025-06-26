@@ -404,7 +404,7 @@ export default function CheckoutForm({
 
     // Memoize stripe options to prevent clientSecret mutation warnings
     const stripeOptions = useMemo(() => ({
-        clientSecret,
+        clientSecret: clientSecret || undefined,
         appearance: {
             theme: 'stripe' as const,
             variables: {
