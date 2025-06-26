@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import AttendeeManagement from './AttendeeManagement'
 import Analytics from './Analytics'
+import { EventBadges } from '@/lib/utils/event-badges'
 
 interface User {
     id: string
@@ -583,20 +584,11 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
                                         
                                         {/* Badges in top-right corner */}
                                         <div className="absolute top-4 right-4 flex flex-wrap gap-2 justify-end">
-                                            {event.featured && (
-                                                <Badge variant="default" className="bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900 dark:text-purple-100 dark:border-purple-700">
-                                                    Featured
-                                                </Badge>
-                                            )}
-                                            {event.is_paid === true ? (
-                                                <Badge variant="default" className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900 dark:text-blue-100 dark:border-blue-700">
-                                                    Paid
-                                                </Badge>
-                                            ) : (
-                                                <Badge variant="default" className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-100 dark:border-green-700">
-                                                    Free
-                                                </Badge>
-                                            )}
+                                            <EventBadges 
+                                                event={event}
+                                                isUpcoming={new Date(event.start_time) > new Date()}
+                                                className="flex gap-2"
+                                            />
                                             {getEventStatusBadge(event)}
                                         </div>
                                     </div>

@@ -6,6 +6,7 @@ import { Calendar, MapPin, Users, Clock, Tag, ExternalLink, ImageIcon } from 'lu
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui';
 import { formatDateTime, formatPrice, truncateText, getEventCardDescription, formatLocationForCard } from '@/lib/utils';
 import { getEventTimingInfo, getEventTimingBadge } from '@/lib/utils/event-timing';
+import { EventBadges } from '@/lib/utils/event-badges';
 
 // Event interface (simplified from database types)
 export interface EventData {
@@ -214,27 +215,12 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                     >
                         {event.title}
                     </CardTitle>
-                    <div className="flex gap-2">
-                        {!event.is_paid && isUpcoming && (
-                            <span 
-                                className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full"
-                                aria-label="Free event"
-                                data-test-id="free-badge"
-                            >
-                                Free
-                            </span>
-                        )}
-                        {event.is_paid && (
-                            <span 
-                                className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full"
-                                aria-label={`Paid event, ${hasPrice ? `starting at ${formatPrice(lowestPrice)}` : 'pricing available'}`}
-                                data-test-id="paid-badge"
-                            >
-                                {hasPrice ? formatPrice(lowestPrice) : 'Paid'}
-                            </span>
-                        )}
-                        {getEventTimingBadge(event.start_time)}
-                    </div>
+                    <EventBadges 
+                        event={event}
+                        isUpcoming={isUpcoming}
+                        priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
+                        className="flex gap-2"
+                    />
                 </div>
                 <CardDescription 
                     className="min-h-[3rem] line-clamp-2 text-sm leading-relaxed"
@@ -320,19 +306,12 @@ function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowe
                         <h3 className="font-semibold text-base text-foreground line-clamp-2 min-h-[3rem] leading-relaxed pr-2">
                             {event.title}
                         </h3>
-                        <div className="flex gap-1 flex-shrink-0">
-                            {!event.is_paid && isUpcoming && (
-                                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                                    Free
-                                </span>
-                            )}
-                            {event.is_paid && (
-                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                                    {hasPrice ? formatPrice(lowestPrice) : 'Paid'}
-                                </span>
-                            )}
-                            {getEventTimingBadge(event.start_time)}
-                        </div>
+                        <EventBadges 
+                            event={event}
+                            isUpcoming={isUpcoming}
+                            priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
+                            className="flex gap-1 flex-shrink-0"
+                        />
                     </div>
 
                     <p className="text-sm text-muted-foreground mb-3 line-clamp-2 min-h-[2.5rem] leading-relaxed">
@@ -394,19 +373,13 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
                     <CardTitle as="h2" className="text-xl">
                         {event.title}
                     </CardTitle>
-                    <div className="flex gap-2">
-                        {!event.is_paid && isUpcoming && (
-                            <span className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium">
-                                Free Event
-                            </span>
-                        )}
-                        {event.is_paid && (
-                            <span className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium">
-                                {hasPrice ? formatPrice(lowestPrice) : 'Paid Event'}
-                            </span>
-                        )}
-                        {getEventTimingBadge(event.start_time)}
-                    </div>
+                    <EventBadges 
+                        event={event}
+                        isUpcoming={isUpcoming}
+                        priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
+                        variant="full"
+                        className="flex gap-2"
+                    />
                 </div>
                 <CardDescription className="text-base line-clamp-2 min-h-[3rem] leading-relaxed">
                     {getEventCardDescription(event.description, event.short_description)}
@@ -511,17 +484,12 @@ function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcom
                     </div>
                 </div>
                 <div className="flex items-center gap-2 ml-3">
-                    {!event.is_paid && isUpcoming && (
-                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                            Free
-                        </span>
-                    )}
-                    {event.is_paid && (
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                            {hasPrice ? formatPrice(lowestPrice) : 'Paid'}
-                        </span>
-                    )}
-                    {getEventTimingBadge(event.start_time)}
+                    <EventBadges 
+                        event={event}
+                        isUpcoming={isUpcoming}
+                        priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
+                        className="flex gap-2"
+                    />
                     <ExternalLink className="w-3 h-3 text-muted-foreground group-hover:text-foreground" />
                 </div>
             </div>
@@ -555,19 +523,12 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpco
                         <h3 className="font-semibold text-base text-foreground group-hover:text-blue-600 transition-colors line-clamp-2 min-h-[3rem] leading-relaxed">
                             {event.title}
                         </h3>
-                        <div className="flex gap-1 ml-2">
-                            {!event.is_paid && isUpcoming && (
-                                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                                    Free
-                                </span>
-                            )}
-                            {event.is_paid && (
-                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                                    {hasPrice ? formatPrice(lowestPrice) : 'Paid'}
-                                </span>
-                            )}
-                            {getEventTimingBadge(event.start_time)}
-                        </div>
+                        <EventBadges 
+                            event={event}
+                            isUpcoming={isUpcoming}
+                            priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
+                            className="flex gap-1 ml-2"
+                        />
                     </div>
 
                     <p className="text-sm text-gray-600 mb-2 line-clamp-2 min-h-[2.5rem] leading-relaxed">
