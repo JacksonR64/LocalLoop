@@ -228,6 +228,7 @@ function PaymentForm({
                                     onChange={(e) => setCustomerDetails(prev => ({ ...prev, email: e.target.value }))}
                                     className="w-full pl-10 pr-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
                                     placeholder="your@email.com"
+                                    autoComplete="email"
                                     required
                                 />
                             </div>
@@ -247,6 +248,7 @@ function PaymentForm({
                                     value={customerDetails.name}
                                     onChange={(e) => setCustomerDetails(prev => ({ ...prev, name: e.target.value }))}
                                     className="w-full pl-10 pr-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
+                                    autoComplete="name"
                                     placeholder="Your full name"
                                     required
                                 />

@@ -22,6 +22,7 @@ export interface EventData {
     featured?: boolean;
     capacity?: number;
     rsvp_count: number;
+    tickets_sold?: number; // New field for paid events
     is_open_for_registration?: boolean;
     image_url?: string | null;
     image_alt_text?: string;
@@ -258,8 +259,11 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                     <div className="flex items-center gap-2 text-muted-foreground">
                         <Users className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
                         <span>
-                            {event.rsvp_count} attending
-                            {spotsRemaining && spotsRemaining > 0 && ` • ${spotsRemaining} spots left`}
+                            {event.is_paid 
+                                ? `${event.rsvp_count} tickets sold`
+                                : `${event.rsvp_count} attending`
+                            }
+                            {spotsRemaining && spotsRemaining > 0 && ` • ${spotsRemaining} ${event.is_paid ? 'tickets' : 'spots'} left`}
                         </span>
                     </div>
 
@@ -435,12 +439,21 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
                         <div className="flex items-center gap-3 text-foreground">
                             <Users className="w-5 h-5 flex-shrink-0 text-blue-600" />
                             <div>
-                                <div className="font-medium">{event.rsvp_count} attending</div>
+                                <div className="font-medium">
+                                    {event.is_paid 
+                                        ? `${event.rsvp_count} tickets sold`
+                                        : `${event.rsvp_count} attending`
+                                    }
+                                </div>
                                 {spotsRemaining && spotsRemaining > 0 && (
-                                    <div className="text-muted-foreground">{spotsRemaining} spots remaining</div>
+                                    <div className="text-muted-foreground">
+                                        {spotsRemaining} {event.is_paid ? 'tickets' : 'spots'} remaining
+                                    </div>
                                 )}
                                 {event.capacity && spotsRemaining === 0 && (
-                                    <div className="text-red-500">Event is full</div>
+                                    <div className="text-red-500">
+                                        {event.is_paid ? 'Sold out' : 'Event is full'}
+                                    </div>
                                 )}
                             </div>
                         </div>

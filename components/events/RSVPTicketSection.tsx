@@ -32,6 +32,7 @@ interface RSVPTicketSectionProps {
     capacity?: number;
     currentRSVPs: number;
     isRegistrationOpen: boolean;
+    isPaidEvent?: boolean;
     className?: string;
 }
 
@@ -67,6 +68,7 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
     capacity,
     currentRSVPs,
     isRegistrationOpen,
+    isPaidEvent = false,
     className
 }) => {
     // State management
@@ -301,14 +303,20 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
                     <div className="flex items-center gap-2">
                         <Users className="h-4 w-4" />
                         <span className="text-sm" data-test-id="rsvp-count">
-                            {currentRSVPs} RSVP{currentRSVPs !== 1 ? 's' : ''}
+                            {isPaidEvent 
+                                ? `${currentRSVPs} ticket${currentRSVPs !== 1 ? 's' : ''} sold`
+                                : `${currentRSVPs} RSVP${currentRSVPs !== 1 ? 's' : ''}`
+                            }
                             {capacity && ` / ${capacity} capacity`}
                         </span>
                     </div>
 
                     {spotsLeft !== null && (
                         <Badge variant={spotsLeft <= 5 ? "destructive" : "secondary"} data-test-id="spots-left-badge">
-                            {spotsLeft === 0 ? 'Full' : `${spotsLeft} spots left`}
+                            {spotsLeft === 0 
+                                ? (isPaidEvent ? 'Sold Out' : 'Full')
+                                : `${spotsLeft} ${isPaidEvent ? 'tickets' : 'spots'} left`
+                            }
                         </Badge>
                     )}
                 </div>
@@ -402,15 +410,17 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                         <div>
-                                            <label className="block text-sm font-medium mb-1">
+                                            <label htmlFor="guest-name-input" className="block text-sm font-medium mb-1">
                                                 Full Name *
                                             </label>
                                             <Input
+                                                id="guest-name-input"
                                                 type="text"
                                                 name="guest_name"
                                                 placeholder="Enter your full name"
                                                 value={formData.guestName || ''}
                                                 onChange={(e) => handleInputChange('guestName', e.target.value)}
+                                                autoComplete="name"
                                                 required
                                                 disabled={submitting}
                                                 data-test-id="guest-name-input"
@@ -418,15 +428,17 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium mb-1">
+                                            <label htmlFor="guest-email-input" className="block text-sm font-medium mb-1">
                                                 Email Address *
                                             </label>
                                             <Input
+                                                id="guest-email-input"
                                                 type="email"
                                                 name="guest_email"
                                                 placeholder="Enter your email"
                                                 value={formData.guestEmail || ''}
                                                 onChange={(e) => handleInputChange('guestEmail', e.target.value)}
+                                                autoComplete="email"
                                                 required
                                                 disabled={submitting}
                                                 data-test-id="guest-email-input"
