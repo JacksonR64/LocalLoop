@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
+import { LoadingProvider } from "@/lib/loading-context";
 import { PerformanceMonitor } from "@/components/analytics/PerformanceMonitor";
 import { ThemeProvider } from 'next-themes';
 import { Navigation } from '@/components/ui/Navigation';
@@ -112,13 +113,15 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
         >
-          <AuthProvider>
-            <DevOnlyErrorFilter />
-            <Navigation />
-            <main className="pt-16">
-              {children}
-            </main>
-          </AuthProvider>
+          <LoadingProvider position="top-right" delay={1000}>
+            <AuthProvider>
+              <DevOnlyErrorFilter />
+              <Navigation />
+              <main className="pt-16">
+                {children}
+              </main>
+            </AuthProvider>
+          </LoadingProvider>
         </ThemeProvider>
         <PerformanceMonitor pageName="app" />
       </body>

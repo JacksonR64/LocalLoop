@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { cn } from '@/lib/utils';
+import { useLoading } from '@/lib/loading-context';
+import { DelayedLoadingIndicator } from '@/components/ui/DelayedLoadingIndicator';
 
 // Types
 interface RSVPTicketSectionProps {
@@ -83,6 +85,9 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
         guestName: '',
         notes: ''
     });
+
+    // Global loading context
+    const { withLoading } = useLoading();
 
     // Check existing RSVP for the user
     const checkExistingRSVP = useCallback(async () => {
@@ -176,25 +181,28 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
                     notes
                 };
 
-            const response = await fetch('/api/rsvps', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(rsvpData),
-            });
+            // Use global loading indicator for the RSVP submission
+            await withLoading(async () => {
+                const response = await fetch('/api/rsvps', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(rsvpData),
+                });
 
-            const result = await response.json();
+                const result = await response.json();
 
-            if (!response.ok) {
-                throw new Error(result.error || 'Failed to create RSVP');
-            }
+                if (!response.ok) {
+                    throw new Error(result.error || 'Failed to create RSVP');
+                }
 
-            setSuccess('RSVP confirmed successfully!');
-            setExistingRSVP(result.rsvp);
+                setSuccess('RSVP confirmed successfully!');
+                setExistingRSVP(result.rsvp);
 
-            // Reset form for guest users
-            if (!user) {
-                (e.target as HTMLFormElement).reset();
-            }
+                // Reset form for guest users
+                if (!user) {
+                    (e.target as HTMLFormElement).reset();
+                }
+            }, 'rsvp-submit');
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
         } finally {
