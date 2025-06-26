@@ -571,7 +571,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                                             variant="outline"
                                                             size="sm"
                                                             onClick={() => handleRefundClick(order)}
-                                                            className="text-red-600 border-red-200 hover:bg-red-50 w-full sm:w-auto"
+                                                            className="w-full sm:w-auto"
                                                             data-testid="request-refund-button"
                                                         >
                                                             <DollarSign className="w-4 h-4 mr-2" />
@@ -718,7 +718,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                                                                             variant="outline"
                                                                             size="sm"
                                                                             onClick={() => handleRefundClick(order)}
-                                                                            className="text-red-600 border-red-200 hover:bg-red-50 w-full sm:w-auto"
+                                                                            className="w-full sm:w-auto"
                                                                             data-testid="request-refund-button"
                                                                         >
                                                                             <DollarSign className="w-4 h-4 mr-2" />
