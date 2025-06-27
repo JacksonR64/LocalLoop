@@ -134,7 +134,7 @@ export function Navigation({
                                 alt="LocalLoop logo" 
                                 width={200}
                                 height={60}
-                                className="w-12 h-auto" 
+                                className="h-12 w-auto" 
                             />
                             <span className="text-xl font-bold text-card-foreground min-[400px]:inline hidden" data-test-id="homepage-title">LocalLoop</span>
                         </Link>

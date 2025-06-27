@@ -61,6 +61,9 @@ const nextConfig: NextConfig = {
   // PoweredBy header removal for security
   poweredByHeader: false,
 
+  // Enable source maps for production debugging and Lighthouse analysis
+  productionBrowserSourceMaps: true,
+
   // Headers for security, performance and caching
   async headers() {
     return [
@@ -95,10 +98,14 @@ const nextConfig: NextConfig = {
             value: 'max-age=63072000; includeSubDomains; preload'
           },
           {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin'
+          },
+          {
             key: 'Content-Security-Policy',
             value: process.env.NODE_ENV === 'development' 
-              ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://va.vercel-scripts.com; connect-src 'self' https://api.stripe.com https://r.stripe.com https://q.stripe.com https://m.stripe.com https://b.stripe.com https://js.stripe.com https://merchant-ui-api.stripe.com https://checkout.stripe.com https://vitals.vercel-insights.com https://va.vercel-scripts.com https://jbyuivzpetgbapisbnxy.supabase.co https://*.stripe.com; frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com; style-src 'self' 'unsafe-inline' https://js.stripe.com; img-src 'self' data: https: https://*.stripe.com; font-src 'self' data: https://js.stripe.com;"
-              : "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://va.vercel-scripts.com; connect-src 'self' https://api.stripe.com https://r.stripe.com https://q.stripe.com https://m.stripe.com https://b.stripe.com https://js.stripe.com https://merchant-ui-api.stripe.com https://checkout.stripe.com https://vitals.vercel-insights.com https://va.vercel-scripts.com https://jbyuivzpetgbapisbnxy.supabase.co https://*.stripe.com; frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com; style-src 'self' 'unsafe-inline' https://js.stripe.com; img-src 'self' data: https: https://*.stripe.com; font-src 'self' data: https://js.stripe.com;"
+              ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://va.vercel-scripts.com; connect-src 'self' https://api.stripe.com https://r.stripe.com https://q.stripe.com https://m.stripe.com https://b.stripe.com https://js.stripe.com https://merchant-ui-api.stripe.com https://checkout.stripe.com https://vitals.vercel-insights.com https://va.vercel-scripts.com https://jbyuivzpetgbapisbnxy.supabase.co https://*.stripe.com; frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com; style-src 'self' 'unsafe-inline' https://js.stripe.com; img-src 'self' data: https: https://*.stripe.com; font-src 'self' data: https://js.stripe.com; object-src 'none'; base-uri 'self';"
+              : "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://va.vercel-scripts.com; connect-src 'self' https://api.stripe.com https://r.stripe.com https://q.stripe.com https://m.stripe.com https://b.stripe.com https://js.stripe.com https://merchant-ui-api.stripe.com https://checkout.stripe.com https://vitals.vercel-insights.com https://va.vercel-scripts.com https://jbyuivzpetgbapisbnxy.supabase.co https://*.stripe.com; frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com; style-src 'self' 'unsafe-inline' https://js.stripe.com; img-src 'self' data: https: https://*.stripe.com; font-src 'self' data: https://js.stripe.com; object-src 'none'; base-uri 'self';"
           }
         ],
       },
