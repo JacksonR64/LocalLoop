@@ -221,32 +221,38 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
 
             <CardHeader>
                 <div className="flex items-start justify-between">
-                    <CardTitle 
-                        as={featured ? 'h2' : 'h3'} 
-                        className={`${featured ? 'text-lg' : 'text-base'} line-clamp-2 min-h-[3rem] leading-relaxed pr-2 pt-6`}
-                        id={`${cardId}-title`}
-                    >
-                        {event.title}
-                    </CardTitle>
+                    <div className={`${featured ? 'h-20' : 'h-16'} flex items-center pr-2 pt-6 w-full`}>
+                        <CardTitle 
+                            as={featured ? 'h2' : 'h3'} 
+                            className={`${featured ? 'text-lg' : 'text-base'} line-clamp-2 leading-6 w-full`}
+                            id={`${cardId}-title`}
+                        >
+                            {event.title}
+                        </CardTitle>
+                    </div>
                 </div>
-                <CardDescription 
-                    className="min-h-[3rem] line-clamp-2 text-sm leading-relaxed"
-                    id={`${cardId}-description`}
-                >
-                    {getEventCardDescription(event.description, event.short_description)}
-                </CardDescription>
+                <div className="min-h-[4.5rem] flex items-center">
+                    <CardDescription 
+                        className="line-clamp-3 text-sm leading-relaxed w-full"
+                        id={`${cardId}-description`}
+                    >
+                        {event.short_description || event.description || ''}
+                    </CardDescription>
+                </div>
             </CardHeader>
 
             <CardContent>
+                {/* Separator line */}
+                <div className="border-t border-muted-foreground/20 my-3"></div>
                 <div className="space-y-2 text-sm" id={`${cardId}-details`}>
                     <div className="flex items-center gap-2 text-muted-foreground">
                         <Calendar className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
-                        <span>{formatDateTime(event.start_time)}</span>
+                        <span className="truncate">{formatDateTime(event.start_time)}</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-muted-foreground">
                         <MapPin className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
-                        <span className="line-clamp-2">{formatLocationForCard(event.location)}</span>
+                        <span className="truncate">{formatLocationForCard(event.location)}</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-muted-foreground">
@@ -310,9 +316,11 @@ function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowe
 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-semibold text-base text-foreground line-clamp-2 min-h-[3rem] leading-relaxed pr-2 pt-4">
-                            {event.title}
-                        </h3>
+                        <div className="h-16 flex items-center pr-2 pt-4 flex-1">
+                            <h3 className="font-semibold text-base text-foreground line-clamp-2 leading-6 w-full">
+                                {event.title}
+                            </h3>
+                        </div>
                         <EventBadges 
                             event={event}
                             isUpcoming={isUpcoming}
@@ -321,22 +329,27 @@ function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowe
                         />
                     </div>
 
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2 min-h-[2.5rem] leading-relaxed">
-                        {getEventCardDescription(event.description, event.short_description)}
-                    </p>
+                    <div className="min-h-[3.75rem] flex items-center mb-3">
+                        <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed w-full">
+                            {event.short_description || event.description || ''}
+                        </p>
+                    </div>
+
+                    {/* Separator line */}
+                    <div className="border-t border-muted-foreground/20 my-3"></div>
 
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {new Date(event.start_time).toLocaleDateString()}
+                            <Calendar className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">{new Date(event.start_time).toLocaleDateString()}</span>
+                        </span>
+                        <span className="flex items-center gap-1 min-w-0">
+                            <MapPin className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">{formatLocationForCard(event.location)}</span>
                         </span>
                         <span className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {truncateText(formatLocationForCard(event.location), 25)}
-                        </span>
-                        <span className="flex items-center gap-1">
-                            <Users className="w-3 h-3" />
-                            {event.rsvp_count}
+                            <Users className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">{event.rsvp_count}</span>
                         </span>
                     </div>
                 </div>
@@ -387,16 +400,25 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
 
             <CardHeader>
                 <div className="flex items-start justify-between">
-                    <CardTitle as="h2" className="text-xl pt-4">
-                        {event.title}
-                    </CardTitle>
+                    <div className="h-20 flex items-center pt-4 w-full">
+                        <CardTitle 
+                            as="h2" 
+                            className="text-xl line-clamp-2 leading-6 w-full"
+                        >
+                            {event.title}
+                        </CardTitle>
+                    </div>
                 </div>
-                <CardDescription className="text-base line-clamp-2 min-h-[3rem] leading-relaxed">
-                    {getEventCardDescription(event.description, event.short_description)}
-                </CardDescription>
+                <div className="min-h-[4.5rem] flex items-center">
+                    <CardDescription className="text-base line-clamp-3 leading-relaxed w-full">
+                        {event.short_description || event.description || ''}
+                    </CardDescription>
+                </div>
             </CardHeader>
 
             <CardContent>
+                {/* Separator line */}
+                <div className="border-t border-muted-foreground/20 my-3"></div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div className="space-y-3">
                         <div className="flex items-center gap-3 text-foreground">
@@ -485,12 +507,14 @@ function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcom
                     <h4 className="font-medium text-sm text-foreground truncate pt-4">
                         {event.title}
                     </h4>
+                    {/* Separator line */}
+                    <div className="border-t border-muted-foreground/20 my-2"></div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                        <span>{new Date(event.start_time).toLocaleDateString()}</span>
+                        <span className="truncate">{new Date(event.start_time).toLocaleDateString()}</span>
                         <span>•</span>
-                        <span>{truncateText(formatLocationForCard(event.location), 20)}</span>
+                        <span className="truncate">{formatLocationForCard(event.location)}</span>
                         <span>•</span>
-                        <span>{event.rsvp_count} attending</span>
+                        <span className="truncate">{event.rsvp_count} attending</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-2 ml-3">
@@ -530,9 +554,11 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpco
                 {/* Event Details */}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-semibold text-base text-foreground group-hover:text-blue-600 transition-colors line-clamp-2 min-h-[3rem] leading-relaxed pt-4">
-                            {event.title}
-                        </h3>
+                        <div className="h-16 flex items-center pt-4 flex-1">
+                            <h3 className="font-semibold text-base text-foreground group-hover:text-blue-600 transition-colors line-clamp-2 leading-6 w-full">
+                                {event.title}
+                            </h3>
+                        </div>
                         <EventBadges 
                             event={event}
                             isUpcoming={isUpcoming}
@@ -541,22 +567,27 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpco
                         />
                     </div>
 
-                    <p className="text-sm text-gray-600 mb-2 line-clamp-2 min-h-[2.5rem] leading-relaxed">
-                        {getEventCardDescription(event.description, event.short_description, 80)}
-                    </p>
+                    <div className="min-h-[3.75rem] flex items-center mb-2">
+                        <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed w-full">
+                            {event.short_description || event.description || ''}
+                        </p>
+                    </div>
+
+                    {/* Separator line */}
+                    <div className="border-t border-muted-foreground/20 my-3"></div>
 
                     <div className="flex items-center gap-4 text-xs text-gray-500">
                         <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                            <Clock className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">{eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</span>
+                        </span>
+                        <span className="flex items-center gap-1 min-w-0">
+                            <MapPin className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">{formatLocationForCard(event.location)}</span>
                         </span>
                         <span className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {truncateText(formatLocationForCard(event.location), 25)}
-                        </span>
-                        <span className="flex items-center gap-1">
-                            <Users className="w-3 h-3" />
-                            {event.rsvp_count}
+                            <Users className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">{event.rsvp_count}</span>
                         </span>
                     </div>
                 </div>

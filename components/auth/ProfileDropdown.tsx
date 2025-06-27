@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { User, LogOut, ChevronDown, Settings, Calendar, BarChart3, Link2, Unlink, Loader2 } from 'lucide-react'
+import { User, LogOut, ChevronDown, Settings, Calendar, BarChart3, Link as LinkIcon, Unlink, Loader2 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { useAuth as useAuthHook } from '@/lib/hooks/useAuth'
 import Link from 'next/link'
@@ -40,6 +40,7 @@ export function ProfileDropdown({ testIdPrefix = "", onOpenChange }: ProfileDrop
   const [calendarConnected, setCalendarConnected] = useState(false)
   const [calendarLoading, setCalendarLoading] = useState(false)
   const [calendarCheckLoading, setCalendarCheckLoading] = useState(true)
+  const [showCalendarModal, setShowCalendarModal] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const { user, signOut } = useAuth()
   const { user: userProfile, isStaff, isAdmin } = useAuthHook()
@@ -83,6 +84,7 @@ export function ProfileDropdown({ testIdPrefix = "", onOpenChange }: ProfileDrop
   const handleCalendarConnect = async () => {
     try {
       setCalendarLoading(true)
+      setShowCalendarModal(false)
       
       // Build OAuth initiation URL
       const params = new URLSearchParams({
@@ -104,6 +106,7 @@ export function ProfileDropdown({ testIdPrefix = "", onOpenChange }: ProfileDrop
   const handleCalendarDisconnect = async () => {
     try {
       setCalendarLoading(true)
+      setShowCalendarModal(false)
 
       const response = await fetch('/api/auth/google/disconnect', {
         method: 'POST',
@@ -130,6 +133,7 @@ export function ProfileDropdown({ testIdPrefix = "", onOpenChange }: ProfileDrop
       setCalendarLoading(false)
     }
   }
+
 
   // Handle sign out
   const handleSignOut = async () => {
@@ -231,52 +235,28 @@ export function ProfileDropdown({ testIdPrefix = "", onOpenChange }: ProfileDrop
           <div className="border-t border-border my-1" />
 
           {/* Google Calendar Connection */}
-          <div className="px-4 py-2" data-testid="google-calendar-section">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm text-foreground">Google Calendar</span>
-              </div>
-              
-              {calendarCheckLoading ? (
-                <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" data-testid="calendar-status-loading" />
-              ) : (
-                <div className="flex items-center gap-2">
-                  {calendarConnected ? (
-                    <>
-                      <CheckCircle className="w-3 h-3 text-green-600" data-testid="calendar-connected-icon" />
-                      <button
-                        onClick={handleCalendarDisconnect}
-                        disabled={calendarLoading}
-                        className="p-1 text-red-600 hover:text-red-700 hover:bg-red-50 rounded disabled:opacity-50 transition-colors"
-                        data-testid="calendar-disconnect-button"
-                        aria-label={calendarLoading ? 'Disconnecting...' : 'Disconnect Google Calendar'}
-                        title={calendarLoading ? 'Disconnecting...' : 'Disconnect Google Calendar'}
-                      >
-                        {calendarLoading ? (
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                        ) : (
-                          <XCircle className="w-3 h-3" />
-                        )}
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <AlertCircle className="w-3 h-3 text-amber-500" data-testid="calendar-disconnected-icon" />
-                      <button
-                        onClick={handleCalendarConnect}
-                        disabled={calendarLoading}
-                        className="text-xs text-blue-600 hover:text-blue-700 disabled:opacity-50"
-                        data-testid="calendar-connect-button"
-                      >
-                        {calendarLoading ? 'Connecting...' : 'Connect'}
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
+          <button
+            onClick={() => setShowCalendarModal(true)}
+            disabled={calendarLoading}
+            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors disabled:opacity-50"
+            data-testid="calendar-toggle-button"
+            aria-label={calendarConnected ? 'Manage Google Calendar connection' : 'Manage Google Calendar connection'}
+            title={calendarConnected ? 'Manage Google Calendar connection' : 'Manage Google Calendar connection'}
+          >
+            <Calendar className="w-4 h-4 text-muted-foreground" />
+            <span>Google Calendar</span>
+            {calendarCheckLoading ? (
+              <Loader2 className="w-3 h-3 animate-spin text-muted-foreground ml-auto" data-testid="calendar-status-loading" />
+            ) : (
+              <>
+                {calendarConnected ? (
+                  <LinkIcon className="w-3 h-3 text-green-600 -translate-y-0.5" data-testid="calendar-connected-icon" />
+                ) : (
+                  <Unlink className="w-3 h-3 text-amber-500 -translate-y-0.5" data-testid="calendar-disconnected-icon" />
+                )}
+              </>
+            )}
+          </button>
 
           <div className="border-t border-border my-1" />
 
@@ -290,6 +270,100 @@ export function ProfileDropdown({ testIdPrefix = "", onOpenChange }: ProfileDrop
             <LogOut className="w-4 h-4" />
             Sign Out
           </button>
+        </div>
+      )}
+
+      {/* Google Calendar Modal */}
+      {showCalendarModal && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]"
+          onClick={() => setShowCalendarModal(false)}
+        >
+          <div 
+            className="bg-card rounded-lg shadow-xl border border-border p-6 m-4 max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <Calendar className="w-6 h-6 text-blue-600" />
+              <h3 className="text-lg font-medium text-foreground">
+                Google Calendar
+              </h3>
+            </div>
+            
+            <div className="space-y-4">
+              {calendarConnected ? (
+                <>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <LinkIcon className="w-4 h-4 text-green-600" />
+                    <span>Your Google Calendar is currently connected</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Events you RSVP to will automatically be added to your Google Calendar.
+                  </p>
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      onClick={handleCalendarDisconnect}
+                      disabled={calendarLoading}
+                      className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                    >
+                      {calendarLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Disconnecting...
+                        </>
+                      ) : (
+                        <>
+                          <Unlink className="w-4 h-4" />
+                          Disconnect
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setShowCalendarModal(false)}
+                      className="flex-1 bg-muted text-muted-foreground px-4 py-2 rounded-lg hover:bg-accent transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Unlink className="w-4 h-4 text-amber-500" />
+                    <span>Your Google Calendar is not connected</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Connect your Google Calendar to automatically add events you RSVP to.
+                  </p>
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      onClick={handleCalendarConnect}
+                      disabled={calendarLoading}
+                      className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                    >
+                      {calendarLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Connecting...
+                        </>
+                      ) : (
+                        <>
+                          <LinkIcon className="w-4 h-4" />
+                          Connect
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setShowCalendarModal(false)}
+                      className="flex-1 bg-muted text-muted-foreground px-4 py-2 rounded-lg hover:bg-accent transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
