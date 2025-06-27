@@ -401,7 +401,7 @@ export default function CheckoutForm({
                 variables: {
                     // Use only valid Stripe appearance variables
                     colorPrimary: isDark ? '#64748b' : '#475569',
-                    colorBackground: 'transparent', // Clear/no fill as requested
+                    // Note: colorBackground removed - using rules for transparency instead
                     colorText: isDark ? '#f8fafc' : '#1f2937',
                     colorTextSecondary: isDark ? '#94a3b8' : '#6b7280',
                     colorTextPlaceholder: isDark ? '#64748b' : '#9ca3af',
@@ -413,13 +413,14 @@ export default function CheckoutForm({
                     fontWeightNormal: '500',
                 },
                 rules: {
-                    // Clear styling for both light and dark modes
+                    // Clear/transparent styling for all elements
                     '.Input': {
                         backgroundColor: 'transparent',
                         border: isDark ? '1px solid #334155' : '1px solid #e2e8f0',
                         color: isDark ? '#f8fafc' : '#1f2937'
                     },
                     '.Input:focus': {
+                        backgroundColor: 'transparent',
                         border: isDark ? '1px solid #64748b' : '1px solid #475569',
                         boxShadow: isDark ? '0 0 0 1px #64748b' : '0 0 0 1px #475569'
                     },
@@ -433,6 +434,12 @@ export default function CheckoutForm({
                     '.Tab--selected': {
                         backgroundColor: 'transparent',
                         border: isDark ? '1px solid #64748b' : '1px solid #475569'
+                    },
+                    '.TabIcon': {
+                        backgroundColor: 'transparent'
+                    },
+                    '.Block': {
+                        backgroundColor: 'transparent'
                     }
                 }
             },

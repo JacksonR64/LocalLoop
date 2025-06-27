@@ -88,7 +88,31 @@ export function DevOnlyErrorFilter() {
                 return // Silently ignore - this is expected in development
             }
 
+            // Suppress Stripe Apple Pay/Google Pay HTTPS warnings (expected in dev)
+            if (message.includes('If you are testing Apple Pay or Google Pay, you must serve this page over HTTPS') ||
+                message.includes('will not work over HTTP') ||
+                message.includes('Please read https://stripe.com/docs/stripe-js/elements/payment-request-button')) {
+                return // Silently ignore - Apple/Google Pay requires HTTPS, expected in dev
+            }
 
+            // Suppress Stripe payment method activation warnings (configuration, not code)
+            if (message.includes('The following payment method types are not activated') ||
+                message.includes('They will be displayed in test mode, but hidden in live mode') ||
+                message.includes('Please activate the payment method types in your dashboard')) {
+                return // Silently ignore - Dashboard configuration, not code issue
+            }
+
+            // Suppress domain registration warnings for Apple Pay (configuration, not code)
+            if (message.includes('You have not registered or verified the domain') ||
+                message.includes('Please follow https://stripe.com/docs/payments/payment-methods/pmd-registration')) {
+                return // Silently ignore - Domain registration is deployment config, not code
+            }
+
+            // Suppress Stripe appearance API help links (not actionable warnings)
+            if (message.includes('For more information on using the `appearance` option') ||
+                message.includes('see https://stripe.com/docs/stripe-js/appearance-api')) {
+                return // Silently ignore - Just informational link, not a warning
+            }
 
             // Call original for all other warnings
             originalWarn.apply(console, args)
