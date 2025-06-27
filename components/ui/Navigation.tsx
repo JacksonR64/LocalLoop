@@ -129,13 +129,13 @@ export function Navigation({
                     {/* Left side - Logo only on mobile, Logo + Badge on desktop */}
                     <div className="flex items-center gap-3">
                         <Link href="/" className="flex items-center gap-1" data-test-id="homepage-logo">
-                            <div className="h-12 w-12 overflow-hidden flex items-center">
+                            <div className="h-12 w-16 overflow-hidden flex items-center">
                                 <Image 
                                     src="/logo.svg" 
                                     alt="LocalLoop logo" 
                                     width={200}
                                     height={60}
-                                    className="h-12 w-auto object-contain scale-150 translate-x-1" 
+                                    className="h-12 w-auto object-contain" 
                                 />
                             </div>
                             <span className="text-xl font-bold text-card-foreground min-[400px]:inline hidden" data-test-id="homepage-title">LocalLoop</span>
