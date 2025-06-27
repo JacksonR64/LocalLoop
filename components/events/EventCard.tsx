@@ -177,7 +177,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
     return (
         <Card
             size={size}
-            variant={featured ? 'elevated' : 'default'}
+            variant="elevated"
             className={`relative hover:shadow-lg transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
             onClick={onClick}
             role="article"
@@ -312,8 +312,8 @@ function PreviewListCard({ event, featured, className, onClick, isUpcoming, hasP
     
     return (
         <Card
-            variant="outlined"
-            className={`hover:shadow-md transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
+            variant="elevated"
+            className={`shadow-sm hover:shadow-md transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
             onClick={onClick}
         >
 
@@ -395,9 +395,9 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
     
     return (
         <Card
-            variant="default"
+            variant="elevated"
             size="lg"
-            className={`relative hover:shadow-lg transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
+            className={`relative shadow-md hover:shadow-lg transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
             onClick={onClick}
         >
             {event.image_url && (
@@ -530,8 +530,8 @@ function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcom
     return (
         <Card
             size="sm"
-            variant="ghost"
-            className={`hover:bg-muted transition-colors cursor-pointer group border-l-4 ${urgencyClass} ${className}`}
+            variant="elevated"
+            className={`shadow-sm hover:shadow-md hover:bg-muted transition-all cursor-pointer group border-l-4 ${urgencyClass} ${className}`}
             onClick={onClick}
         >
             <div className="flex items-center justify-between p-3">
@@ -573,8 +573,8 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpco
 
     return (
         <Card
-            variant="outlined"
-            className={`hover:shadow-md transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
+            variant="elevated"
+            className={`shadow-sm hover:shadow-md transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
             onClick={onClick}
         >
 
