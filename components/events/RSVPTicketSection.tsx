@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { IconCard } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
@@ -265,27 +265,26 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
     // Loading state
     if (loading) {
         return (
-            <Card className={cn("w-full", className)}>
-                <CardContent className="p-6">
-                    <div className="flex items-center justify-center space-x-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Loading RSVP options...</span>
-                    </div>
-                </CardContent>
-            </Card>
+            <IconCard 
+                cardType="event-rsvp" 
+                className={cn("w-full", className)}
+                contentProps={{ className: "p-6" }}
+            >
+                <div className="flex items-center justify-center space-x-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Loading RSVP options...</span>
+                </div>
+            </IconCard>
         );
     }
 
     return (
-        <Card className={cn("w-full", className)} data-test-id="rsvp-card">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2" data-test-id="rsvp-title">
-                    <CalendarDays className="h-5 w-5" />
-                    Event RSVP
-                </CardTitle>
-            </CardHeader>
-
-            <CardContent className="space-y-6">
+        <IconCard 
+            cardType="event-rsvp" 
+            className={cn("w-full", className)} 
+            data-test-id="rsvp-card"
+            contentProps={{ className: "space-y-6" }}
+        >
                 {/* Event Summary */}
                 <div className="bg-muted p-4 rounded-lg space-y-2" data-test-id="event-summary">
                     <h3 className="font-medium text-lg" data-test-id="event-title">{eventTitle}</h3>
@@ -374,11 +373,10 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
                             RSVP confirmed on {new Date(existingRSVP.created_at).toLocaleDateString()}
                         </p>
                         <Button
-                            variant="outline"
+                            variant="destructive-outline"
                             size="sm"
                             onClick={handleCancel}
                             disabled={submitting}
-                            className="border-red-300 text-red-700 hover:bg-red-50"
                             data-test-id="cancel-rsvp-button"
                         >
                             {submitting ? (
@@ -520,8 +518,7 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
                         You&apos;re all set! We&apos;ve confirmed your RSVP for this event.
                     </p>
                 )}
-            </CardContent>
-        </Card>
+        </IconCard>
     );
 };
 
