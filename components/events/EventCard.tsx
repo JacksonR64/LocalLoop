@@ -4,7 +4,8 @@ import React from 'react';
 import Image from 'next/image';
 import { Calendar, MapPin, Users, Clock, Tag, ExternalLink, ImageIcon } from 'lucide-react';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui';
-import { formatDateTime, formatDate, getEventCardDescription, formatLocationForCard } from '@/lib/utils';
+import { getEventCardDescription, formatLocationForCard } from '@/lib/utils';
+import { ClientDateTime } from '@/components/utils/ClientDate';
 import { getEventTimingInfo } from '@/lib/utils/event-timing';
 import { EventBadges } from '@/lib/utils/event-badges';
 
@@ -268,7 +269,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                 <div className="space-y-2 text-sm" id={`${cardId}-details`}>
                     <div className="flex items-center gap-2 text-muted-foreground">
                         <Calendar className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
-                        <span className="truncate">{formatDateTime(event.start_time)}</span>
+                        <ClientDateTime date={event.start_time} format="full" className="truncate" />
                     </div>
 
                     <div className="flex items-center gap-2 text-muted-foreground">
@@ -379,7 +380,7 @@ function PreviewListCard({ event, featured, className, onClick, isUpcoming, hasP
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3 flex-shrink-0" />
-                            <span className="truncate">{formatDate(event.start_time, { month: 'short', day: 'numeric' })}</span>
+                            <ClientDateTime date={event.start_time} format="short-date" className="truncate" />
                         </span>
                         <span className="flex items-center gap-1 min-w-0">
                             <MapPin className="w-3 h-3 flex-shrink-0" />
@@ -463,7 +464,7 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
                         <div className="flex items-center gap-3 text-foreground">
                             <Calendar className="w-5 h-5 flex-shrink-0 text-blue-600" />
                             <div>
-                                <div className="font-medium">{formatDateTime(event.start_time)}</div>
+                                <ClientDateTime date={event.start_time} format="full" className="font-medium" />
                                 <div className="text-muted-foreground">
                                     Duration: {Math.round((new Date(event.end_time).getTime() - new Date(event.start_time).getTime()) / (1000 * 60 * 60))} hours
                                 </div>
@@ -549,7 +550,7 @@ function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcom
                     {/* Separator line */}
                     <div className="border-t border-muted-foreground/20 my-2"></div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                        <span className="truncate">{formatDate(event.start_time, { month: 'short', day: 'numeric' })}</span>
+                        <ClientDateTime date={event.start_time} format="short-date" className="truncate" />
                         <span>•</span>
                         <span className="truncate">{formatLocationForCard(event.location)}</span>
                         <span>•</span>
@@ -576,7 +577,6 @@ function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcom
 function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpcoming }: Readonly<CardComponentProps>) {
     const eventDate = new Date(event.start_time);
     const day = eventDate.getDate();
-    const month = formatDate(event.start_time, { month: 'short' });
     const urgencyClass = ''
     
 
@@ -591,7 +591,7 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpco
                 {/* Date Circle */}
                 <div className="flex-shrink-0 w-16 h-16 bg-blue-600 text-white rounded-full flex flex-col items-center justify-center">
                     <div className="text-lg font-bold leading-none">{day}</div>
-                    <div className="text-xs uppercase leading-none">{month}</div>
+                    <ClientDateTime date={event.start_time} format="month-short" className="text-xs uppercase leading-none" />
                 </div>
 
                 {/* Event Details */}
@@ -626,7 +626,7 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpco
                     <div className="flex items-center gap-4 text-xs text-gray-500">
                         <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3 flex-shrink-0" />
-                            <span className="truncate">{formatDate(event.start_time, { hour: 'numeric', minute: '2-digit', hour12: true })}</span>
+                            <ClientDateTime date={event.start_time} format="time-only" className="truncate" />
                         </span>
                         <span className="flex items-center gap-1 min-w-0">
                             <MapPin className="w-3 h-3 flex-shrink-0" />

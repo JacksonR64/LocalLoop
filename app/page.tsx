@@ -103,21 +103,16 @@ async function getEventsData(): Promise<EventData[]> {
 // Main Page Component - Server Component that renders the full page
 export default async function HomePage() {
   const events = await getEventsData();
-  const now = new Date();
   
-  // Separate events by featured status and time
+  // Separate events by featured status
   const featuredEvents = events.filter(event => event.featured);
   
-  // Separate ALL events (both featured and non-featured) into upcoming and past
-  const upcomingEvents = events.filter(event => new Date(event.start_time) >= now);
-  const pastEvents = events.filter(event => new Date(event.start_time) < now);
-
+  // Pass all events to client - let client handle time-based filtering to avoid hydration mismatches
   return (
     <div className="min-h-screen bg-background">
       <HomePageClient
         featuredEvents={featuredEvents}
-        upcomingEvents={upcomingEvents}
-        pastEvents={pastEvents}
+        allEvents={events}
       />
     </div>
   );

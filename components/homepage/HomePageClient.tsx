@@ -11,14 +11,27 @@ import { Footer } from '@/components/ui/Footer';
 
 interface HomePageClientProps {
   featuredEvents: EventData[];
-  upcomingEvents: EventData[];
-  pastEvents: EventData[];
+  allEvents: EventData[];
 }
 
-export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: HomePageClientProps) {
+export function HomePageClient({ featuredEvents, allEvents }: HomePageClientProps) {
   const router = useRouter();
-  const [filteredEvents, setFilteredEvents] = React.useState(upcomingEvents);
+  
+  // Client-side time filtering to avoid hydration mismatches
+  const [upcomingEvents, pastEvents] = React.useMemo(() => {
+    const now = new Date();
+    const upcoming = allEvents.filter(event => new Date(event.start_time) >= now);
+    const past = allEvents.filter(event => new Date(event.start_time) < now);
+    return [upcoming, past];
+  }, [allEvents]);
+  
+  const [filteredEvents, setFilteredEvents] = React.useState<EventData[]>([]);
   const [showPastEvents, setShowPastEvents] = React.useState(false);
+  
+  // Initialize filtered events once upcoming events are calculated
+  React.useEffect(() => {
+    setFilteredEvents(upcomingEvents);
+  }, [upcomingEvents]);
 
   // Memoize the filtered events setter to prevent infinite re-renders
   const handleFilteredEventsChange = React.useCallback((events: EventData[]) => {
