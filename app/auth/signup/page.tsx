@@ -86,23 +86,35 @@ export default function SignupPage() {
 
                     <div className="space-y-4">
                         <div>
+                            <label htmlFor="signup-email" className="sr-only">
+                                Email address
+                            </label>
                             <input
+                                id="signup-email"
+                                name="email"
                                 type="email"
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="block w-full px-4 py-3 border border-border placeholder-muted-foreground text-foreground bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-base"
                                 placeholder="Email address"
+                                autoComplete="email"
                             />
                         </div>
                         <div>
+                            <label htmlFor="signup-password" className="sr-only">
+                                Password
+                            </label>
                             <input
+                                id="signup-password"
+                                name="password"
                                 type="password"
                                 required
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="block w-full px-4 py-3 border border-border placeholder-muted-foreground text-foreground bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-base"
                                 placeholder="Password"
+                                autoComplete="new-password"
                             />
                         </div>
                     </div>

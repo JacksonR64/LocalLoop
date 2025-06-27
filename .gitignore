@@ -106,12 +106,12 @@ lighthouse-report/
 .env.test.local
 .env.production.local
 settings.local.json
-.claude/
-claude/
 
 # Claude AI assistant files (keep local only)
-CLAUDE*.md
+.claude/
+claude/
 *.claude.md
+CLAUDE*.md
 claude.*.md
 SQUASH_COMMIT_MESSAGE.md
 RESUBMISSION_EMAIL_DRAFT.md

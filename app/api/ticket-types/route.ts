@@ -2,24 +2,30 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { z } from 'zod'
 
-// Map event slugs to their corresponding numeric IDs for sample events
+// Map event slugs to their corresponding UUIDs  
 function getEventIdFromSlugOrId(eventIdOrSlug: string): string | null {
-    const slugToIdMap: { [key: string]: string } = {
-        'local-business-networking': '2',
-        'kids-art-workshop': '3',
-        'startup-pitch-night': '7',
-        'food-truck-festival': '9',
+    const slugToUuidMap: { [key: string]: string } = {
+        'local-business-networking': '00000000-0000-0000-0000-000000000002',
+        'kids-art-workshop': '00000000-0000-0000-0000-000000000003', 
+        'startup-pitch-night': '00000000-0000-0000-0000-000000000007',
+        'food-truck-festival': '00000000-0000-0000-0000-000000000009',
         // Add more mappings as needed
     };
 
-    // If it's already a numeric ID or UUID, return as is
-    if (/^\d+$/.test(eventIdOrSlug) || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventIdOrSlug)) {
+    // If it's already a UUID, return as is
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventIdOrSlug)) {
         return eventIdOrSlug;
     }
 
-    // If it's a sample event slug, map it to the numeric ID
-    // Otherwise, return the original slug to allow database lookup
-    return slugToIdMap[eventIdOrSlug] || eventIdOrSlug;
+    // If it's a numeric ID, convert to UUID format
+    if (/^\d+$/.test(eventIdOrSlug)) {
+        const num = parseInt(eventIdOrSlug);
+        return `00000000-0000-0000-0000-${num.toString().padStart(12, '0')}`;
+    }
+
+    // If it's a known slug, map it to UUID
+    // Otherwise, return the original slug to allow database lookup by slug
+    return slugToUuidMap[eventIdOrSlug] || eventIdOrSlug;
 }
 
 // Custom datetime validation for datetime-local inputs
@@ -201,8 +207,10 @@ export async function GET(request: NextRequest) {
         // Map slug to ID if needed, or keep as is if already valid
         const eventId = getEventIdFromSlugOrId(eventIdOrSlug);
 
+        // DISABLED: Sample tickets functionality - use database instead
         // For development/demo: Check for sample events first
-        if (eventId) {
+        const ENABLE_SAMPLE_TICKETS = false; // Set to true only for testing
+        if (ENABLE_SAMPLE_TICKETS && eventId) {
             const sampleTickets = getSampleTicketTypes(eventId);
             if (sampleTickets) {
                 return NextResponse.json({ ticket_types: sampleTickets });
@@ -242,10 +250,20 @@ export async function GET(request: NextRequest) {
             actualEventId = event.id;
         }
 
-        // Fetch ticket types from database using the actual UUID
+        // Fetch ticket types and calculate sold counts from orders
         const { data: tickets, error } = await supabase
             .from('ticket_types')
-            .select('*')
+            .select(`
+                *,
+                tickets!tickets_ticket_type_id_fkey(
+                    quantity,
+                    orders!tickets_order_id_fkey(
+                        status,
+                        refund_amount,
+                        total_amount
+                    )
+                )
+            `)
             .eq('event_id', actualEventId)
             .order('sort_order', { ascending: true });
 
@@ -257,11 +275,35 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Add sold_count field for frontend compatibility (set to 0 for now)
-        const ticketsWithSoldCount = (tickets || []).map(ticket => ({
-            ...ticket,
-            sold_count: 0 // TODO: Calculate actual sold count from orders
-        }));
+        // Calculate sold counts from completed, non-refunded orders
+        interface TicketRecord {
+            quantity?: number;
+            orders?: {
+                status: string;
+                refund_amount: number;
+                total_amount: number;
+            };
+        }
+        
+        const ticketsWithSoldCount = (tickets || []).map(ticket => {
+            const soldCount = (ticket.tickets || []).reduce((total: number, ticketRecord: TicketRecord) => {
+                const order = ticketRecord.orders;
+                // Only count tickets from completed orders that haven't been fully refunded
+                if (order && 
+                    order.status === 'completed' && 
+                    (order.refund_amount === 0 || order.refund_amount < order.total_amount)) {
+                    return total + (ticketRecord.quantity || 0);
+                }
+                return total;
+            }, 0);
+
+            return {
+                ...ticket,
+                sold_count: soldCount,
+                // Remove the nested relationship data from response
+                tickets: undefined
+            };
+        });
 
         return NextResponse.json({ ticket_types: ticketsWithSoldCount });
 

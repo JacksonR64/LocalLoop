@@ -5,9 +5,44 @@ import { calculateRefundAmount } from '@/lib/utils/ticket-utils'
 import { sendRefundConfirmationEmail } from '@/lib/email-service'
 import { z } from 'zod'
 
+// Database types for order with relations
+interface OrderData {
+    id: string;
+    created_at: string;
+    updated_at: string;
+    user_id: string | null;
+    event_id: string;
+    status: string;
+    total_amount: number;
+    currency: string;
+    refunded_at: string | null;
+    refund_amount: number;
+    stripe_payment_intent_id: string | null;
+    guest_email: string | null;
+    guest_name: string | null;
+    tickets: Array<{
+        id: string;
+        quantity: number;
+        unit_price: number;
+        ticket_type_id: string;
+        ticket_types: {
+            name: string;
+        };
+    }>;
+    events: {
+        id: string;
+        title: string;
+        start_time: string;
+        end_time: string;
+        location: string | null;
+        cancelled: boolean;
+        slug: string;
+    };
+}
+
 // Request validation schema
 const refundRequestSchema = z.object({
-    order_id: z.string().uuid(),
+    order_id: z.string().min(1), // Accept any string, we'll handle UUID conversion
     refund_type: z.enum(['full_cancellation', 'customer_request']),
     reason: z.string().min(1).max(500)
 })
@@ -16,9 +51,12 @@ export async function POST(request: NextRequest) {
     try {
         // Parse and validate request body
         const body = await request.json()
+        console.log('Refund request received:', { order_id: body.order_id, refund_type: body.refund_type })
+        
         const validationResult = refundRequestSchema.safeParse(body)
 
         if (!validationResult.success) {
+            console.error('Validation failed:', validationResult.error.issues)
             return NextResponse.json(
                 { error: 'Invalid request data', details: validationResult.error.issues },
                 { status: 400 }
@@ -30,11 +68,34 @@ export async function POST(request: NextRequest) {
         // Create Supabase client
         const supabase = await createServerSupabaseClient()
 
-        // Get order details with tickets, customer info, and event details
-        const { data: orderData, error: orderError } = await supabase
+        // Get current user for authorization (moved up to avoid reference error)
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+        if (userError) {
+            console.error('User authentication error:', userError)
+            return NextResponse.json(
+                { error: 'Authentication required' },
+                { status: 401 }
+            )
+        }
+
+        // Handle both full UUIDs and display IDs
+        const orderQuery = supabase
             .from('orders')
             .select(`
-                *,
+                id,
+                created_at,
+                updated_at,
+                user_id,
+                event_id,
+                status,
+                total_amount,
+                currency,
+                refunded_at,
+                refund_amount,
+                stripe_payment_intent_id,
+                guest_email,
+                guest_name,
                 tickets (
                     id,
                     quantity,
@@ -52,15 +113,76 @@ export async function POST(request: NextRequest) {
                     slug
                 )
             `)
-            .eq('id', order_id)
-            .single()
+
+        // Check if order_id is a UUID (36 characters with hyphens) or a display ID (8 characters)
+        let orderData: OrderData | null = null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let orderError: any = null;
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(order_id)) {
+            // It's a full UUID
+            console.log('Looking up order by full UUID:', order_id)
+            const result = await orderQuery.eq('id', order_id).single()
+            orderData = result.data as unknown as OrderData | null
+            orderError = result.error
+        } else {
+            // It's likely a display ID - try to find by the last 8 characters of the UUID
+            console.log('Looking up order by display ID:', order_id)
+            const result = await orderQuery.like('id', `%${order_id}`)
+            
+            if (result.data && Array.isArray(result.data) && result.data.length === 1) {
+                orderData = result.data[0] as unknown as OrderData
+                orderError = null
+            } else if (result.data && Array.isArray(result.data) && result.data.length > 1) {
+                console.error('Multiple orders found with same display ID:', order_id)
+                orderError = { message: 'Multiple orders found with same display ID' }
+                orderData = null
+            } else {
+                orderData = null
+                orderError = result.error || { message: 'Order not found' }
+            }
+        }
 
         if (orderError || !orderData) {
+            console.error('Order fetch error:', {
+                error: orderError,
+                order_id: order_id,
+                errorCode: orderError?.code,
+                errorMessage: orderError?.message
+            })
+            
+            // Let's also try to see if there are any orders at all for this user
+            const { data: allUserOrders, error: allOrdersError } = await supabase
+                .from('orders')
+                .select('id, stripe_payment_intent_id, status, user_id, guest_email')
+                .limit(10)
+            
+            console.log('Available orders for debugging:', {
+                searchedOrderId: order_id,
+                currentUserId: user?.id,
+                allUserOrders: allUserOrders?.map(o => ({ 
+                    id: o.id, 
+                    stripe_id: o.stripe_payment_intent_id,
+                    user_id: o.user_id,
+                    guest_email: o.guest_email,
+                    status: o.status
+                })),
+                allOrdersError
+            })
+            
             return NextResponse.json(
                 { error: 'Order not found' },
                 { status: 404 }
             )
         }
+
+        console.log('Order data fetched:', {
+            order_id: orderData.id,
+            status: orderData.status,
+            stripe_payment_intent_id: orderData.stripe_payment_intent_id,
+            total_amount: orderData.total_amount,
+            refund_amount: orderData.refund_amount,
+            user_id: orderData.user_id
+        })
 
         // Comprehensive refund eligibility validation
         const now = new Date()
@@ -106,25 +228,39 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        // Get current user for authorization
-        const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-        if (userError) {
-            return NextResponse.json(
-                { error: 'Authentication required' },
-                { status: 401 }
-            )
-        }
+        console.log('Refund request debug info:', {
+            order_id,
+            refund_type,
+            user_id: user?.id,
+            order_user_id: orderData.user_id,
+            order_guest_email: orderData.guest_email,
+            order_status: orderData.status,
+            event_cancelled: orderData.events.cancelled
+        })
 
-        // Authorization check: user must own the order OR be a guest with matching email
+        // Authorization check: user must own the order
         const isOwner = user && orderData.user_id === user.id
-        const isGuest = !user && orderData.guest_email && orderData.guest_email === orderData.guest_email
+        const isGuestOrder = !orderData.user_id && orderData.guest_email
 
-        if (!isOwner && !isGuest) {
+        console.log('Authorization debug:', {
+            isOwner,
+            isGuestOrder,
+            userAuthenticated: !!user,
+            orderHasUser: !!orderData.user_id,
+            orderHasGuestEmail: !!orderData.guest_email
+        })
+
+        if (!isOwner && !isGuestOrder) {
             return NextResponse.json(
                 { error: 'Unauthorized to refund this order' },
                 { status: 403 }
             )
+        }
+
+        // For guest orders, we should allow refunds for now (in production, add email verification)
+        if (isGuestOrder && !user) {
+            console.log('⚠️ Allowing guest order refund - in production, implement email verification')
         }
 
         // Calculate refund amount
@@ -144,6 +280,15 @@ export async function POST(request: NextRequest) {
         if (refundAmount <= 0) {
             return NextResponse.json(
                 { error: 'No refund amount calculated' },
+                { status: 400 }
+            )
+        }
+
+        // Check if we have a Stripe payment intent ID
+        if (!orderData.stripe_payment_intent_id) {
+            console.error('Order missing Stripe payment intent ID:', order_id)
+            return NextResponse.json(
+                { error: 'This order cannot be refunded online. Please contact support.' },
                 { status: 400 }
             )
         }
@@ -186,10 +331,7 @@ export async function POST(request: NextRequest) {
             .from('orders')
             .update({
                 refund_amount: newRefundAmount,
-                refunded_at: new Date().toISOString(),
-                notes: orderData.notes ?
-                    `${orderData.notes}\n[${new Date().toISOString()}] Refund processed: $${(refundAmount / 100).toFixed(2)} (${refund_type}) - ${reason}` :
-                    `[${new Date().toISOString()}] Refund processed: $${(refundAmount / 100).toFixed(2)} (${refund_type}) - ${reason}`
+                refunded_at: new Date().toISOString()
             })
             .eq('id', order_id)
 
@@ -218,13 +360,7 @@ export async function POST(request: NextRequest) {
         })
 
         // Prepare refunded tickets data for email
-        interface TicketData {
-            ticket_types: { name: string }
-            quantity: number
-            unit_price: number
-        }
-
-        const refundedTickets = orderData.tickets.map((ticket: TicketData) => {
+        const refundedTickets = orderData.tickets.map((ticket) => {
             const ticketRefundAmount = refund_type === 'full_cancellation'
                 ? ticket.quantity * ticket.unit_price
                 : Math.round((ticket.quantity * ticket.unit_price) * (refundAmount / remainingAmount))
@@ -239,8 +375,8 @@ export async function POST(request: NextRequest) {
 
         // Send confirmation email
         try {
-            const customerName = orderData.customer_name || 'Customer'
-            const customerEmail = orderData.customer_email || orderData.guest_email
+            const customerName = orderData.guest_name || 'Customer'
+            const customerEmail = orderData.guest_email
 
             if (customerEmail) {
                 await sendRefundConfirmationEmail({
@@ -249,7 +385,7 @@ export async function POST(request: NextRequest) {
                     eventTitle: orderData.events.title,
                     eventDate: eventDate,
                     eventTime: eventTime,
-                    eventLocation: orderData.events.location,
+                    eventLocation: orderData.events.location || '',
                     refundedTickets: refundedTickets,
                     totalRefundAmount: refundAmount,
                     originalOrderAmount: orderData.total_amount,

@@ -145,7 +145,7 @@ export const createAuthenticatedClient = (userId: string = TEST_USER.id) => {
 export const createMockRequest = (
     method: string = 'GET',
     url: string = 'http://localhost:3000/api/test',
-    body?: any,
+    body?: Record<string, unknown> | string | null,
     headers: Record<string, string> = {}
 ) => {
     const request = new Request(url, {
@@ -157,7 +157,7 @@ export const createMockRequest = (
         body: body ? JSON.stringify(body) : undefined
     })
 
-    return request as any // Type assertion for Next.js compatibility
+    return request as Request // Type assertion for Next.js compatibility
 }
 
 // Database query helpers for testing

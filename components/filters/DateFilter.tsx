@@ -150,22 +150,28 @@ export function DateFilter({ selectedRange, onRangeChange, className = '' }: Dat
                         </div>
                         <div className="px-3 pb-3 space-y-2">
                             <div>
-                                <label className="block text-xs text-muted-foreground mb-1">Start Date</label>
+                                <label htmlFor="date-filter-start" className="block text-xs text-muted-foreground mb-1">Start Date</label>
                                 <input
+                                    id="date-filter-start"
+                                    name="date-filter-start"
                                     type="date"
                                     value={customStart}
                                     onChange={(e) => setCustomStart(e.target.value)}
                                     className="w-full px-2 py-1 text-sm border border-border bg-background text-foreground rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                                    aria-label="Select start date for event filter"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-muted-foreground mb-1">End Date</label>
+                                <label htmlFor="date-filter-end" className="block text-xs text-muted-foreground mb-1">End Date</label>
                                 <input
+                                    id="date-filter-end"
+                                    name="date-filter-end"
                                     type="date"
                                     value={customEnd}
                                     onChange={(e) => setCustomEnd(e.target.value)}
                                     min={customStart}
                                     className="w-full px-2 py-1 text-sm border border-border bg-background text-foreground rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                                    aria-label="Select end date for event filter"
                                 />
                             </div>
                             <button

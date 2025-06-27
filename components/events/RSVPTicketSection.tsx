@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { IconCard } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { cn } from '@/lib/utils';
+import { useLoading } from '@/lib/loading-context';
 
 // Types
 interface RSVPTicketSectionProps {
@@ -32,6 +33,7 @@ interface RSVPTicketSectionProps {
     capacity?: number;
     currentRSVPs: number;
     isRegistrationOpen: boolean;
+    isPaidEvent?: boolean;
     className?: string;
 }
 
@@ -67,6 +69,7 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
     capacity,
     currentRSVPs,
     isRegistrationOpen,
+    isPaidEvent = false,
     className
 }) => {
     // State management
@@ -82,6 +85,9 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
         notes: ''
     });
 
+    // Global loading context
+    const { withLoading } = useLoading();
+
     // Check existing RSVP for the user
     const checkExistingRSVP = useCallback(async () => {
         if (!user) return;
@@ -91,9 +97,17 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
             if (response.ok) {
                 const data = await response.json();
                 setExistingRSVP(data.rsvp || null);
+            } else if (response.status === 401) {
+                // Auth error - clear user state
+                setUser(null);
+                setExistingRSVP(null);
+            } else {
+                console.error('Failed to check existing RSVP:', response.status, response.statusText);
             }
         } catch (error) {
             console.error('Error checking existing RSVP:', error);
+            // Don't block the UI if RSVP check fails
+            setExistingRSVP(null);
         }
     }, [eventId, user]);
 
@@ -121,7 +135,17 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
             }
         };
 
-        initializeAuth();
+        // Add timeout to prevent infinite loading
+        const timeoutId = setTimeout(() => {
+            // Auth initialization timeout - gracefully handle slow auth
+            setLoading(false);
+        }, 5000); // 5 second timeout
+
+        initializeAuth().finally(() => {
+            clearTimeout(timeoutId);
+        });
+
+        return () => clearTimeout(timeoutId);
     }, [eventId]);
 
     // Separate effect to check RSVP when user changes
@@ -156,25 +180,28 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
                     notes
                 };
 
-            const response = await fetch('/api/rsvps', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(rsvpData),
-            });
+            // Use global loading indicator for the RSVP submission
+            await withLoading((async () => {
+                const response = await fetch('/api/rsvps', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(rsvpData),
+                });
 
-            const result = await response.json();
+                const result = await response.json();
 
-            if (!response.ok) {
-                throw new Error(result.error || 'Failed to create RSVP');
-            }
+                if (!response.ok) {
+                    throw new Error(result.error || 'Failed to create RSVP');
+                }
 
-            setSuccess('RSVP confirmed successfully!');
-            setExistingRSVP(result.rsvp);
+                setSuccess('RSVP confirmed successfully!');
+                setExistingRSVP(result.rsvp);
 
-            // Reset form for guest users
-            if (!user) {
-                (e.target as HTMLFormElement).reset();
-            }
+                // Reset form for guest users
+                if (!user) {
+                    (e.target as HTMLFormElement).reset();
+                }
+            })(), 'rsvp-submit');
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
         } finally {
@@ -196,7 +223,18 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
 
             if (!response.ok) {
                 const result = await response.json();
-                throw new Error(result.error || 'Failed to cancel RSVP');
+                let errorMessage = result.error || 'Failed to cancel RSVP';
+                
+                // Provide user-friendly error messages
+                if (response.status === 400 && errorMessage.includes('2 hours')) {
+                    errorMessage = 'RSVPs can only be cancelled up to 2 hours before the event starts.';
+                } else if (response.status === 401) {
+                    errorMessage = 'You must be logged in to cancel your RSVP.';
+                } else if (response.status === 404) {
+                    errorMessage = 'RSVP not found or you do not have permission to cancel it.';
+                }
+                
+                throw new Error(errorMessage);
             }
 
             setSuccess('RSVP cancelled successfully');
@@ -227,27 +265,26 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
     // Loading state
     if (loading) {
         return (
-            <Card className={cn("w-full", className)}>
-                <CardContent className="p-6">
-                    <div className="flex items-center justify-center space-x-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Loading RSVP options...</span>
-                    </div>
-                </CardContent>
-            </Card>
+            <IconCard 
+                cardType="event-rsvp" 
+                className={cn("w-full", className)}
+                contentProps={{ className: "p-6" }}
+            >
+                <div className="flex items-center justify-center space-x-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Loading RSVP options...</span>
+                </div>
+            </IconCard>
         );
     }
 
     return (
-        <Card className={cn("w-full", className)} data-test-id="rsvp-card">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2" data-test-id="rsvp-title">
-                    <CalendarDays className="h-5 w-5" />
-                    Event RSVP
-                </CardTitle>
-            </CardHeader>
-
-            <CardContent className="space-y-6">
+        <IconCard 
+            cardType="event-rsvp" 
+            className={cn("w-full", className)} 
+            data-test-id="rsvp-card"
+            contentProps={{ className: "space-y-6" }}
+        >
                 {/* Event Summary */}
                 <div className="bg-muted p-4 rounded-lg space-y-2" data-test-id="event-summary">
                     <h3 className="font-medium text-lg" data-test-id="event-title">{eventTitle}</h3>
@@ -272,14 +309,20 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
                     <div className="flex items-center gap-2">
                         <Users className="h-4 w-4" />
                         <span className="text-sm" data-test-id="rsvp-count">
-                            {currentRSVPs} RSVP{currentRSVPs !== 1 ? 's' : ''}
+                            {isPaidEvent 
+                                ? `${currentRSVPs} ticket${currentRSVPs !== 1 ? 's' : ''} sold`
+                                : `${currentRSVPs} RSVP${currentRSVPs !== 1 ? 's' : ''}`
+                            }
                             {capacity && ` / ${capacity} capacity`}
                         </span>
                     </div>
 
                     {spotsLeft !== null && (
                         <Badge variant={spotsLeft <= 5 ? "destructive" : "secondary"} data-test-id="spots-left-badge">
-                            {spotsLeft === 0 ? 'Full' : `${spotsLeft} spots left`}
+                            {spotsLeft === 0 
+                                ? (isPaidEvent ? 'Sold Out' : 'Full')
+                                : `${spotsLeft} ${isPaidEvent ? 'tickets' : 'spots'} left`
+                            }
                         </Badge>
                     )}
                 </div>
@@ -330,11 +373,10 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
                             RSVP confirmed on {new Date(existingRSVP.created_at).toLocaleDateString()}
                         </p>
                         <Button
-                            variant="outline"
+                            variant="destructive-outline"
                             size="sm"
                             onClick={handleCancel}
                             disabled={submitting}
-                            className="border-red-300 text-red-700 hover:bg-red-50"
                             data-test-id="cancel-rsvp-button"
                         >
                             {submitting ? (
@@ -373,15 +415,17 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                         <div>
-                                            <label className="block text-sm font-medium mb-1">
+                                            <label htmlFor="guest-name-input" className="block text-sm font-medium mb-1">
                                                 Full Name *
                                             </label>
                                             <Input
+                                                id="guest-name-input"
                                                 type="text"
                                                 name="guest_name"
                                                 placeholder="Enter your full name"
                                                 value={formData.guestName || ''}
                                                 onChange={(e) => handleInputChange('guestName', e.target.value)}
+                                                autoComplete="name"
                                                 required
                                                 disabled={submitting}
                                                 data-test-id="guest-name-input"
@@ -389,15 +433,17 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium mb-1">
+                                            <label htmlFor="guest-email-input" className="block text-sm font-medium mb-1">
                                                 Email Address *
                                             </label>
                                             <Input
+                                                id="guest-email-input"
                                                 type="email"
                                                 name="guest_email"
                                                 placeholder="Enter your email"
                                                 value={formData.guestEmail || ''}
                                                 onChange={(e) => handleInputChange('guestEmail', e.target.value)}
+                                                autoComplete="email"
                                                 required
                                                 disabled={submitting}
                                                 data-test-id="guest-email-input"
@@ -410,10 +456,11 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
 
                         {/* Optional Notes */}
                         <div>
-                            <label className="block text-sm font-medium mb-1">
+                            <label htmlFor="rsvp-notes-textarea" className="block text-sm font-medium mb-1">
                                 Additional Notes (Optional)
                             </label>
                             <Textarea
+                                id="rsvp-notes-textarea"
                                 name="notes"
                                 placeholder="Any special requirements, dietary restrictions, or comments..."
                                 value={formData.notes || ''}
@@ -421,6 +468,7 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
                                 disabled={submitting}
                                 rows={3}
                                 data-test-id="rsvp-notes-textarea"
+                                aria-label="Additional notes for your RSVP"
                             />
                         </div>
 
@@ -470,8 +518,7 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
                         You&apos;re all set! We&apos;ve confirmed your RSVP for this event.
                     </p>
                 )}
-            </CardContent>
-        </Card>
+        </IconCard>
     );
 };
 

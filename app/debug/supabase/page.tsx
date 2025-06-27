@@ -4,10 +4,12 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
 export default function SupabaseDebugPage() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [testResults, setTestResults] = useState<any[]>([])
 
     useEffect(() => {
         const runDiagnostics = async () => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const results: any[] = []
             
             // Test 1: Basic client info
@@ -34,6 +36,7 @@ export default function SupabaseDebugPage() {
                         error: session.error?.message
                     }
                 })
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (error: any) {
                 results.push({
                     test: 'getSession() call',
@@ -68,6 +71,7 @@ export default function SupabaseDebugPage() {
                         provider: oauth.data?.provider
                     }
                 })
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (error: any) {
                 results.push({
                     test: 'OAuth URL Generation',

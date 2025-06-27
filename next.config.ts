@@ -61,6 +61,9 @@ const nextConfig: NextConfig = {
   // PoweredBy header removal for security
   poweredByHeader: false,
 
+  // Enable source maps for production debugging and Lighthouse analysis
+  productionBrowserSourceMaps: true,
+
   // Headers for security, performance and caching
   async headers() {
     return [
@@ -86,11 +89,23 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), gyroscope=(), magnetometer=(), payment=()'
+            value: process.env.NODE_ENV === 'development' 
+              ? 'camera=(), microphone=(), geolocation=(), gyroscope=(), magnetometer=(), payment=*'
+              : 'camera=(), microphone=(), geolocation=(), gyroscope=(), magnetometer=(), payment=(self "https://js.stripe.com" "https://checkout.stripe.com" "https://api.stripe.com" "https://hooks.stripe.com" "https://r.stripe.com")'
           },
           {
             key: 'Strict-Transport-Security',
             value: 'max-age=63072000; includeSubDomains; preload'
+          },
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin'
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: (process.env.NODE_ENV === 'development' || process.env.VERCEL_ENV === 'preview')
+              ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://va.vercel-scripts.com; connect-src 'self' https://api.stripe.com https://r.stripe.com https://q.stripe.com https://m.stripe.com https://b.stripe.com https://js.stripe.com https://merchant-ui-api.stripe.com https://checkout.stripe.com https://vitals.vercel-insights.com https://va.vercel-scripts.com https://jbyuivzpetgbapisbnxy.supabase.co https://*.stripe.com; frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com; style-src 'self' 'unsafe-inline' https://js.stripe.com; img-src 'self' data: https: https://*.stripe.com; font-src 'self' data: https://js.stripe.com; object-src 'none'; base-uri 'self'; manifest-src 'self';"
+              : "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://va.vercel-scripts.com; connect-src 'self' https://api.stripe.com https://r.stripe.com https://q.stripe.com https://m.stripe.com https://b.stripe.com https://js.stripe.com https://merchant-ui-api.stripe.com https://checkout.stripe.com https://vitals.vercel-insights.com https://va.vercel-scripts.com https://jbyuivzpetgbapisbnxy.supabase.co https://*.stripe.com; frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com; style-src 'self' 'unsafe-inline' https://js.stripe.com; img-src 'self' data: https: https://*.stripe.com; font-src 'self' data: https://js.stripe.com; object-src 'none'; base-uri 'self'; manifest-src 'self';"
           }
         ],
       },
@@ -105,6 +120,16 @@ const nextConfig: NextConfig = {
           {
             key: 'X-Robots-Tag',
             value: 'noindex, nofollow, noarchive, nosnippet, noimageindex'
+          }
+        ],
+      },
+      {
+        // Ensure main pages are indexable (override any global noindex)
+        source: '/((?!auth|api|_next|static).*)',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'index, follow'
           }
         ],
       },
@@ -171,8 +196,8 @@ const nextConfig: NextConfig = {
       config.resolve = config.resolve || {}
       config.resolve.fallback = {
         ...config.resolve.fallback,
-        'leaflet': false as any,
-        'react-leaflet': false as any,
+        'leaflet': false,
+        'react-leaflet': false,
         'web-vitals': false,
         '@vercel/analytics': false,
         '@stripe/stripe-js': false,
@@ -193,26 +218,46 @@ const nextConfig: NextConfig = {
       }
     }
 
-    // Enhanced production optimizations for performance
-    if (!dev && !isServer) {
+    // Enhanced optimizations for both dev and production
+    if (!isServer) {
       config.optimization = {
         ...config.optimization,
         sideEffects: false,
-        minimize: true,
+        minimize: !dev, // Only minimize in production
         splitChunks: {
           chunks: 'all',
+          maxInitialRequests: 25,
+          maxAsyncRequests: 25,
           cacheGroups: {
+            // Separate Stripe into its own chunk for lazy loading
+            stripe: {
+              test: /[\\/]node_modules[\\/]@stripe/,
+              name: 'stripe',
+              chunks: 'all',
+              maxSize: 150000,
+              priority: 20,
+            },
+            // Separate large UI libraries
+            radix: {
+              test: /[\\/]node_modules[\\/]@radix-ui/,
+              name: 'radix-ui',
+              chunks: 'all',
+              maxSize: 100000,
+              priority: 15,
+            },
             vendor: {
               test: /[\\/]node_modules[\\/]/,
               name: 'vendors',
               chunks: 'all',
-              maxSize: 244000, // 244KB max chunk size
+              maxSize: 200000, // Reduced from 244KB
+              priority: 10,
             },
             common: {
               name: 'common',
               minChunks: 2,
               chunks: 'all',
-              maxSize: 244000,
+              maxSize: 150000, // Reduced from 244KB
+              priority: 5,
             },
           },
         },
@@ -245,8 +290,14 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-label',
       '@radix-ui/react-switch',
       '@radix-ui/react-tabs',
+      '@stripe/stripe-js',
+      '@stripe/react-stripe-js',
+      '@supabase/ssr',
     ],
   },
+
+  // Server external packages for better tree shaking
+  serverExternalPackages: ['@supabase/supabase-js'],
 
   // Turbopack configuration - properly typed resolveAlias
   turbopack: {

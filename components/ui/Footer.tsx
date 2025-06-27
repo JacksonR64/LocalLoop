@@ -7,16 +7,15 @@ export function Footer() {
         <footer className="bg-muted border-t mt-20" data-test-id="homepage-footer">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="text-center">
-                    <Link href="/" className="flex items-center justify-center mb-4" data-test-id="footer-logo">
+                    <Link href="/" className="flex items-center justify-center mb-4 gap-4" data-test-id="footer-logo">
                         <Image 
                             src="/logo.svg" 
-                            alt="" 
-                            width={48}
-                            height={48}
-                            className="w-12 h-12" 
-
+                            alt="LocalLoop logo" 
+                            width={200}
+                            height={60}
+                            className="h-12 w-auto" 
                         />
-                        <span className="ml-2 text-xl font-bold text-foreground" data-test-id="footer-title">LocalLoop</span>
+                        <span className="text-3xl text-foreground" data-test-id="footer-title">LocalLoop</span>
                     </Link>
                     <p className="text-muted-foreground mb-6" data-test-id="footer-description">
                         Connecting communities through local events

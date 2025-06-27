@@ -66,6 +66,11 @@ interface APIPerformanceData {
 
 async function trackAPIPerformance(data: APIPerformanceData) {
   try {
+    // Skip tracking the analytics endpoint itself to prevent infinite loops
+    if (data.endpoint.includes('/api/analytics/performance')) {
+      return
+    }
+
     // In production, you might want to batch these or use a queue
     if (process.env.NODE_ENV === 'development') {
       console.log('📊 API Performance:', {
