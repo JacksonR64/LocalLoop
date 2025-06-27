@@ -7,6 +7,7 @@ import { PerformanceMonitor } from "@/components/analytics/PerformanceMonitor";
 import { ThemeProvider } from 'next-themes';
 import { Navigation } from '@/components/ui/Navigation';
 import { DevOnlyErrorFilter } from '@/components/utils/DevOnlyErrorFilter';
+import { BrowserExtensionCleanup } from '@/components/utils/BrowserExtensionCleanup';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -188,6 +189,7 @@ export default function RootLayout({
           <LoadingProvider position="top-right" delay={1000}>
             <AuthProvider>
               <DevOnlyErrorFilter />
+              <BrowserExtensionCleanup />
               <Navigation />
               <main id="main-content" className="pt-16 w-full overflow-x-hidden">
                 {children}
