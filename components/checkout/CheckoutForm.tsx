@@ -125,7 +125,7 @@ function PaymentForm({
                     return_url: returnUrl,
                     receipt_email: customerDetails.email,
                 },
-                redirect: 'if_required'
+                redirect: 'always'  // Always redirect to show payment success
             })
 
             if (error) {
@@ -290,7 +290,7 @@ function PaymentForm({
                         </Alert>
                     )}
 
-                    <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                    <div className="flex flex-col sm:flex-row lg:flex-col gap-3 mt-6">
                         <Button
                             type="button"
                             variant="outline"
@@ -563,7 +563,7 @@ export default function CheckoutForm({
     }
 
     return (
-        <div className="max-w-2xl mx-auto">
+        <div className="w-full lg:max-w-2xl lg:mx-auto">
             {clientSecret && (
                 <Elements 
                     stripe={stripePromise} 

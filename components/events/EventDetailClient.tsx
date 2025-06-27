@@ -63,44 +63,78 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
         }
     }, [event.id, event.database_id, event.is_paid]);
 
-    // Check for payment success from redirect (e.g., PayPal)
+    // Check for payment success from redirect (e.g., PayPal) 
     useEffect(() => {
         const paymentStatus = searchParams.get('payment');
         const paymentIntentParam = searchParams.get('payment_intent');
         
+        console.log('🔍 Payment Success Debug:', {
+            paymentStatus,
+            paymentIntentParam,
+            allParams: Object.fromEntries(searchParams.entries()),
+            currentUrl: typeof window !== 'undefined' ? window.location.href : 'SSR'
+        });
+        
         if (paymentStatus === 'success') {
+            console.log('✅ Payment success detected, showing success card');
             setShowPaymentSuccess(true);
             if (paymentIntentParam) {
                 setPaymentIntentId(paymentIntentParam);
             }
             
-            // Clean up URL parameters after 100ms to avoid flash
+            // Clean up URL parameters but preserve the anchor
             setTimeout(() => {
-                const url = new URL(window.location.href);
-                url.searchParams.delete('payment');
-                url.searchParams.delete('payment_intent');
-                url.searchParams.delete('payment_intent_client_secret');
-                router.replace(url.pathname + url.search, { scroll: false });
-            }, 100);
+                try {
+                    const url = new URL(window.location.href);
+                    console.log('🧹 Cleaning URL parameters, current URL:', url.href);
+                    url.searchParams.delete('payment');
+                    url.searchParams.delete('payment_intent');
+                    url.searchParams.delete('payment_intent_client_secret');
+                    
+                    // Preserve the anchor when cleaning up
+                    const cleanUrl = `${url.pathname}${url.search}#payment-success`;
+                    console.log('🔗 Clean URL (preserving anchor):', cleanUrl);
+                    router.replace(cleanUrl);
+                } catch (error) {
+                    console.warn('Failed to clean URL parameters:', error);
+                }
+            }, 2000); // Longer delay to ensure anchor navigation completes first
         }
     }, [searchParams, router]);
 
-    // Auto-scroll to payment success card when it becomes visible
+    // Separate effect for anchor navigation after success card is rendered
     useEffect(() => {
         if (showPaymentSuccess) {
-            // Wait a moment for the card to render, then scroll to it
-            setTimeout(() => {
-                const successCard = document.querySelector('[data-test-id="payment-success-card"]');
-                if (successCard) {
-                    successCard.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'start',
-                        inline: 'nearest'
-                    });
+            console.log('💳 Payment success card should be rendered, attempting anchor navigation...');
+            
+            // Wait for DOM to be updated with the success card
+            const attemptAnchorNavigation = () => {
+                const paymentSuccessElement = document.getElementById('payment-success');
+                if (paymentSuccessElement) {
+                    console.log('🎯 Found payment-success element, navigating to anchor');
+                    router.replace('#payment-success');
+                    return true;
+                } else {
+                    console.log('⏳ Payment success element not found yet, retrying...');
+                    return false;
                 }
-            }, 200);
+            };
+
+            // Try immediately
+            if (!attemptAnchorNavigation()) {
+                // If element not found, retry with increasing delays
+                const retryAttempts = [100, 300, 500, 1000];
+                retryAttempts.forEach((delay, index) => {
+                    setTimeout(() => {
+                        if (!document.getElementById('payment-success')) {
+                            console.log(`🔄 Retry ${index + 1}/${retryAttempts.length} after ${delay}ms`);
+                            attemptAnchorNavigation();
+                        }
+                    }, delay);
+                });
+            }
         }
-    }, [showPaymentSuccess]);
+    }, [showPaymentSuccess, router]);
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -264,10 +298,10 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
 
                     {/* Sidebar */}
                     <div className="lg:col-span-1" data-test-id="event-sidebar">
-                        <div className="sticky top-24 space-y-6">
+                        <div className="sticky top-0 space-y-6">
                             {/* Payment Success Message */}
                             {showPaymentSuccess ? (
-                                <Card data-test-id="payment-success-card">
+                                <Card id="payment-success" data-test-id="payment-success-card">
                                     <CardContent className="text-center py-8">
                                         <div className="mb-4">
                                             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -283,9 +317,9 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                             Your tickets have been purchased successfully.
                                         </p>
                                         
-                                        <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6 text-left">
-                                            <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">Order Details</h3>
-                                            <div className="space-y-1 text-sm text-green-700 dark:text-green-300">
+                                        <div className="bg-green-50 dark:bg-green-100 border border-green-200 dark:border-green-300 rounded-lg p-4 mb-6 text-left">
+                                            <h3 className="font-semibold text-green-800 dark:text-green-800 mb-2">Order Details</h3>
+                                            <div className="space-y-1 text-sm text-green-700 dark:text-green-700">
                                                 {paymentIntentId && <div>Payment ID: {paymentIntentId}</div>}
                                                 <div>Event: {event.title}</div>
                                                 <div>Date: {formatDate(event.start_time)}</div>
@@ -298,21 +332,34 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                             Please save this email as it contains important information for event entry.
                                         </div>
 
-                                        <GoogleCalendarConnectWithStatus
-                                            action="create_event"
-                                            returnUrl={`/events/${event.id}`}
-                                            eventData={{
-                                                id: event.id,
-                                                title: event.title,
-                                                description: event.description,
-                                                start_time: event.start_time,
-                                                end_time: event.end_time,
-                                                location: event.location,
-                                                is_paid: event.is_paid,
-                                                rsvp_count: event.rsvp_count,
-                                                organizer: event.organizer
-                                            }}
-                                        />
+                                        <div className="space-y-4">
+                                            <GoogleCalendarConnectWithStatus
+                                                action="create_event"
+                                                returnUrl={`/events/${event.id}`}
+                                                eventData={{
+                                                    id: event.id,
+                                                    title: event.title,
+                                                    description: event.description,
+                                                    start_time: event.start_time,
+                                                    end_time: event.end_time,
+                                                    location: event.location,
+                                                    is_paid: event.is_paid,
+                                                    rsvp_count: event.rsvp_count,
+                                                    organizer: event.organizer
+                                                }}
+                                            />
+                                            
+                                            <button
+                                                onClick={() => setShowPaymentSuccess(false)}
+                                                className="w-full bg-primary text-primary-foreground py-3 px-4 rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                                                data-test-id="continue-to-event-button"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                Continue to Event
+                                            </button>
+                                        </div>
                                     </CardContent>
                                 </Card>
                             ) : (
@@ -364,9 +411,10 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                                 eventId={event.id}
                                                 selectedTickets={selectedTickets}
                                                 onSuccess={(paymentIntentId) => {
-                                                    console.log('Payment successful:', paymentIntentId)
-                                                    // Handle success - could redirect or show success message
-                                                    setCheckoutStep('tickets')
+                                                    console.log('Payment successful:', paymentIntentId);
+                                                    setShowPaymentSuccess(true);
+                                                    setPaymentIntentId(paymentIntentId);
+                                                    setCheckoutStep('tickets');
                                                 }}
                                                 onCancel={() => {
                                                     setCheckoutStep('tickets')

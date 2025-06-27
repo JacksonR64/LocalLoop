@@ -111,6 +111,92 @@ body {
   overflow-x: hidden;
 }
 
+/* Ensure proper box-sizing and prevent overflow */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* Prevent any element from causing horizontal overflow */
+body, #__next, main {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* 
+ * Anchor Navigation System
+ * Desktop: No offset needed - scroll to top of element
+ * Mobile: Small buffer for better positioning with mobile nav
+ */
+:root {
+  --nav-height: 64px;
+  --anchor-buffer: 0px; /* No buffer on desktop */
+  --anchor-scroll-offset: calc(var(--nav-height) + var(--anchor-buffer));
+}
+
+/* 
+ * Universal anchor scroll offset
+ * Single column layout: Need scroll margin (card is below main content)
+ * Two column layout: Minimal margin (card is in sidebar)
+ */
+#payment-success,
+#about,
+#location,
+#calendar,
+#tickets,
+#rsvp {
+  scroll-margin-top: 80px; /* Single column: need proper scroll positioning */
+}
+
+/* Two-column layout: card is in sidebar, less scroll margin needed */
+@media (min-width: 1024px) {
+  #payment-success,
+  #about,
+  #location,
+  #calendar,
+  #tickets,
+  #rsvp {
+    scroll-margin-top: 16px; /* Two column: minimal margin */
+  }
+}
+
+/* 
+ * Smooth scrolling behavior for better user experience
+ * Applied to the entire document for consistent anchor navigation
+ */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 
+ * Respect user preferences for reduced motion
+ * Disables smooth scrolling for users who prefer reduced motion
+ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* 
+ * Fallback for older browsers that don't support CSS custom properties
+ * Provides the same 80px offset using a fixed value
+ */
+@supports not (scroll-margin-top: var(--anchor-scroll-offset)) {
+  #payment-success,
+  #about,
+  #location,
+  #calendar,
+  #tickets,
+  #rsvp {
+    scroll-margin-top: 80px;
+  }
+}
+
 /* Custom scrollbar for better UX */
 ::-webkit-scrollbar {
   width: 8px;
