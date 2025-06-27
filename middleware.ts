@@ -14,7 +14,8 @@ export const config = {
          * - favicon.ico (favicon file)
          * - manifest.json (PWA manifest)
          * - api routes (already handled by API middleware)
+         * - static assets
          */
-        '/((?!_next/static|_next/image|favicon.ico|manifest.json|.*\\.svg|.*\\.ico|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.webp|api).*)',
+        '/((?!_next/static|_next/image|favicon.ico|manifest.json|api/|.*\\.svg|.*\\.ico|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.webp).*)',
     ],
 } 

@@ -135,9 +135,14 @@ export function EventCard({
     const hasPrice = Boolean(event.is_paid && event.ticket_types && event.ticket_types.length > 0);
     const lowestPrice = hasPrice ? Math.min(...event.ticket_types!.map(t => t.price)) : 0;
     
-    // Use shared timing logic
-    const timingInfo = getEventTimingInfo(event.start_time);
-    const { isUpcoming } = timingInfo;
+    // Default to upcoming for SSR consistency, will update on client
+    const [isUpcoming, setIsUpcoming] = React.useState(true);
+    
+    React.useEffect(() => {
+        // Only calculate timing on client to avoid hydration mismatch
+        const timingInfo = getEventTimingInfo(event.start_time);
+        setIsUpcoming(timingInfo.isUpcoming);
+    }, [event.start_time]);
 
     const commonProps: CardComponentProps = {
         event,

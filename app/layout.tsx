@@ -133,11 +133,8 @@ export default function RootLayout({
                         );
                       }
                       
-                      // Suppress Radix UI and React focus errors in preview/dev
-                      if (message.includes('Minified React error #418') || 
-                          message.includes('roving-focus-group') ||
-                          message.includes('focus-scope') ||
-                          message.includes('vercel.live') ||
+                      // Suppress only non-functional Vercel Live errors (not React errors)
+                      if (message.includes('vercel.live') ||
                           message.includes('feedback.js')) {
                         return true;
                       }

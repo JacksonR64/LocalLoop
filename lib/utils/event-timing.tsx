@@ -4,21 +4,28 @@ import { Badge } from '@/components/ui/badge'
 /**
  * Determines if an event is upcoming based on start time and 1-day grace period
  * Events are considered "past" only 1 day after the event date
+ * 
+ * @param startTime - Event start time
+ * @param currentTime - Optional current time for testing/SSR consistency
  */
-export function isEventUpcoming(startTime: string): boolean {
+export function isEventUpcoming(startTime: string, currentTime?: Date): boolean {
     const eventDate = new Date(startTime)
     const oneDayAfterEvent = new Date(eventDate)
     oneDayAfterEvent.setDate(eventDate.getDate() + 1)
-    return new Date() < oneDayAfterEvent
+    const now = currentTime || new Date()
+    return now < oneDayAfterEvent
 }
 
 /**
  * Gets the appropriate timing badge for an event
  * Returns Today, Tomorrow, Upcoming, or Past Event based on event timing
+ * 
+ * @param startTime - Event start time
+ * @param currentTime - Optional current time for testing/SSR consistency
  */
-export function getEventTimingBadge(startTime: string): React.ReactElement {
+export function getEventTimingBadge(startTime: string, currentTime?: Date): React.ReactElement {
     const eventDate = new Date(startTime)
-    const now = new Date()
+    const now = currentTime || new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     const tomorrow = new Date(today)
     tomorrow.setDate(today.getDate() + 1)
@@ -76,10 +83,13 @@ export function getEventTimingBadge(startTime: string): React.ReactElement {
 
 /**
  * Gets event timing information for filtering and sorting
+ * 
+ * @param startTime - Event start time
+ * @param currentTime - Optional current time for testing/SSR consistency  
  */
-export function getEventTimingInfo(startTime: string) {
+export function getEventTimingInfo(startTime: string, currentTime?: Date) {
     const eventDate = new Date(startTime)
-    const now = new Date()
+    const now = currentTime || new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     const tomorrow = new Date(today)
     tomorrow.setDate(today.getDate() + 1)
