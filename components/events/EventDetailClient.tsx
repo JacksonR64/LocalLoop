@@ -68,15 +68,8 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
         const paymentStatus = searchParams.get('payment');
         const paymentIntentParam = searchParams.get('payment_intent');
         
-        console.log('🔍 Payment Success Debug:', {
-            paymentStatus,
-            paymentIntentParam,
-            allParams: Object.fromEntries(searchParams.entries()),
-            currentUrl: typeof window !== 'undefined' ? window.location.href : 'SSR'
-        });
         
         if (paymentStatus === 'success') {
-            console.log('✅ Payment success detected, showing success card');
             setShowPaymentSuccess(true);
             if (paymentIntentParam) {
                 setPaymentIntentId(paymentIntentParam);
@@ -86,14 +79,12 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
             setTimeout(() => {
                 try {
                     const url = new URL(window.location.href);
-                    console.log('🧹 Cleaning URL parameters, current URL:', url.href);
                     url.searchParams.delete('payment');
                     url.searchParams.delete('payment_intent');
                     url.searchParams.delete('payment_intent_client_secret');
                     
                     // Preserve the anchor when cleaning up
                     const cleanUrl = `${url.pathname}${url.search}#payment-success`;
-                    console.log('🔗 Clean URL (preserving anchor):', cleanUrl);
                     router.replace(cleanUrl);
                 } catch (error) {
                     console.warn('Failed to clean URL parameters:', error);
@@ -105,17 +96,14 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     // Separate effect for anchor navigation after success card is rendered
     useEffect(() => {
         if (showPaymentSuccess) {
-            console.log('💳 Payment success card should be rendered, attempting anchor navigation...');
             
             // Wait for DOM to be updated with the success card
             const attemptAnchorNavigation = () => {
                 const paymentSuccessElement = document.getElementById('payment-success');
                 if (paymentSuccessElement) {
-                    console.log('🎯 Found payment-success element, navigating to anchor');
                     router.replace('#payment-success');
                     return true;
                 } else {
-                    console.log('⏳ Payment success element not found yet, retrying...');
                     return false;
                 }
             };
@@ -124,10 +112,9 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
             if (!attemptAnchorNavigation()) {
                 // If element not found, retry with increasing delays
                 const retryAttempts = [100, 300, 500, 1000];
-                retryAttempts.forEach((delay, index) => {
+                retryAttempts.forEach((delay) => {
                     setTimeout(() => {
                         if (!document.getElementById('payment-success')) {
-                            console.log(`🔄 Retry ${index + 1}/${retryAttempts.length} after ${delay}ms`);
                             attemptAnchorNavigation();
                         }
                     }, delay);
@@ -411,7 +398,6 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                                 eventId={event.id}
                                                 selectedTickets={selectedTickets}
                                                 onSuccess={(paymentIntentId) => {
-                                                    console.log('Payment successful:', paymentIntentId);
                                                     setShowPaymentSuccess(true);
                                                     setPaymentIntentId(paymentIntentId);
                                                     setCheckoutStep('tickets');

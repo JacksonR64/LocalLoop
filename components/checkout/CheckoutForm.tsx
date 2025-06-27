@@ -116,9 +116,8 @@ function PaymentForm({
                 : process.env.NEXT_PUBLIC_SITE_URL || 'https://localloop.app';
             const returnUrl = `${baseUrl}/events/${orderDetails.event.id}?payment=success`;
 
-            console.log('Confirming payment with return URL:', returnUrl);
 
-            const { error, paymentIntent } = await stripe.confirmPayment({
+            const result = await stripe.confirmPayment({
                 elements,
                 confirmParams: {
                     return_url: returnUrl,
@@ -127,12 +126,13 @@ function PaymentForm({
                 redirect: 'always'  // Always redirect to show payment success
             })
 
-            if (error) {
-                console.error('Stripe payment error:', error);
-                console.error('Error type:', error.type);
-                console.error('Error code:', error.code);
-                setPaymentError(error.message || 'An error occurred during payment processing')
-            } else if (paymentIntent) {
+            if (result.error) {
+                console.error('Stripe payment error:', result.error);
+                console.error('Error type:', result.error.type);
+                console.error('Error code:', result.error.code);
+                setPaymentError(result.error.message || 'An error occurred during payment processing')
+            } else if ('paymentIntent' in result && result.paymentIntent) {
+                const paymentIntent = result.paymentIntent as any;
                 // Update customer information in our system if it changed
                 if (customerDetails.email !== customerInfo.email || customerDetails.name !== customerInfo.name) {
                     try {
@@ -171,9 +171,9 @@ function PaymentForm({
                 cardType="order-summary"
                 contentProps={{ className: "space-y-3" }}
             >
-                    <div className="text-sm font-medium text-foreground">
-                        {orderDetails.event.title}
-                    </div>
+                <div className="text-sm font-medium text-foreground">
+                    {orderDetails.event.title}
+                </div>
 
                     {orderDetails.ticket_items.map((item, index) => (
                         <div key={index} className="flex justify-between text-sm text-foreground">
@@ -205,7 +205,7 @@ function PaymentForm({
                 cardType="customer-info"
                 contentProps={{ className: "space-y-4" }}
             >
-                    <div className="space-y-4">
+                <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium mb-1" htmlFor="customer-email">
                                 Email Address *
@@ -391,32 +391,53 @@ export default function CheckoutForm({
     const isDark = resolvedTheme === 'dark'
 
     // Memoize stripe options to prevent clientSecret mutation warnings
-    const stripeOptions = useMemo(() => ({
-        clientSecret: clientSecret || undefined,
-        appearance: {
-            theme: isDark ? 'night' as const : 'stripe' as const,
-            variables: {
-                colorPrimary: '#475569', // Use slate-600 to match site theme better
-                colorBackground: isDark ? '#020817' : '#ffffff',
-                colorText: isDark ? '#f8fafc' : '#1f2937',
-                colorTextSecondary: isDark ? '#94a3b8' : '#6b7280',
-                colorDanger: '#dc2626',
-                fontFamily: 'system-ui, sans-serif',
-                spacingUnit: '4px',
-                borderRadius: '8px',
-                // Dark mode specific variables to match site theme
-                ...(isDark && {
-                    colorPrimary: '#64748b', // Use slate-500 for dark mode
-                    colorBackgroundDeemphasized: '#0f172a',
-                    colorInputBackground: '#1e293b',
-                    colorInputBorder: '#334155',
-                    colorInputText: '#f8fafc',
-                    colorInputPlaceholder: '#64748b',
-                    colorBackgroundText: '#1e293b',
-                }),
+    const stripeOptions = useMemo(() => {
+        if (!clientSecret) return undefined;
+        
+        return {
+            clientSecret,
+            appearance: {
+                theme: isDark ? 'night' as const : 'stripe' as const,
+                variables: {
+                    // Use only valid Stripe appearance variables
+                    colorPrimary: isDark ? '#64748b' : '#475569',
+                    colorBackground: 'transparent', // Clear/no fill as requested
+                    colorText: isDark ? '#f8fafc' : '#1f2937',
+                    colorTextSecondary: isDark ? '#94a3b8' : '#6b7280',
+                    colorTextPlaceholder: isDark ? '#64748b' : '#9ca3af',
+                    colorDanger: '#dc2626',
+                    fontFamily: 'system-ui, sans-serif',
+                    spacingUnit: '4px',
+                    borderRadius: '8px',
+                    fontSizeBase: '14px',
+                    fontWeightNormal: '500',
+                },
+                rules: {
+                    // Clear styling for both light and dark modes
+                    '.Input': {
+                        backgroundColor: 'transparent',
+                        border: isDark ? '1px solid #334155' : '1px solid #e2e8f0',
+                        color: isDark ? '#f8fafc' : '#1f2937'
+                    },
+                    '.Input:focus': {
+                        border: isDark ? '1px solid #64748b' : '1px solid #475569',
+                        boxShadow: isDark ? '0 0 0 1px #64748b' : '0 0 0 1px #475569'
+                    },
+                    '.Tab': {
+                        backgroundColor: 'transparent',
+                        border: isDark ? '1px solid #334155' : '1px solid #e2e8f0'
+                    },
+                    '.Tab:hover': {
+                        backgroundColor: isDark ? 'rgba(100, 116, 139, 0.1)' : 'rgba(71, 85, 105, 0.05)'
+                    },
+                    '.Tab--selected': {
+                        backgroundColor: 'transparent',
+                        border: isDark ? '1px solid #64748b' : '1px solid #475569'
+                    }
+                }
             },
-        },
-    }), [clientSecret, isDark])
+        };
+    }, [clientSecret, isDark])
 
     // Create checkout session
     useEffect(() => {

@@ -26,7 +26,7 @@ interface IconCardProps extends React.HTMLAttributes<HTMLDivElement> {
     /** Additional props for the header */
     headerProps?: React.ComponentProps<typeof IconCardHeader>;
     /** Additional props for the content */
-    contentProps?: React.ComponentProps<typeof CardContent>;
+    contentProps?: Omit<React.ComponentProps<typeof CardContent>, 'children'>;
     /** Whether to include the header at all */
     includeHeader?: boolean;
 }
@@ -104,7 +104,7 @@ export const IconCard = React.forwardRef<HTMLDivElement, IconCardProps>(
                         includeHeader ? 'pt-0' : undefined,
                         contentProps?.className
                     )}
-                    {...contentProps}
+                    {...(contentProps && { ...contentProps, className: undefined })}
                 >
                     {children}
                 </CardContent>
