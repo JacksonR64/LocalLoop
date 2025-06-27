@@ -217,7 +217,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
 
 
             {/* Badges positioned to overlap image and content */}
-            <div className={`absolute ${size === 'lg' ? 'right-6' : 'right-4'} z-10`} style={{ top: size === 'lg' ? 'calc(12rem + 16px)' : 'calc(12rem + 8px)' }} suppressHydrationWarning>
+            <div className={`absolute ${size === 'lg' ? 'right-6' : 'right-4'} z-10`} style={{ top: size === 'lg' ? 'calc(12rem + 16px)' : 'calc(12rem + 8px)' }}>
                 <EventBadges 
                     event={event}
                     isUpcoming={isUpcoming}
@@ -356,7 +356,7 @@ function PreviewListCard({ event, featured, className, onClick, isUpcoming, hasP
                                 {event.title}
                             </h3>
                         </div>
-                        <div suppressHydrationWarning>
+                        <div>
                             <EventBadges 
                                 event={event}
                                 isUpcoming={isUpcoming}
@@ -428,7 +428,7 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
             )}
 
             {/* Badges positioned to overlap image and content */}
-            <div className="absolute right-4 z-10" style={{ top: 'calc(14rem + 8px)' }} suppressHydrationWarning>
+            <div className="absolute right-4 z-10" style={{ top: 'calc(14rem + 8px)' }}>
                 <EventBadges 
                     event={event}
                     isUpcoming={isUpcoming}
@@ -557,7 +557,7 @@ function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcom
                     </div>
                 </div>
                 <div className="flex items-center gap-2 ml-3">
-                    <div suppressHydrationWarning>
+                    <div>
                         <EventBadges 
                             event={event}
                             isUpcoming={isUpcoming}
@@ -603,7 +603,7 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpco
                                 {event.title}
                             </h3>
                         </div>
-                        <div suppressHydrationWarning>
+                        <div>
                             <EventBadges 
                                 event={event}
                                 isUpcoming={isUpcoming}

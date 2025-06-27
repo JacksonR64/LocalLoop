@@ -1,4 +1,5 @@
 import React from 'react'
+import { useSyncExternalStore } from 'react'
 
 export interface EventBadgeProps {
     event: {
@@ -18,11 +19,11 @@ export interface EventBadgeProps {
 const getBadgeClasses = () => "px-2 py-1 rounded-full text-xs font-normal"
 
 /**
- * Get timing status of an event
+ * Get timing status of an event with optional current time for SSR consistency
  */
-function getEventTiming(startTime: string) {
+function getEventTiming(startTime: string, currentTime?: Date) {
     const eventDate = new Date(startTime)
-    const now = new Date()
+    const now = currentTime || new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     const tomorrow = new Date(today)
     tomorrow.setDate(today.getDate() + 1)
@@ -49,6 +50,17 @@ function getEventTiming(startTime: string) {
     }
     
     return 'upcoming'
+}
+
+/**
+ * SSR-safe hook for getting event timing status
+ */
+function useEventTiming(startTime: string) {
+    return useSyncExternalStore(
+        () => () => {}, // No subscription needed for date calculations
+        () => getEventTiming(startTime), // Client: use current time
+        () => 'upcoming' // Server: always return 'upcoming' for consistency
+    )
 }
 
 /**
@@ -96,7 +108,7 @@ export function EventBadges({
     isUpcoming = true,
     className = "flex gap-2"
 }: EventBadgeProps & { className?: string }): React.ReactElement {
-    const timingStatus = getEventTiming(event.start_time)
+    const timingStatus = useEventTiming(event.start_time)
     const timingColors = getTimingColors(timingStatus)
     const timingLabel = getTimingLabel(timingStatus)
     
