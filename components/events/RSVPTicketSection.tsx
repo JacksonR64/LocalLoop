@@ -458,10 +458,11 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
 
                         {/* Optional Notes */}
                         <div>
-                            <label className="block text-sm font-medium mb-1">
+                            <label htmlFor="rsvp-notes-textarea" className="block text-sm font-medium mb-1">
                                 Additional Notes (Optional)
                             </label>
                             <Textarea
+                                id="rsvp-notes-textarea"
                                 name="notes"
                                 placeholder="Any special requirements, dietary restrictions, or comments..."
                                 value={formData.notes || ''}
@@ -469,6 +470,7 @@ const RSVPTicketSection: React.FC<RSVPTicketSectionProps> = ({
                                 disabled={submitting}
                                 rows={3}
                                 data-test-id="rsvp-notes-textarea"
+                                aria-label="Additional notes for your RSVP"
                             />
                         </div>
 

@@ -10,6 +10,11 @@ export {
     type CardVariant,
 } from './Card';
 
+// Modern icon-based card components
+export { CardIcon } from './CardIcon';
+export { IconCardHeader } from './IconCardHeader';
+export { IconCard } from './IconCard';
+
 export { LoadingSpinner } from './LoadingSpinner';
 export { Button, type ButtonProps } from './button';
 export { Input, type InputProps } from './input';

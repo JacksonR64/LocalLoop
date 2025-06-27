@@ -8,7 +8,7 @@ import {
     useStripe,
     useElements
 } from '@stripe/react-stripe-js'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
+import { Card, CardContent, IconCard } from '@/components/ui'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
@@ -20,8 +20,7 @@ import {
     AlertCircle,
     ArrowLeft,
     Mail,
-    User,
-    Receipt
+    User
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import GoogleCalendarAddButton from './GoogleCalendarAddButton'
@@ -168,14 +167,10 @@ function PaymentForm({
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             {/* Order Summary */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Receipt className="h-5 w-5" />
-                        Order Summary
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
+            <IconCard 
+                cardType="order-summary"
+                contentProps={{ className: "space-y-3" }}
+            >
                     <div className="text-sm font-medium text-foreground">
                         {orderDetails.event.title}
                     </div>
@@ -203,18 +198,13 @@ function PaymentForm({
                             <span>{formatPrice(orderDetails.amount)}</span>
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+            </IconCard>
 
             {/* Customer Information */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <User className="h-5 w-5" />
-                        Customer Information
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+            <IconCard 
+                cardType="customer-info"
+                contentProps={{ className: "space-y-4" }}
+            >
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium mb-1" htmlFor="customer-email">
@@ -259,18 +249,10 @@ function PaymentForm({
                             </p>
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+            </IconCard>
 
             {/* Payment Information */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <CreditCard className="h-5 w-5" />
-                        Payment Information
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
+            <IconCard cardType="payment-info">
                     <PaymentElement
                         options={{
                             layout: 'tabs',
@@ -320,8 +302,7 @@ function PaymentForm({
                             )}
                         </Button>
                     </div>
-                </CardContent>
-            </Card>
+            </IconCard>
         </form>
     )
 }

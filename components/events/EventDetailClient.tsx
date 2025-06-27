@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Calendar, Clock, MapPin, User, DollarSign, Share2, Heart, ArrowLeft } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui';
+import { Card, CardContent, IconCard } from '@/components/ui';
 import { EventData } from '@/components/events';
 import { EventMapWrapper as EventMap } from '@/components/events/EventMapWrapper';
 import { RSVPTicketSection } from '@/components/events/RSVPTicketSection';
@@ -250,50 +250,50 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                         </div>
 
                         {/* Event Description */}
-                        <Card data-test-id="event-description-card">
-                            <CardContent className="p-6">
-                                <h2 className="text-xl font-semibold mb-4 text-foreground" data-test-id="description-title">About This Event</h2>
-                                <div className="prose max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-em:text-muted-foreground prose-a:text-primary prose-a:hover:text-primary/80">
-                                    <p className="text-foreground leading-relaxed" data-test-id="event-description">{event.description}</p>
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <IconCard 
+                            cardType="about-event"
+                            data-test-id="event-description-card"
+                        >
+                            <div className="prose max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-em:text-muted-foreground prose-a:text-primary prose-a:hover:text-primary/80">
+                                <p className="text-foreground leading-relaxed" data-test-id="event-description">{event.description}</p>
+                            </div>
+                        </IconCard>
 
                         {/* Map */}
                         {event.location && (
-                            <Card data-test-id="event-map-card">
-                                <CardContent>
-                                    <h2 className="text-xl font-semibold mb-4 text-foreground" data-test-id="location-title">Location</h2>
-                                    <div data-test-id="event-map">
-                                        <EventMap location={event.location || 'Location TBD'} eventTitle={event.title} />
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            <IconCard 
+                                cardType="location"
+                                data-test-id="event-map-card"
+                            >
+                                <div data-test-id="event-map">
+                                    <EventMap location={event.location || 'Location TBD'} eventTitle={event.title} />
+                                </div>
+                            </IconCard>
                         )}
 
                         {/* Google Calendar Integration */}
-                        <Card data-test-id="calendar-integration-card">
-                            <CardContent>
-                                <h2 className="text-xl font-semibold mb-4 text-foreground" data-test-id="calendar-title">Add to Calendar</h2>
-                                <div data-test-id="google-calendar-integration">
-                                    <GoogleCalendarConnectWithStatus
-                                        action="create_event"
-                                        returnUrl={`/events/${event.id}`}
-                                        eventData={{
-                                            id: event.id,
-                                            title: event.title,
-                                            description: event.description,
-                                            start_time: event.start_time,
-                                            end_time: event.end_time,
-                                            location: event.location,
-                                            is_paid: event.is_paid,
-                                            rsvp_count: event.rsvp_count,
-                                            organizer: event.organizer
-                                        }}
-                                    />
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <IconCard 
+                            cardType="add-calendar"
+                            data-test-id="calendar-integration-card"
+                        >
+                            <div data-test-id="google-calendar-integration">
+                                <GoogleCalendarConnectWithStatus
+                                    action="create_event"
+                                    returnUrl={`/events/${event.id}`}
+                                    eventData={{
+                                        id: event.id,
+                                        title: event.title,
+                                        description: event.description,
+                                        start_time: event.start_time,
+                                        end_time: event.end_time,
+                                        location: event.location,
+                                        is_paid: event.is_paid,
+                                        rsvp_count: event.rsvp_count,
+                                        organizer: event.organizer
+                                    }}
+                                />
+                            </div>
+                        </IconCard>
                     </div>
 
                     {/* Sidebar */}
@@ -450,10 +450,11 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                             )}
 
                                     {/* Event Stats */}
-                                    <Card data-test-id="event-stats-card">
-                                        <CardContent>
-                                            <h3 className="text-lg font-semibold mb-4 text-foreground" data-test-id="event-stats-title">Event Details</h3>
-                                            <div className="bg-muted p-4 rounded-lg space-y-3" data-test-id="event-stats-list">
+                                    <IconCard 
+                                        cardType="event-details"
+                                        data-test-id="event-stats-card"
+                                    >
+                                        <div className="bg-muted p-4 rounded-lg space-y-3" data-test-id="event-stats-list">
                                                 <div className="flex justify-between" data-test-id="event-category">
                                                     <span className="text-muted-foreground">Category:</span>
                                                     <span className="text-foreground capitalize">{event.category}</span>
@@ -482,9 +483,8 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                                 </span>
                                             </div>
                                         )}
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                        </div>
+                                    </IconCard>
                                 </>
                             )}
                         </div>

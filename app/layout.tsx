@@ -80,8 +80,9 @@ export const metadata: Metadata = {
 
 export const viewport = {
   width: "device-width",
-  initialScale: 1,
-  maximumScale: 5,
+  initialScale: 1.0,
+  minimumScale: 1.0,
+  maximumScale: 5.0,
   userScalable: true,
   viewportFit: "cover",
   themeColor: [
@@ -106,7 +107,7 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground w-full overflow-x-hidden`}
       >
         <ThemeProvider
           attribute="class"
@@ -117,7 +118,7 @@ export default function RootLayout({
             <AuthProvider>
               <DevOnlyErrorFilter />
               <Navigation />
-              <main id="main-content" className="pt-16">
+              <main id="main-content" className="pt-16 w-full overflow-x-hidden">
                 {children}
               </main>
             </AuthProvider>

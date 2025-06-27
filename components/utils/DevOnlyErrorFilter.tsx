@@ -11,6 +11,7 @@ import { useEffect } from 'react'
  * 
  * SUPPRESSED VIOLATIONS (External Libraries Only - Verified via Investigation):
  * 1. Stripe - HTTPS development warnings (expected in dev mode)
+ * 2. Stripe - Network fetch errors to r.stripe.com/b (analytics endpoint, non-critical)
  * 
  * INVESTIGATION COMPLETED: Our application code is clean:
  * - No touchstart/touchmove/wheel event listeners in our code
@@ -41,6 +42,14 @@ import { useEffect } from 'react'
  * If you see "payment method types are not activated" warnings, these are 
  * CONFIGURATION issues in your Stripe Dashboard, not code issues. 
  * Go to: Stripe Dashboard > Settings > Payment methods to activate needed methods.
+ * 
+ * STRIPE NETWORK FETCH ERRORS (r.stripe.com/b):
+ * The r.stripe.com/b endpoint is used for Stripe's internal analytics/telemetry.
+ * These fetch errors are common in development environments due to:
+ * - Browser extensions blocking requests
+ * - Network connectivity issues
+ * - Development environment restrictions
+ * These errors don't affect payment functionality and are safely suppressed.
  */
 export function DevOnlyErrorFilter() {
     useEffect(() => {
@@ -50,6 +59,7 @@ export function DevOnlyErrorFilter() {
         // Store original console methods
         const originalLog = console.log
         const originalWarn = console.warn
+        const originalError = console.error
 
         // Override console.log to filter Stripe development warnings
         console.log = (...args) => {
@@ -84,6 +94,21 @@ export function DevOnlyErrorFilter() {
             originalWarn.apply(console, args)
         }
 
+        // Override console.error to filter Stripe network errors
+        console.error = (...args) => {
+            const message = args[0]?.toString() || ''
+            
+            // Suppress Stripe network fetch errors (common in development)
+            if (message.includes('FetchError: Error fetching https://r.stripe.com/b: Failed to fetch') ||
+                message.includes('Error fetching https://r.stripe.com/b') ||
+                (message.includes('FetchError') && message.includes('r.stripe.com'))) {
+                return // Silently ignore - Stripe analytics endpoint failures are non-critical
+            }
+
+            // Call original for all other errors
+            originalError.apply(console, args)
+        }
+
         // Override console.info to catch violation messages that might come through info
         console.info = (...args) => {
             // const message = args[0]?.toString() || ''
@@ -97,6 +122,7 @@ export function DevOnlyErrorFilter() {
         return () => {
             console.log = originalLog
             console.warn = originalWarn
+            console.error = originalError
             console.info = originalInfo
         }
     }, [])
