@@ -132,7 +132,7 @@ export const LOAD_TEST_USERS = [
 /**
  * Export all for convenience
  */
-const testCredentials = {
+export default {
     TEST_ACCOUNTS,
     GOOGLE_TEST_ACCOUNT,
     DEV_EMAIL_OVERRIDE,
@@ -143,5 +143,3 @@ const testCredentials = {
     getGoogleTestAccount,
     getDevEmailOverride
 };
-
-export default testCredentials;
