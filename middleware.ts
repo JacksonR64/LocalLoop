@@ -15,6 +15,6 @@ export const config = {
          * - manifest.json (PWA manifest)
          * - api routes (already handled by API middleware)
          */
-        '/((?!_next/static|_next/image|favicon.ico|manifest.json|api).*)',
+        '/((?!_next/static|_next/image|favicon.ico|manifest.json|.*\\.svg|.*\\.ico|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.webp|api).*)',
     ],
 } 

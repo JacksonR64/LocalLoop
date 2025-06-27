@@ -104,8 +104,8 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icon.svg" />
-        <link rel="manifest" href="/manifest.json" />
-{process.env.NODE_ENV === 'development' && (
+        <link rel="manifest" href="/api/manifest" />
+{(process.env.NODE_ENV === 'development' || process.env.VERCEL_ENV === 'preview') && (
           <script 
             dangerouslySetInnerHTML={{
               __html: `
@@ -131,6 +131,15 @@ export default function RootLayout({
                           message.includes('Please activate the payment method types in your dashboard') ||
                           message.includes('Please follow https://stripe.com/docs/payments/payment-methods/pmd-registration')
                         );
+                      }
+                      
+                      // Suppress Radix UI and React focus errors in preview/dev
+                      if (message.includes('Minified React error #418') || 
+                          message.includes('roving-focus-group') ||
+                          message.includes('focus-scope') ||
+                          message.includes('vercel.live') ||
+                          message.includes('feedback.js')) {
+                        return true;
                       }
                       
                       // Keep other existing suppressions
