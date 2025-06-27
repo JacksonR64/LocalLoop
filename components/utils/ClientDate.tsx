@@ -39,7 +39,6 @@ export function ClientDateTime({ date, format = 'full', options, className }: Cl
       const dateObj = typeof date === 'string' ? new Date(date) : date
       const isoStr = dateObj.toISOString()
       const dateStr = isoStr.split('T')[0] // YYYY-MM-DD
-      const timeStr = isoStr.split('T')[1].substring(0, 5) // HH:MM
       
       switch (format) {
         case 'full':
