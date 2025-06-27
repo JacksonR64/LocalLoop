@@ -124,6 +124,16 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // Ensure main pages are indexable (override any global noindex)
+        source: '/((?!auth|api|_next|static).*)',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'index, follow'
+          }
+        ],
+      },
+      {
         // API security headers
         source: '/api/(.*)',
         headers: [
