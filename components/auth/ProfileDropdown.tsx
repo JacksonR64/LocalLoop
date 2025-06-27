@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { User, LogOut, ChevronDown, Settings, Calendar, BarChart3, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import { User, LogOut, ChevronDown, Settings, Calendar, BarChart3, Link2, Unlink, Loader2 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { useAuth as useAuthHook } from '@/lib/hooks/useAuth'
 import Link from 'next/link'
@@ -184,7 +184,7 @@ export function ProfileDropdown({ testIdPrefix = "", onOpenChange }: ProfileDrop
       {/* Dropdown Menu */}
       {(isOpen || isAnimating) && (
         <div 
-          className="lg:absolute lg:right-0 lg:mt-2 lg:w-56 lg:rounded-lg lg:shadow-lg fixed top-16 left-0 right-0 lg:static bg-card border border-border lg:border-border py-2 lg:py-2 z-50 transform transition-all duration-200 ease-out"
+          className="absolute right-0 top-full mt-2 w-max min-w-56 max-w-80 rounded-lg shadow-lg bg-card border border-border py-2 z-50"
           style={{
             animation: animationType === 'enter' ? 'fadeInScale 200ms ease-out forwards' : 'scaleOutFade 200ms ease-out forwards'
           }}
@@ -193,8 +193,8 @@ export function ProfileDropdown({ testIdPrefix = "", onOpenChange }: ProfileDrop
           aria-label="Profile menu"
         >
           <div className="px-4 py-2 border-b border-border" data-testid="profile-info-section">
-            <p className="text-sm font-medium text-foreground truncate" data-testid="profile-name">{getUserDisplayName()}</p>
-            <p className="text-xs font-normal text-muted-foreground truncate" title={user.email} data-testid="profile-email">{user.email}</p>
+            <p className="text-sm font-medium text-foreground whitespace-nowrap" data-testid="profile-name">{getUserDisplayName()}</p>
+            <p className="text-xs font-normal text-muted-foreground whitespace-nowrap" title={user.email} data-testid="profile-email">{user.email}</p>
             {userProfile?.role && (
               <p className="text-xs text-primary capitalize font-medium mt-1" data-testid="profile-role">
                 {userProfile.role}
@@ -248,10 +248,16 @@ export function ProfileDropdown({ testIdPrefix = "", onOpenChange }: ProfileDrop
                       <button
                         onClick={handleCalendarDisconnect}
                         disabled={calendarLoading}
-                        className="text-xs text-red-600 hover:text-red-700 disabled:opacity-50"
+                        className="p-1 text-red-600 hover:text-red-700 hover:bg-red-50 rounded disabled:opacity-50 transition-colors"
                         data-testid="calendar-disconnect-button"
+                        aria-label={calendarLoading ? 'Disconnecting...' : 'Disconnect Google Calendar'}
+                        title={calendarLoading ? 'Disconnecting...' : 'Disconnect Google Calendar'}
                       >
-                        {calendarLoading ? 'Disconnecting...' : 'Disconnect'}
+                        {calendarLoading ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <XCircle className="w-3 h-3" />
+                        )}
                       </button>
                     </>
                   ) : (
