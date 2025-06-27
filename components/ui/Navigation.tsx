@@ -136,7 +136,7 @@ export function Navigation({
                                 height={60}
                                 className="h-8 md:h-10 w-auto flex-shrink-0" 
                             />
-                            <span className="text-2xl md:text-3xl text-card-foreground min-[400px]:inline hidden whitespace-nowrap" data-test-id="homepage-title">LocalLoop</span>
+                            <span className="text-2xl md:text-3xl text-card-foreground min-[350px]:inline hidden whitespace-nowrap" data-test-id="homepage-title">LocalLoop</span>
                         </Link>
                         
                         {/* Admin/Staff Badge - Hidden on mobile and small tablets, shown on large screens */}

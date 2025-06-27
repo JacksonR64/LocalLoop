@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
 import { createAuthHelpers } from './utils/auth-helpers';
-import { TEST_ACCOUNTS } from './config/test-credentials';
 
 const BASE_URL = 'http://localhost:3000';
 const TEST_EVENT_ID = '75c8904e-671f-426c-916d-4e275806e277'; // Known test event
