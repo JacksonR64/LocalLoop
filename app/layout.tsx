@@ -116,16 +116,29 @@ export default function RootLayout({
                     const originalLog = console.log;
                     
                     const shouldSuppress = function(msg) {
-                      var message = (msg || '').toString().toLowerCase();
-                      return message.includes('stripe.js') && (
-                        message.includes('apple pay') || 
-                        message.includes('google pay') || 
-                        message.includes('payment method types are not activated') ||
-                        message.includes('not registered or verified the domain') ||
-                        message.includes('is not a supported property') ||
-                        message.includes('appearance') ||
-                        message.includes('https') ||
-                        message.includes('elements-inner-loader-ui.html')
+                      var message = (msg || '').toString();
+                      
+                      // Suppress Stripe.js development warnings (with exact pattern matching)
+                      if (message.includes('[Stripe.js]')) {
+                        return (
+                          message.includes('If you are testing Apple Pay or Google Pay, you must serve this page over HTTPS') ||
+                          message.includes('The following payment method types are not activated') ||
+                          message.includes('link') && message.includes('paypal') && message.includes('not activated') ||
+                          message.includes('You have not registered or verified the domain') ||
+                          message.includes('apple_pay') && message.includes('not enabled in the Payment Element') ||
+                          message.includes('will not work over HTTP') ||
+                          message.includes('Please read https://stripe.com/docs/stripe-js/elements/payment-request-button') ||
+                          message.includes('Please activate the payment method types in your dashboard') ||
+                          message.includes('Please follow https://stripe.com/docs/payments/payment-methods/pmd-registration')
+                        );
+                      }
+                      
+                      // Keep other existing suppressions
+                      var lowerMessage = message.toLowerCase();
+                      return lowerMessage.includes('stripe.js') && (
+                        lowerMessage.includes('appearance') ||
+                        lowerMessage.includes('is not a supported property') ||
+                        lowerMessage.includes('elements-inner-loader-ui.html')
                       );
                     };
                     
