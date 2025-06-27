@@ -10,9 +10,9 @@ export const config = {
         /*
          * Match all request paths except:
          * - API routes (handled separately)
-         * - Next.js internals
+         * - Next.js internals  
          * - Static files
          */
-        '/((?!api|_next/static|_next/image|favicon.ico|manifest.json).*)',
+        '/((?!api|_next|favicon.ico|manifest.json).*)',
     ],
 } 
