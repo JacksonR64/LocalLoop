@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Check, X } from 'lucide-react';
+import { Check, X, Tag } from 'lucide-react';
 import { FilterOption } from '@/lib/types/filters';
 import { FilterButton, FilterDropdown, FilterContainer } from '@/components/ui/FilterButton';
 
@@ -69,18 +69,29 @@ export function CategoryFilter({
                 aria-haspopup="listbox"
             >
                 <div className="flex items-center justify-between w-full">
-                    <span className="truncate text-muted-foreground hover:text-foreground transition-colors">
-                        {getDisplayText()}
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <Tag className="w-4 h-4 text-muted-foreground" />
+                        <span className="truncate text-muted-foreground hover:text-foreground transition-colors">
+                            {getDisplayText()}
+                        </span>
+                    </div>
                     {selectedCategories.length > 0 && (
-                        <button
-                            type="button"
+                        <div
                             onClick={clearSelection}
-                            className="p-0.5 hover:bg-accent rounded ml-2"
+                            className="p-0.5 hover:bg-accent rounded ml-2 cursor-pointer"
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    onChange([]);
+                                }
+                            }}
                             aria-label="Clear selection"
                         >
                             <X className="w-3 h-3 text-muted-foreground" />
-                        </button>
+                        </div>
                     )}
                 </div>
             </FilterButton>

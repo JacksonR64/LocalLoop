@@ -11,19 +11,39 @@ import { Footer } from '@/components/ui/Footer';
 
 interface HomePageClientProps {
   featuredEvents: EventData[];
-  upcomingEvents: EventData[];
-  pastEvents: EventData[];
+  allEvents: EventData[];
 }
 
-export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: HomePageClientProps) {
+export function HomePageClient({ featuredEvents, allEvents }: HomePageClientProps) {
   const router = useRouter();
-  const [filteredEvents, setFilteredEvents] = React.useState(upcomingEvents);
+  
+  // Client-side time filtering to avoid hydration mismatches
+  const [upcomingEvents, pastEvents] = React.useMemo(() => {
+    const now = new Date();
+    const upcoming = allEvents.filter(event => new Date(event.start_time) >= now);
+    const past = allEvents.filter(event => new Date(event.start_time) < now);
+    return [upcoming, past];
+  }, [allEvents]);
+  
+  const [filteredEvents, setFilteredEvents] = React.useState<EventData[]>([]);
   const [showPastEvents, setShowPastEvents] = React.useState(false);
+  
+  // Initialize filtered events once upcoming events are calculated
+  React.useEffect(() => {
+    setFilteredEvents(upcomingEvents);
+  }, [upcomingEvents]);
 
   // Memoize the filtered events setter to prevent infinite re-renders
   const handleFilteredEventsChange = React.useCallback((events: EventData[]) => {
     setFilteredEvents(events);
   }, []);
+
+  // Sort past events by most recent first (reverse chronological order)
+  const sortedPastEvents = React.useMemo(() => {
+    return [...pastEvents].sort((a, b) => {
+      return new Date(b.start_time).getTime() - new Date(a.start_time).getTime();
+    });
+  }, [pastEvents]);
 
   // Pagination for upcoming events
   const {
@@ -41,7 +61,7 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
     loadMore: loadMorePast,
     state: pastPaginationState
   } = usePagination({
-    data: pastEvents,
+    data: sortedPastEvents,
     pageSize: 8
   });
 
@@ -205,6 +225,7 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
                     <EventCard
                       event={event}
                       size="md"
+                      featured={event.featured}
                       onClick={() => handleEventClick(event.id)}
                     />
                   </div>
@@ -254,6 +275,7 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
                       <EventCard
                         event={event}
                         size="md"
+                        featured={event.featured}
                         onClick={() => handleEventClick(event.id)}
                       />
                     </div>

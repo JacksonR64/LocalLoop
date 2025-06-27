@@ -101,7 +101,7 @@ print_status "Checking changes against main branch..."
 if git remote get-url origin > /dev/null 2>&1; then
     git fetch origin main:main 2>/dev/null || git fetch origin main 2>/dev/null || true
     
-    CHANGED_FILES=$(git diff --name-only main...HEAD -- '*.ts' '*.tsx' '*.js' '*.jsx' 2>/dev/null || echo "")
+    CHANGED_FILES=$(git diff --name-only --diff-filter=d main...HEAD -- '*.ts' '*.tsx' '*.js' '*.jsx' 2>/dev/null || echo "")
     if [ ! -z "$CHANGED_FILES" ]; then
         print_status "Changed files detected, running targeted ESLint..."
         echo "$CHANGED_FILES" | tr '\n' ' '

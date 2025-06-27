@@ -158,10 +158,12 @@ export const utils = {
   }
 };
 
-export default {
+const loadTestConfig = {
   environments,
   getConfig,
   getBaseUrl,
   testData,
   utils
-}; 
+};
+
+export default loadTestConfig;

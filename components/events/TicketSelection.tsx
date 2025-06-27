@@ -47,12 +47,14 @@ interface TicketSelectionProps {
     eventId: string
     selectedTickets: TicketSelection[]
     onTicketsChange: (tickets: TicketSelection[]) => void
+    eventCapacity?: number
 }
 
 export default function TicketSelection({
     eventId,
     selectedTickets = [],
-    onTicketsChange
+    onTicketsChange,
+    eventCapacity
 }: TicketSelectionProps) {
     const [ticketTypes, setTicketTypes] = useState<TicketType[]>([])
     const [loading, setLoading] = useState(true)
@@ -94,12 +96,32 @@ export default function TicketSelection({
         }
     }, [eventId, selectedTickets])
 
+    // Calculate total tickets sold across all types for capacity management
+    const totalTicketsSold = ticketTypes.reduce((total, ticket) => {
+        return total + (ticket.sold_count || 0);
+    }, 0);
+
+    // Calculate remaining event capacity (if event capacity is set)
+    const remainingEventCapacity = eventCapacity ? Math.max(0, eventCapacity - totalTicketsSold) : null;
+
     // Update quantities and notify parent
     const updateQuantity = (ticketTypeId: string, newQuantity: number) => {
         const ticketType = ticketTypes.find(t => t.id === ticketTypeId)
         if (!ticketType) return
 
-        const maxQuantity = Math.max(0, ticketType.capacity - ticketType.sold_count)
+        // Calculate max based on ticket type capacity
+        const ticketTypeAvailable = Math.max(0, ticketType.capacity - ticketType.sold_count)
+        
+        // Factor in overall event capacity if set
+        let maxQuantity = ticketTypeAvailable
+        if (remainingEventCapacity !== null) {
+            // Current quantity selected for this ticket type
+            const currentQuantity = quantities[ticketTypeId] || 0
+            // Available capacity = remaining event capacity + current selection for this type
+            const availableCapacity = remainingEventCapacity + currentQuantity
+            maxQuantity = Math.min(ticketTypeAvailable, availableCapacity)
+        }
+
         const validQuantity = Math.max(0, Math.min(newQuantity, maxQuantity))
 
         const newQuantities = {
@@ -112,26 +134,38 @@ export default function TicketSelection({
         const updatedSelections = Object.entries(newQuantities)
             .filter(([, qty]) => qty > 0)
             .map(([ticketId, qty]) => {
-                const ticket = ticketTypes.find(t => t.id === ticketId)!
+                const ticket = ticketTypes.find(t => t.id === ticketId)
+                if (!ticket) {
+                    console.error(`Ticket type not found for ID: ${ticketId}`)
+                    return null
+                }
+                
+                // Ensure price is a valid number
+                const ticketPrice = ticket.price ?? 0
+                
                 return {
                     ticket_type_id: ticketId,
                     ticket_type: {
                         id: ticket.id,
                         name: ticket.name,
-                        price: ticket.price
+                        price: ticketPrice
                     },
                     quantity: qty,
-                    unit_price: ticket.price,
-                    total_price: ticket.price * qty
+                    unit_price: ticketPrice,
+                    total_price: ticketPrice * qty
                 }
             })
+            .filter((selection): selection is TicketSelection => selection !== null)
 
         onTicketsChange(updatedSelections)
     }
 
     // Calculate totals with safety checks
-    const totalQuantity = Object.values(quantities).reduce((sum, qty) => sum + qty, 0)
-    const totalPrice = (selectedTickets || []).reduce((sum, ticket) => sum + ticket.total_price, 0)
+    const totalQuantity = Object.values(quantities).reduce((sum, qty) => sum + (qty || 0), 0)
+    const totalPrice = (selectedTickets || []).reduce((sum, ticket) => {
+        const price = ticket?.total_price ?? 0
+        return sum + (isNaN(price) ? 0 : price)
+    }, 0)
 
     if (loading) {
         return (
@@ -182,7 +216,14 @@ export default function TicketSelection({
                         // Handle undefined sold_count gracefully
                         const soldCount = ticket.sold_count || 0
                         const capacity = ticket.capacity || 1000
-                        const available = Math.max(0, capacity - soldCount)
+                        const ticketTypeAvailable = Math.max(0, capacity - soldCount)
+                        
+                        // Calculate actual availability considering event capacity
+                        let available = ticketTypeAvailable
+                        if (remainingEventCapacity !== null) {
+                            available = Math.min(ticketTypeAvailable, remainingEventCapacity)
+                        }
+                        
                         const quantity = quantities[ticket.id] || 0
                         const isAvailable = available > 0
 
@@ -236,8 +277,14 @@ export default function TicketSelection({
                                     <div className="space-y-3" data-test-id="quantity-controls">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm font-medium">Quantity:</span>
-                                                <div className="flex items-center gap-2">
+                                                <label 
+                                                    id={`quantity-label-${ticket.id}`}
+                                                    htmlFor={`quantity-${ticket.id}`}
+                                                    className="text-sm font-medium"
+                                                >
+                                                    Quantity:
+                                                </label>
+                                                <div className="flex items-center gap-2" role="group" aria-labelledby={`quantity-label-${ticket.id}`}>
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
@@ -245,10 +292,14 @@ export default function TicketSelection({
                                                         disabled={quantity <= 0}
                                                         className="h-8 w-8 p-0"
                                                         data-test-id="decrease-quantity-button"
+                                                        aria-label={`Decrease quantity for ${ticket.name}`}
+                                                        aria-controls={`quantity-${ticket.id}`}
                                                     >
-                                                        <Minus className="h-4 w-4" />
+                                                        <Minus className="h-4 w-4" aria-hidden="true" />
                                                     </Button>
                                                     <Input
+                                                        id={`quantity-${ticket.id}`}
+                                                        name={`quantity-${ticket.id}`}
                                                         type="number"
                                                         min="0"
                                                         max={available}
@@ -256,6 +307,8 @@ export default function TicketSelection({
                                                         onChange={(e) => updateQuantity(ticket.id, parseInt(e.target.value) || 0)}
                                                         className="w-16 text-center"
                                                         data-test-id="quantity-input"
+                                                        aria-label={`Quantity for ${ticket.name}`}
+                                                        aria-describedby={`quantity-help-${ticket.id}`}
                                                     />
                                                     <Button
                                                         variant="outline"
@@ -264,9 +317,17 @@ export default function TicketSelection({
                                                         disabled={quantity >= available}
                                                         className="h-8 w-8 p-0"
                                                         data-test-id="increase-quantity-button"
+                                                        aria-label={`Increase quantity for ${ticket.name}`}
+                                                        aria-controls={`quantity-${ticket.id}`}
                                                     >
-                                                        <Plus className="h-4 w-4" />
+                                                        <Plus className="h-4 w-4" aria-hidden="true" />
                                                     </Button>
+                                                    <span 
+                                                        id={`quantity-help-${ticket.id}`} 
+                                                        className="sr-only"
+                                                    >
+                                                        Use + and - buttons or type to select quantity. Maximum {available} tickets available.
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -275,7 +336,7 @@ export default function TicketSelection({
                                             <div className="flex justify-between items-center pt-2 border-t border-border" data-test-id="ticket-subtotal">
                                                 <span className="text-sm text-muted-foreground">Subtotal:</span>
                                                 <span className="font-semibold text-foreground" data-test-id="subtotal-amount">
-                                                    {formatPrice(ticket.price * quantity)}
+                                                    {formatPrice((ticket.price ?? 0) * quantity)}
                                                 </span>
                                             </div>
                                         )}

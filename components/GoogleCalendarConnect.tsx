@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Calendar, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import type { EventData } from '@/components/events/EventCard'
+import { useAuth } from '@/lib/auth-context'
+import Link from 'next/link'
 // import { useRouter } from 'next/navigation' // Will be used when disconnect functionality is implemented
 
 /**
@@ -42,12 +44,21 @@ function useOAuthCallback() {
 
 /**
  * Hook to fetch Google Calendar connection status
+ * Only checks status if user is authenticated
  */
 function useGoogleCalendarStatus() {
     const [isConnected, setIsConnected] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
+    const { user, loading: authLoading } = useAuth()
 
-    const checkStatus = async () => {
+    const checkStatus = useCallback(async () => {
+        // Don't check Google Calendar status if user isn't authenticated
+        if (!user) {
+            setIsConnected(false)
+            setIsLoading(false)
+            return
+        }
+
         try {
             // Extract user ID from OAuth callback URL parameters
             const urlParams = new URLSearchParams(window.location.search)
@@ -87,11 +98,14 @@ function useGoogleCalendarStatus() {
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [user])
 
     useEffect(() => {
-        checkStatus()
-    }, [])
+        // Wait for auth loading to complete before checking status
+        if (!authLoading) {
+            checkStatus()
+        }
+    }, [user, authLoading, checkStatus])
 
     return { isConnected, isLoading, refresh: checkStatus }
 }
@@ -125,6 +139,7 @@ export default function GoogleCalendarConnect({
     const [isLoading, setIsLoading] = useState(false)
     const [localConnected, setLocalConnected] = useState(isConnected)
     const callbackMessage = useOAuthCallback()
+    const { user, loading: authLoading } = useAuth()
 
     // Update local state when prop changes
     useEffect(() => {
@@ -209,8 +224,42 @@ export default function GoogleCalendarConnect({
         return 'Not connected'
     }
 
+    // Show sign-in prompt if user is not authenticated
+    if (!authLoading && !user) {
+        return (
+            <div className={`p-4 sm:p-6 border border-border rounded-lg bg-card shadow-sm ${className}`}>
+                <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="flex items-center space-x-2">
+                        <Calendar className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                        <span className="font-medium text-foreground">Google Calendar</span>
+                    </div>
+                    
+                    <div className="space-y-2">
+                        <h3 className="text-lg font-semibold text-foreground">
+                            Add to Google Calendar
+                        </h3>
+                        <p className="text-sm text-muted-foreground max-w-md">
+                            Sign in to your LocalLoop account to connect with Google Calendar and add events directly to your calendar.
+                        </p>
+                    </div>
+
+                    <Link
+                        href="/auth/login"
+                        className="flex items-center justify-center px-4 py-2.5 bg-primary text-primary-foreground text-sm font-medium rounded-md hover:bg-primary/90 transition-colors min-h-[44px]"
+                    >
+                        Sign In to Connect Calendar
+                    </Link>
+
+                    <p className="text-xs text-muted-foreground">
+                        New to LocalLoop? <Link href="/auth/signup" className="text-primary hover:underline">Create an account</Link>
+                    </p>
+                </div>
+            </div>
+        )
+    }
+
     return (
-        <div className={`p-4 sm:p-6 border border-border rounded-lg bg-card shadow-sm ${className}`}>
+        <div className={`p-4 border border-border rounded-lg bg-muted shadow-sm ${className}`}>
             {/* Success/Error Messages */}
             {callbackMessage && (
                 <div className={`mb-4 p-3 rounded-md ${callbackMessage.type === 'success'
@@ -233,7 +282,7 @@ export default function GoogleCalendarConnect({
                 <div className="space-y-2">
                     <div className="flex items-center space-x-2">
                         <Calendar className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                        <span className="font-medium text-gray-900">Google Calendar</span>
+                        <span className="font-medium text-foreground">Google Calendar</span>
                     </div>
 
                     <div className="flex items-center space-x-2">
@@ -245,7 +294,7 @@ export default function GoogleCalendarConnect({
                         ) : (
                             <>
                                 <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                                <span className="text-sm text-gray-500">{getStatusText()}</span>
+                                <span className="text-sm text-muted-foreground">{getStatusText()}</span>
                             </>
                         )}
                     </div>
@@ -360,6 +409,7 @@ export function GoogleCalendarConnectWithStatus({
 }: Omit<GoogleCalendarConnectProps, 'isConnected'>) {
     const { isConnected, isLoading, refresh } = useGoogleCalendarStatus()
     const callbackMessage = useOAuthCallback()
+    const { user, loading: authLoading } = useAuth()
 
     // Refresh status when OAuth success is detected
     useEffect(() => {
@@ -371,12 +421,38 @@ export function GoogleCalendarConnectWithStatus({
         }
     }, [callbackMessage, refresh])
 
-    if (isLoading) {
+    // Show loading state only when auth is loaded but calendar status is still loading
+    if ((authLoading) || (!authLoading && user && isLoading)) {
         return (
             <div className={`p-4 sm:p-6 border border-border rounded-lg bg-card shadow-sm ${className}`}>
                 <div className="flex items-center justify-center space-x-2">
                     <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
-                    <span className="text-sm text-gray-500">Checking Google Calendar connection...</span>
+                    <span className="text-sm text-gray-500">
+                        {authLoading ? 'Loading...' : 'Checking Google Calendar connection...'}
+                    </span>
+                </div>
+            </div>
+        )
+    }
+
+    // If user is not authenticated, show sign-in prompt
+    if (!authLoading && !user) {
+        return (
+            <div className={`p-4 sm:p-6 border border-border rounded-lg bg-card shadow-sm ${className}`}>
+                <div className="text-center space-y-3">
+                    <Calendar className="w-8 h-8 text-muted-foreground mx-auto" />
+                    <div>
+                        <h3 className="font-medium text-foreground">Add to Google Calendar</h3>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Sign in to your LocalLoop account to connect with Google Calendar and add events directly to your calendar.
+                        </p>
+                    </div>
+                    <Link
+                        href={`/auth/login?force_logout=true&return_url=${encodeURIComponent(returnUrl || window.location.href)}`}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm"
+                    >
+                        Sign In to Connect Calendar
+                    </Link>
                 </div>
             </div>
         )

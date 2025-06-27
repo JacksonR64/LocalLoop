@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -28,6 +29,7 @@ import {
 } from 'lucide-react'
 import AttendeeManagement from './AttendeeManagement'
 import Analytics from './Analytics'
+import { EventBadges } from '@/lib/utils/event-badges'
 
 interface User {
     id: string
@@ -74,9 +76,45 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
         upcoming_events: 0,
         draft_events: 0
     })
+    const router = useRouter()
+    const searchParams = useSearchParams()
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [activeTab, setActiveTab] = useState('overview')
+    const [activeTab, setActiveTab] = useState(() => {
+        // Initialize from URL parameter or default to 'overview'
+        return searchParams.get('tab') || 'overview'
+    })
+    const [searchTerm, setSearchTerm] = useState('')
+    const [showFilter, setShowFilter] = useState(false)
+    const [filterStatus, setFilterStatus] = useState('all')
+
+    // Handle tab changes and update URL
+    const handleTabChange = useCallback((newTab: string) => {
+        setActiveTab(newTab)
+        // Update URL without full page refresh
+        const newUrl = newTab === 'overview' ? '/staff' : `/staff?tab=${newTab}`
+        router.push(newUrl, { scroll: false })
+    }, [router])
+
+    // Sync activeTab with URL parameter changes
+    useEffect(() => {
+        const currentTab = searchParams.get('tab') || 'overview'
+        if (currentTab !== activeTab) {
+            setActiveTab(currentTab)
+        }
+    }, [searchParams, activeTab])
+
+    // Close filter dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as Element
+            if (showFilter && !target.closest('.filter-dropdown')) {
+                setShowFilter(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [showFilter])
 
     const fetchDashboardData = useCallback(async () => {
         try {
@@ -179,6 +217,41 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
         )
     }
 
+    // Filter and search events
+    const filteredEvents = events.filter(event => {
+        const matchesSearch = searchTerm === '' || 
+            event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            ((event as any).location && (event as any).location.toLowerCase().includes(searchTerm.toLowerCase()))
+        
+        const matchesFilter = filterStatus === 'all' || 
+            (filterStatus === 'active' && !(event as any).cancelled) ||
+            (filterStatus === 'cancelled' && (event as any).cancelled) ||
+            (filterStatus === 'upcoming' && new Date(event.start_time) > new Date()) ||
+            (filterStatus === 'past' && new Date(event.start_time) < new Date())
+        
+        return matchesSearch && matchesFilter
+    }).sort((a, b) => {
+        const now = new Date()
+        const aDate = new Date(a.start_time)
+        const bDate = new Date(b.start_time)
+        
+        const aIsUpcoming = aDate > now
+        const bIsUpcoming = bDate > now
+        
+        // If both are upcoming, sort by date ascending (soonest first)
+        if (aIsUpcoming && bIsUpcoming) {
+            return aDate.getTime() - bDate.getTime()
+        }
+        
+        // If both are past, sort by date descending (newest first)
+        if (!aIsUpcoming && !bIsUpcoming) {
+            return bDate.getTime() - aDate.getTime()
+        }
+        
+        // Upcoming events always come before past events
+        return aIsUpcoming ? -1 : 1
+    })
+
     return (
         <div className="max-w-7xl mx-auto p-6">
             {/* Header */}
@@ -278,7 +351,7 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
             </div>
 
             {/* Navigation Tabs */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="overview" className="flex items-center gap-2">
                         <BarChart3 className="w-4 h-4" />
@@ -310,8 +383,12 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
                         <Card className="p-6">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-lg font-semibold text-foreground">Recent Events</h3>
-                                <Button variant="outline" size="sm" asChild>
-                                    <Link href="?tab=events">View All</Link>
+                                <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handleTabChange('events')}
+                                >
+                                    View All
                                 </Button>
                             </div>
                             <div className="space-y-4">
@@ -345,19 +422,49 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
                                         Create New Event
                                     </Link>
                                 </Button>
-                                <Button variant="outline" className="w-full justify-start" asChild>
-                                    <Link href="/staff?tab=attendees">
-                                        <Users className="w-4 h-4 mr-2" />
-                                        Manage Attendees
-                                    </Link>
+                                <Button 
+                                    variant="outline" 
+                                    className="w-full justify-start"
+                                    onClick={() => handleTabChange('attendees')}
+                                >
+                                    <Users className="w-4 h-4 mr-2" />
+                                    Manage Attendees
                                 </Button>
-                                <Button variant="outline" className="w-full justify-start" asChild>
-                                    <Link href="/staff?tab=analytics">
-                                        <BarChart3 className="w-4 h-4 mr-2" />
-                                        View Analytics
-                                    </Link>
+                                <Button 
+                                    variant="outline" 
+                                    className="w-full justify-start"
+                                    onClick={() => handleTabChange('analytics')}
+                                >
+                                    <BarChart3 className="w-4 h-4 mr-2" />
+                                    View Analytics
                                 </Button>
-                                <Button variant="outline" className="w-full justify-start">
+                                <Button 
+                                    variant="outline" 
+                                    className="w-full justify-start"
+                                    onClick={() => {
+                                        // Simple CSV export of events data
+                                        const csvData = events.map(event => ({
+                                            title: event.title,
+                                            date: event.start_time,
+                                            location: (event as any).location || 'TBD',
+                                            attendees: event.rsvp_count,
+                                            status: (event as any).cancelled ? 'Cancelled' : 'Active'
+                                        }));
+                                        
+                                        const csvContent = [
+                                            ['Title', 'Date', 'Location', 'Attendees', 'Status'],
+                                            ...csvData.map(row => [row.title, row.date, row.location, row.attendees.toString(), row.status])
+                                        ].map(row => row.join(',')).join('\n');
+                                        
+                                        const blob = new Blob([csvContent], { type: 'text/csv' });
+                                        const url = window.URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = `events-export-${new Date().toISOString().split('T')[0]}.csv`;
+                                        a.click();
+                                        window.URL.revokeObjectURL(url);
+                                    }}
+                                >
                                     <Download className="w-4 h-4 mr-2" />
                                     Export Data
                                 </Button>
@@ -371,13 +478,17 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
                                                 Administrator Tools
                                             </p>
                                         </div>
-                                        <Button variant="outline" className="w-full justify-start">
-                                            <Settings className="w-4 h-4 mr-2" />
-                                            System Settings
+                                        <Button variant="outline" className="w-full justify-start" asChild>
+                                            <Link href="/admin/settings">
+                                                <Settings className="w-4 h-4 mr-2" />
+                                                System Settings
+                                            </Link>
                                         </Button>
-                                        <Button variant="outline" className="w-full justify-start">
-                                            <Users className="w-4 h-4 mr-2" />
-                                            User Management
+                                        <Button variant="outline" className="w-full justify-start" asChild>
+                                            <Link href="/admin/users">
+                                                <Users className="w-4 h-4 mr-2" />
+                                                User Management
+                                            </Link>
                                         </Button>
                                     </>
                                 )}
@@ -405,24 +516,59 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
                             )}
                         </div>
                         <div className="flex items-center gap-3">
-                            <Button variant="outline" size="sm">
-                                <Filter className="w-4 h-4 mr-2" />
-                                Filter
-                            </Button>
-                            <Button variant="outline" size="sm">
-                                <Search className="w-4 h-4 mr-2" />
-                                Search
-                            </Button>
+                            <div className="relative filter-dropdown">
+                                <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => setShowFilter(!showFilter)}
+                                >
+                                    <Filter className="w-4 h-4 mr-2" />
+                                    Filter
+                                </Button>
+                                {showFilter && (
+                                    <div className="absolute top-full mt-2 right-0 bg-background border border-border rounded-lg shadow-lg p-3 z-10 min-w-48">
+                                        <div className="space-y-2">
+                                            <p className="text-sm font-medium">Filter by Status</p>
+                                            <select 
+                                                value={filterStatus} 
+                                                onChange={(e) => setFilterStatus(e.target.value)}
+                                                className="w-full p-2 text-sm border border-border rounded bg-background"
+                                            >
+                                                <option value="all">All Events</option>
+                                                <option value="active">Active</option>
+                                                <option value="cancelled">Cancelled</option>
+                                                <option value="upcoming">Upcoming</option>
+                                                <option value="past">Past</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Search events..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-9 pr-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring w-64"
+                                />
+                                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                            </div>
                         </div>
                     </div>
 
-                    {events.length === 0 ? (
+                    {filteredEvents.length === 0 ? (
                         <Card className="p-12">
                             <div className="text-center">
                                 <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                                <h3 className="text-lg font-medium text-foreground mb-2">No events yet</h3>
+                                <h3 className="text-lg font-medium text-foreground mb-2">
+                                    {events.length === 0 ? 'No events yet' : 'No events match your filters'}
+                                </h3>
                                 <p className="text-muted-foreground mb-6">
-                                    Get started by creating your first event.
+                                    {events.length === 0 
+                                        ? 'Get started by creating your first event.'
+                                        : 'Try adjusting your search terms or filters to find events.'
+                                    }
                                 </p>
                                 <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white">
                                     <Link href="/staff/events/create">
@@ -434,13 +580,12 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
                         </Card>
                     ) : (
                         <div className="space-y-4">
-                            {events.map((event) => (
-                                <Card key={event.id} className="p-6">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-3 mb-2">
+                            {filteredEvents.map((event) => (
+                                <Card key={event.id} className="p-6 relative">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1 pr-4">
+                                            <div className="mb-2">
                                                 <h4 className="text-lg font-semibold text-foreground">{event.title}</h4>
-                                                {getEventStatusBadge(event)}
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm text-muted-foreground">
                                                 <div className="flex items-center gap-1">
@@ -449,19 +594,38 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <Users className="w-4 h-4" />
-                                                    <span>{event.rsvp_count} attendees</span>
+                                                    <span>{event.rsvp_count} {(event as any).is_paid === true ? 'attendees' : 'RSVPs'}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <DollarSign className="w-4 h-4" />
-                                                    <span>{formatCurrency(event.total_revenue)}</span>
+                                                    <span>{(event as any).is_paid === true ? formatCurrency(event.total_revenue) : 'N/A'}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <FileText className="w-4 h-4" />
-                                                    <span>{event.ticket_sales} tickets sold</span>
+                                                    <span>
+                                                        {(event as any).is_paid === true
+                                                            ? `${event.ticket_sales || 0} tickets sold`
+                                                            : 'Free RSVP'
+                                                        }
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2 ml-4">
+                                        
+                                        {/* Badges in top-right corner */}
+                                        <div className="absolute top-4 right-4 flex flex-wrap gap-2 justify-end">
+                                            <EventBadges 
+                                                event={event}
+                                                isUpcoming={new Date(event.start_time) > new Date()}
+                                                className="flex gap-2"
+                                            />
+                                            {getEventStatusBadge(event)}
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Action buttons */}
+                                    <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border">
+                                        <div className="flex items-center gap-2">
                                             <Button variant="outline" size="sm" asChild>
                                                 <Link href={`/events/${event.slug}`}>
                                                     <Eye className="w-4 h-4 mr-2" />

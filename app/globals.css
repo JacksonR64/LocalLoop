@@ -103,12 +103,98 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(to bottom,
       transparent,
       rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
   overflow-x: hidden;
+}
+
+/* Ensure proper box-sizing and prevent overflow */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* Prevent any element from causing horizontal overflow */
+body, #__next, main {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* 
+ * Anchor Navigation System
+ * Desktop: No offset needed - scroll to top of element
+ * Mobile: Small buffer for better positioning with mobile nav
+ */
+:root {
+  --nav-height: 64px;
+  --anchor-buffer: 0px; /* No buffer on desktop */
+  --anchor-scroll-offset: calc(var(--nav-height) + var(--anchor-buffer));
+}
+
+/* 
+ * Universal anchor scroll offset
+ * Single column layout: Need scroll margin (card is below main content)
+ * Two column layout: Minimal margin (card is in sidebar)
+ */
+#payment-success,
+#about,
+#location,
+#calendar,
+#tickets,
+#rsvp {
+  scroll-margin-top: 80px; /* Single column: need proper scroll positioning */
+}
+
+/* Two-column layout: card is in sidebar, less scroll margin needed */
+@media (min-width: 1024px) {
+  #payment-success,
+  #about,
+  #location,
+  #calendar,
+  #tickets,
+  #rsvp {
+    scroll-margin-top: 16px; /* Two column: minimal margin */
+  }
+}
+
+/* 
+ * Smooth scrolling behavior for better user experience
+ * Applied to the entire document for consistent anchor navigation
+ */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 
+ * Respect user preferences for reduced motion
+ * Disables smooth scrolling for users who prefer reduced motion
+ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* 
+ * Fallback for older browsers that don't support CSS custom properties
+ * Provides the same 80px offset using a fixed value
+ */
+@supports not (scroll-margin-top: var(--anchor-scroll-offset)) {
+  #payment-success,
+  #about,
+  #location,
+  #calendar,
+  #tickets,
+  #rsvp {
+    scroll-margin-top: 80px;
+  }
 }
 
 /* Custom scrollbar for better UX */
@@ -216,5 +302,82 @@ body {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
     border-radius: 4px;
+  }
+}
+
+/* Animation Variables */
+:root {
+  /* Timing Variables */
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  
+  /* Easing Variables */
+  --ease-smooth-in: cubic-bezier(0.4, 0, 1, 1); /* Smooth acceleration */
+  --ease-smooth-out: cubic-bezier(0.16, 1, 0.3, 1); /* Smooth deceleration */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* Gentle spring */
+  --ease-natural: cubic-bezier(0.4, 0, 0.2, 1); /* Material Design standard */
+  
+  /* Distance Variables */
+  --slide-distance: 16px;
+  --scale-factor: 0.95;
+}
+
+/* Dropdown and Menu Animations */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(var(--scale-factor)) translateY(calc(-1 * var(--slide-distance) / 2));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    transform: translateY(calc(-1 * var(--slide-distance)));
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slideOutToTop {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(calc(-1 * var(--slide-distance)));
+  }
+}
+
+@keyframes scaleOutFade {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(var(--scale-factor)) translateY(calc(-1 * var(--slide-distance) / 2));
   }
 }

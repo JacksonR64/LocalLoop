@@ -27,7 +27,12 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-foreground">Email</h3>
-                                        <p className="text-muted-foreground">{EMAIL_ADDRESSES.CONTACT}</p>
+                                        <a 
+                                            href={`mailto:${EMAIL_ADDRESSES.CONTACT}`}
+                                            className="text-muted-foreground hover:text-blue-600 transition-colors"
+                                        >
+                                            {EMAIL_ADDRESSES.CONTACT}
+                                        </a>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">
@@ -35,8 +40,8 @@ export default function ContactPage() {
                                         <MessageCircle className="w-6 h-6 text-green-600" />
                                     </div>
                                     <div>
-                                        <h3 className="font-semibold text-foreground">Live Chat</h3>
-                                        <p className="text-muted-foreground">Available Monday-Friday, 9AM-5PM</p>
+                                        <h3 className="font-semibold text-foreground">Coming Soon</h3>
+                                        <p className="text-muted-foreground">Live chat support will be available soon</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">
@@ -45,7 +50,12 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-foreground">Phone</h3>
-                                        <p className="text-muted-foreground">+1 (555) 123-4567</p>
+                                        <a 
+                                            href="tel:+15551234567"
+                                            className="text-muted-foreground hover:text-purple-600 transition-colors"
+                                        >
+                                            +1 (555) 123-4567
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -58,56 +68,64 @@ export default function ContactPage() {
                         <form className="space-y-6">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label htmlFor="firstName" className="block text-sm font-medium text-foreground mb-2">
+                                    <label htmlFor="contact-firstName" className="block text-sm font-medium text-foreground mb-2">
                                         First Name
                                     </label>
                                     <input
                                         type="text"
-                                        id="firstName"
+                                        id="contact-firstName"
+                                        name="firstName"
                                         className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-background text-foreground"
                                         placeholder="John"
+                                        autoComplete="given-name"
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="lastName" className="block text-sm font-medium text-foreground mb-2">
+                                    <label htmlFor="contact-lastName" className="block text-sm font-medium text-foreground mb-2">
                                         Last Name
                                     </label>
                                     <input
                                         type="text"
-                                        id="lastName"
+                                        id="contact-lastName"
+                                        name="lastName"
                                         className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-background text-foreground"
                                         placeholder="Doe"
+                                        autoComplete="family-name"
                                     />
                                 </div>
                             </div>
                             <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+                                <label htmlFor="contact-email" className="block text-sm font-medium text-foreground mb-2">
                                     Email Address
                                 </label>
                                 <input
                                     type="email"
-                                    id="email"
+                                    id="contact-email"
+                                    name="email"
                                     className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-background text-foreground"
                                     placeholder="john@example.com"
+                                    autoComplete="email"
                                 />
                             </div>
                             <div>
-                                <label htmlFor="subject" className="block text-sm font-medium text-foreground mb-2">
+                                <label htmlFor="contact-subject" className="block text-sm font-medium text-foreground mb-2">
                                     Subject
                                 </label>
                                 <input
                                     type="text"
-                                    id="subject"
+                                    id="contact-subject"
+                                    name="subject"
                                     className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-background text-foreground"
                                     placeholder="How can we help?"
                                 />
                             </div>
                             <div>
-                                <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
+                                <label htmlFor="contact-message" className="block text-sm font-medium text-foreground mb-2">
                                     Message
                                 </label>
                                 <textarea
-                                    id="message"
+                                    id="contact-message"
+                                    name="message"
                                     rows={6}
                                     className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-background text-foreground"
                                     placeholder="Tell us how we can help you..."

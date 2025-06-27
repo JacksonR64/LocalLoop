@@ -319,25 +319,30 @@ export default function TicketTypeManager({ eventId, isOrganizer }: TicketTypeMa
                             <CardContent className="space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium mb-1">
+                                        <label htmlFor="ticket-name" className="block text-sm font-medium mb-1">
                                             Ticket Name *
                                         </label>
                                         <Input
+                                            id="ticket-name"
+                                            name="ticket-name"
                                             value={formData.name}
                                             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                                             placeholder="e.g., General Admission"
                                             className={validationErrors.name ? 'border-red-500' : ''}
+                                            aria-describedby={validationErrors.name ? 'name-error' : undefined}
                                         />
                                         {validationErrors.name && (
-                                            <p className="text-red-500 text-sm mt-1">{validationErrors.name}</p>
+                                            <p id="name-error" className="text-red-500 text-sm mt-1">{validationErrors.name}</p>
                                         )}
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium mb-1">
+                                        <label htmlFor="ticket-price" className="block text-sm font-medium mb-1">
                                             Price ($) *
                                         </label>
                                         <Input
+                                            id="ticket-price"
+                                            name="ticket-price"
                                             type="number"
                                             step="0.01"
                                             min="0"
@@ -345,22 +350,25 @@ export default function TicketTypeManager({ eventId, isOrganizer }: TicketTypeMa
                                             onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
                                             placeholder="0.00"
                                             className={validationErrors.price ? 'border-red-500' : ''}
+                                            aria-describedby={validationErrors.price ? 'price-error' : 'price-help'}
                                         />
                                         {validationErrors.price && (
-                                            <p className="text-red-500 text-sm mt-1">{validationErrors.price}</p>
+                                            <p id="price-error" className="text-red-500 text-sm mt-1">{validationErrors.price}</p>
                                         )}
                                         {formData.price && !validationErrors.price && (
-                                            <p className="text-gray-500 text-sm mt-1">
+                                            <p id="price-help" className="text-gray-500 text-sm mt-1">
                                                 Customer pays: {formatPrice(getPriceWithFees(Math.round((parseFloat(formData.price) || 0) * 100)))}
                                             </p>
                                         )}
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium mb-1">
+                                        <label htmlFor="ticket-capacity" className="block text-sm font-medium mb-1">
                                             Capacity (optional)
                                         </label>
                                         <Input
+                                            id="ticket-capacity"
+                                            name="ticket-capacity"
                                             type="number"
                                             min="1"
                                             max="1000"
@@ -368,56 +376,66 @@ export default function TicketTypeManager({ eventId, isOrganizer }: TicketTypeMa
                                             onChange={(e) => setFormData(prev => ({ ...prev, capacity: e.target.value }))}
                                             placeholder="1000 (default)"
                                             className={validationErrors.capacity ? 'border-red-500' : ''}
+                                            aria-describedby={validationErrors.capacity ? 'capacity-error' : 'capacity-help'}
                                         />
                                         {validationErrors.capacity && (
-                                            <p className="text-red-500 text-sm mt-1">{validationErrors.capacity}</p>
+                                            <p id="capacity-error" className="text-red-500 text-sm mt-1">{validationErrors.capacity}</p>
                                         )}
-                                        <p className="text-gray-500 text-xs mt-1">
+                                        <p id="capacity-help" className="text-gray-500 text-xs mt-1">
                                             If blank, defaults to 1000 tickets maximum
                                         </p>
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium mb-1">
+                                        <label htmlFor="sale-start" className="block text-sm font-medium mb-1">
                                             Sale Start Date (optional)
                                         </label>
                                         <Input
+                                            id="sale-start"
+                                            name="sale-start"
                                             type="datetime-local"
                                             value={formData.sale_start}
                                             onChange={(e) => setFormData(prev => ({ ...prev, sale_start: e.target.value }))}
+                                            aria-describedby="sale-start-help"
                                         />
-                                        <p className="text-gray-500 text-xs mt-1">
+                                        <p id="sale-start-help" className="text-gray-500 text-xs mt-1">
                                             If blank, tickets can be purchased immediately
                                         </p>
                                     </div>
 
                                     <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium mb-1">
+                                        <label htmlFor="sale-end" className="block text-sm font-medium mb-1">
                                             Sale End Date (optional)
                                         </label>
                                         <Input
+                                            id="sale-end"
+                                            name="sale-end"
                                             type="datetime-local"
                                             value={formData.sale_end}
                                             onChange={(e) => setFormData(prev => ({ ...prev, sale_end: e.target.value }))}
                                             className={validationErrors.sale_end ? 'border-red-500' : ''}
+                                            aria-describedby={validationErrors.sale_end ? 'sale-end-error' : 'sale-end-help'}
                                         />
                                         {validationErrors.sale_end && (
-                                            <p className="text-red-500 text-sm mt-1">{validationErrors.sale_end}</p>
+                                            <p id="sale-end-error" className="text-red-500 text-sm mt-1">{validationErrors.sale_end}</p>
                                         )}
-                                        <p className="text-gray-500 text-xs mt-1">
+                                        <p id="sale-end-help" className="text-gray-500 text-xs mt-1">
                                             If blank, tickets remain available until the event starts
                                         </p>
                                     </div>
 
                                     <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium mb-1">
+                                        <label htmlFor="ticket-description" className="block text-sm font-medium mb-1">
                                             Description (optional)
                                         </label>
                                         <Textarea
+                                            id="ticket-description"
+                                            name="ticket-description"
                                             value={formData.description}
                                             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                                             placeholder="Additional details about this ticket type..."
                                             rows={3}
+                                            aria-label="Description for this ticket type"
                                         />
                                     </div>
                                 </div>

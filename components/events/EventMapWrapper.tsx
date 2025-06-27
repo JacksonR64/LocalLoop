@@ -13,16 +13,16 @@ export function EventMapWrapper({ location, eventTitle, className }: EventMapWra
     const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`
 
     return (
-        <div className={`bg-gray-100 rounded-lg h-48 flex items-center justify-center ${className || ''}`}>
-            <div className="text-center text-gray-700 p-6">
-                <MapPin className="w-8 h-8 mx-auto mb-3 text-blue-600" />
-                <div className="text-sm font-medium mb-2">{eventTitle}</div>
-                <div className="text-xs text-gray-600 mb-3">{location}</div>
+        <div className={`bg-muted rounded-lg h-48 flex items-center justify-center border border-border ${className || ''}`}>
+            <div className="text-center text-muted-foreground p-6">
+                <MapPin className="w-8 h-8 mx-auto mb-3 text-primary" />
+                <div className="text-sm font-medium mb-2 text-foreground">{eventTitle}</div>
+                <div className="text-xs text-muted-foreground mb-3">{location}</div>
                 <a
                     href={mapsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs font-medium"
+                    className="inline-flex items-center gap-1 text-primary hover:text-primary/80 text-xs font-medium transition-colors"
                 >
                     <ExternalLink className="w-3 h-3" />
                     View on Google Maps

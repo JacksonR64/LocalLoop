@@ -4,7 +4,10 @@ import React from 'react';
 import Image from 'next/image';
 import { Calendar, MapPin, Users, Clock, Tag, ExternalLink, ImageIcon } from 'lucide-react';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui';
-import { formatDateTime, formatPrice, truncateText, getEventCardDescription, formatLocationForCard } from '@/lib/utils';
+import { getEventCardDescription, formatLocationForCard } from '@/lib/utils';
+import { ClientDateTime } from '@/components/utils/ClientDate';
+import { getEventTimingInfo } from '@/lib/utils/event-timing';
+import { EventBadges } from '@/lib/utils/event-badges';
 
 // Event interface (simplified from database types)
 export interface EventData {
@@ -21,6 +24,7 @@ export interface EventData {
     featured?: boolean;
     capacity?: number;
     rsvp_count: number;
+    tickets_sold?: number; // New field for paid events
     is_open_for_registration?: boolean;
     image_url?: string | null;
     image_alt_text?: string;
@@ -62,7 +66,6 @@ interface CardComponentProps {
     isUpcoming: boolean;
     hasPrice: boolean;
     lowestPrice: number;
-    isSoon: boolean;
 }
 
 // Safe Image component with error handling
@@ -93,8 +96,11 @@ function SafeImage({
 
     if (hasError || !src) {
         return (
-            <div className={`bg-muted flex items-center justify-center ${className}`} role="img" aria-label="Event image unavailable">
-                <ImageIcon className="w-8 h-8 text-muted-foreground" aria-hidden="true" />
+            <div className={`bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center ${className}`} role="img" aria-label="Event image unavailable">
+                <div className="text-center">
+                    <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" aria-hidden="true" />
+                    <p className="text-xs text-gray-500">Image unavailable</p>
+                </div>
             </div>
         );
     }
@@ -109,6 +115,8 @@ function SafeImage({
             placeholder={placeholder}
             blurDataURL={blurDataURL}
             onError={() => setHasError(true)}
+            priority={false}
+            quality={75}
             {...props}
         />
     );
@@ -125,15 +133,17 @@ export function EventCard({
     onClick
 }: EventCardProps) {
     const spotsRemaining = event.capacity ? event.capacity - event.rsvp_count : null;
-    const isUpcoming = new Date(event.start_time) > new Date();
     const hasPrice = Boolean(event.is_paid && event.ticket_types && event.ticket_types.length > 0);
     const lowestPrice = hasPrice ? Math.min(...event.ticket_types!.map(t => t.price)) : 0;
     
-    // Check if event is soon (within 7 days)
-    const eventDate = new Date(event.start_time);
-    const today = new Date();
-    const daysDifference = Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    const isSoon = isUpcoming && daysDifference <= 7 && daysDifference >= 0;
+    // Default to upcoming for SSR consistency, will update on client
+    const [isUpcoming, setIsUpcoming] = React.useState(true);
+    
+    React.useEffect(() => {
+        // Only calculate timing on client to avoid hydration mismatch
+        const timingInfo = getEventTimingInfo(event.start_time);
+        setIsUpcoming(timingInfo.isUpcoming);
+    }, [event.start_time]);
 
     const commonProps: CardComponentProps = {
         event,
@@ -146,7 +156,6 @@ export function EventCard({
         isUpcoming,
         hasPrice,
         lowestPrice,
-        isSoon
     };
 
     // Render based on style
@@ -165,15 +174,17 @@ export function EventCard({
 }
 
 // Default Card Style (same as current homepage implementation)
-function DefaultCard({ event, size, featured, showImage, className, onClick, spotsRemaining, isUpcoming, hasPrice, lowestPrice, isSoon }: Readonly<CardComponentProps>) {
+function DefaultCard({ event, size, featured, showImage, className, onClick, spotsRemaining, isUpcoming, hasPrice, lowestPrice }: Readonly<CardComponentProps>) {
     const cardId = `event-card-${event.id}`
+    const urgencyClass = ''
+    
     
 
     return (
         <Card
             size={size}
-            variant={featured ? 'elevated' : 'default'}
-            className={`hover:shadow-lg transition-shadow cursor-pointer group ${className}`}
+            variant="elevated"
+            className={`relative hover:shadow-lg transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
             onClick={onClick}
             role="article"
             aria-labelledby={`${cardId}-title`}
@@ -181,7 +192,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
             data-test-id={`event-card-${event.id}`}
         >
             {showImage && event.image_url && (
-                <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
+                <div className="relative w-full h-48 overflow-hidden rounded-t-lg bg-gray-100">
                     <SafeImage
                         src={event.image_url}
                         alt={event.image_alt_text || event.title}
@@ -205,83 +216,75 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                 </div>
             )}
 
+
+            {/* Badges positioned to overlap image and content */}
+            <div className={`absolute ${size === 'lg' ? 'right-6' : 'right-4'} z-10`} style={{ top: size === 'lg' ? 'calc(12rem + 16px)' : 'calc(12rem + 8px)' }}>
+                <EventBadges 
+                    event={event}
+                    isUpcoming={isUpcoming}
+                    priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
+                    className="flex gap-2"
+                />
+            </div>
+
             <CardHeader>
                 <div className="flex items-start justify-between">
-                    <CardTitle 
-                        as={featured ? 'h2' : 'h3'} 
-                        className={`${featured ? 'text-lg' : 'text-base'} line-clamp-2 min-h-[3rem] leading-relaxed pr-2`}
-                        id={`${cardId}-title`}
-                    >
-                        {event.title}
-                    </CardTitle>
-                    <div className="flex gap-2">
-                        {!event.is_paid && isUpcoming && (
-                            <span 
-                                className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full"
-                                aria-label="Free event"
-                                data-test-id="free-badge"
-                            >
-
-                                Free
-                            </span>
-                        )}
-                        {event.is_paid && (
-                            <span 
-                                className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full"
-                                aria-label={`Paid event, ${hasPrice ? `starting at ${formatPrice(lowestPrice)}` : 'pricing available'}`}
-                                data-test-id="paid-badge"
-                            >
-
-                                {hasPrice ? formatPrice(lowestPrice) : 'Paid'}
-                            </span>
-                        )}
-                        {isSoon && (
-                            <span 
-                                className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full"
-                                aria-label="Event starting soon"
-                                data-test-id="soon-badge"
-                            >
-
-                                Soon
-                            </span>
-                        )}
-                        {!isUpcoming && (
-                            <span 
-                                className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full"
-                                aria-label="Past event"
-                                data-test-id="past-badge"
-                            >
-
-                                Past
-                            </span>
-                        )}
+                    {/* 
+                        Responsive card sizing:
+                        - Mobile (< 640px): Dynamic height (h-auto) for natural content sizing
+                        - Desktop (640px+): Fixed height for grid alignment
+                        
+                        Future admin configuration can be added here:
+                        - Replace responsive classes with utility function
+                        - Add configuration context/props for different sizing modes
+                    */}
+                    <div className="h-auto sm:h-16 flex items-center pr-2 pt-6 w-full">
+                        <CardTitle 
+                            as={featured ? 'h2' : 'h3'} 
+                            className="text-base line-clamp-2 leading-6 w-full"
+                            id={`${cardId}-title`}
+                        >
+                            {event.title}
+                        </CardTitle>
                     </div>
                 </div>
-                <CardDescription 
-                    className="min-h-[3rem] line-clamp-2 text-sm leading-relaxed"
-                    id={`${cardId}-description`}
-                >
-                    {getEventCardDescription(event.description, event.short_description)}
-                </CardDescription>
+                {/* 
+                    Responsive description sizing:
+                    - Mobile: No minimum height (min-h-0) for compact display
+                    - Desktop: Fixed minimum height for grid alignment
+                */}
+                <div className="min-h-0 sm:min-h-[3rem] flex items-center">
+                    <CardDescription 
+                        className="line-clamp-2 text-sm leading-relaxed w-full"
+                        id={`${cardId}-description`}
+                    >
+                        {getEventCardDescription(event.description, event.short_description, 80)}
+                    </CardDescription>
+                </div>
             </CardHeader>
 
             <CardContent>
+                {/* Separator line */}
+                <div className="border-t border-muted-foreground/20 my-3"></div>
                 <div className="space-y-2 text-sm" id={`${cardId}-details`}>
                     <div className="flex items-center gap-2 text-muted-foreground">
                         <Calendar className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
-                        <span>{formatDateTime(event.start_time)}</span>
+                        <ClientDateTime date={event.start_time} format="full" className="truncate" />
                     </div>
 
                     <div className="flex items-center gap-2 text-muted-foreground">
                         <MapPin className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
-                        <span className="line-clamp-2">{formatLocationForCard(event.location)}</span>
+                        <span className="truncate">{formatLocationForCard(event.location)}</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-muted-foreground">
                         <Users className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
                         <span>
-                            {event.rsvp_count} attending
-                            {spotsRemaining && spotsRemaining > 0 && ` • ${spotsRemaining} spots left`}
+                            {event.is_paid 
+                                ? `${event.tickets_sold || event.rsvp_count} tickets sold`
+                                : `${event.rsvp_count} attending`
+                            }
+                            {spotsRemaining && spotsRemaining > 0 && ` • ${spotsRemaining} ${event.is_paid ? 'tickets' : 'spots'} left`}
                         </span>
                     </div>
 
@@ -310,13 +313,16 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
 }
 
 // Preview List Style - Compact horizontal layout for list views
-function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowestPrice, isSoon }: Readonly<CardComponentProps>) {
+function PreviewListCard({ event, featured, className, onClick, isUpcoming, hasPrice, lowestPrice }: Readonly<CardComponentProps>) {
+    const urgencyClass = ''
+    
     return (
         <Card
-            variant="outlined"
-            className={`hover:shadow-md transition-shadow cursor-pointer group ${className}`}
+            variant="elevated"
+            className={`shadow-sm hover:shadow-md transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
             onClick={onClick}
         >
+
             <div className="flex items-start gap-4 p-4">
                 {event.image_url && (
                     <div className="relative w-20 h-20 flex-shrink-0 overflow-hidden rounded-lg">
@@ -329,54 +335,60 @@ function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowe
                             placeholder="blur"
                             blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
                         />
+                        {featured && (
+                            <div className="absolute top-1 left-1">
+                                <span 
+                                    className="bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full text-xs font-medium"
+                                    aria-label="Featured event"
+                                    data-test-id="featured-badge"
+                                >
+                                    Featured
+                                </span>
+                            </div>
+                        )}
                     </div>
                 )}
 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-semibold text-base text-foreground line-clamp-2 min-h-[3rem] leading-relaxed pr-2">
-                            {event.title}
-                        </h3>
-                        <div className="flex gap-1 flex-shrink-0">
-                            {!event.is_paid && isUpcoming && (
-                                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                                    Free
-                                </span>
-                            )}
-                            {event.is_paid && (
-                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                                    {hasPrice ? formatPrice(lowestPrice) : 'Paid'}
-                                </span>
-                            )}
-                            {isSoon && (
-                                <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
-                                    Soon
-                                </span>
-                            )}
-                            {!isUpcoming && (
-                                <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                                    Past
-                                </span>
-                            )}
+                        {/* Responsive title sizing for preview cards */}
+                        <div className="h-auto sm:h-16 flex items-center pr-2 pt-4 flex-1">
+                            <h3 className="font-semibold text-base text-foreground line-clamp-2 leading-6 w-full">
+                                {event.title}
+                            </h3>
+                        </div>
+                        <div>
+                            <EventBadges 
+                                event={event}
+                                isUpcoming={isUpcoming}
+                                priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
+                                className="flex gap-1 flex-shrink-0"
+                            />
                         </div>
                     </div>
 
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2 min-h-[2.5rem] leading-relaxed">
-                        {getEventCardDescription(event.description, event.short_description)}
-                    </p>
+                    {/* Responsive description sizing for preview cards */}
+                    <div className="min-h-0 sm:min-h-[2.5rem] flex items-center mb-3">
+                        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed w-full">
+                            {getEventCardDescription(event.description, event.short_description, 80)}
+                        </p>
+                    </div>
+
+                    {/* Separator line */}
+                    <div className="border-t border-muted-foreground/20 my-3"></div>
 
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {new Date(event.start_time).toLocaleDateString()}
+                            <Calendar className="w-3 h-3 flex-shrink-0" />
+                            <ClientDateTime date={event.start_time} format="short-date" className="truncate" />
+                        </span>
+                        <span className="flex items-center gap-1 min-w-0">
+                            <MapPin className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">{formatLocationForCard(event.location)}</span>
                         </span>
                         <span className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {truncateText(formatLocationForCard(event.location), 25)}
-                        </span>
-                        <span className="flex items-center gap-1">
-                            <Users className="w-3 h-3" />
-                            {event.rsvp_count}
+                            <Users className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">{event.rsvp_count}</span>
                         </span>
                     </div>
                 </div>
@@ -386,16 +398,18 @@ function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowe
 }
 
 // Full List Style - Detailed view with all information
-function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, hasPrice, lowestPrice, isSoon }: Readonly<CardComponentProps>) {
+function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, hasPrice, lowestPrice }: Readonly<CardComponentProps>) {
+    const urgencyClass = ''
+    
     return (
         <Card
-            variant="default"
+            variant="elevated"
             size="lg"
-            className={`hover:shadow-lg transition-shadow cursor-pointer group ${className}`}
+            className={`relative shadow-md hover:shadow-lg transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
             onClick={onClick}
         >
             {event.image_url && (
-                <div className="relative w-full h-56 overflow-hidden rounded-t-lg">
+                <div className="relative w-full h-56 overflow-hidden rounded-t-lg bg-gray-100">
                     <SafeImage
                         src={event.image_url}
                         alt={event.image_alt_text || event.title}
@@ -414,46 +428,43 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
                 </div>
             )}
 
+            {/* Badges positioned to overlap image and content */}
+            <div className="absolute right-4 z-10" style={{ top: 'calc(14rem + 8px)' }}>
+                <EventBadges 
+                    event={event}
+                    isUpcoming={isUpcoming}
+                    priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
+                    className="flex gap-2"
+                />
+            </div>
+
             <CardHeader>
                 <div className="flex items-start justify-between">
-                    <CardTitle as="h2" className="text-xl">
-                        {event.title}
-                    </CardTitle>
-                    <div className="flex gap-2">
-                        {!event.is_paid && isUpcoming && (
-                            <span className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium">
-                                Free Event
-                            </span>
-                        )}
-                        {event.is_paid && (
-                            <span className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium">
-                                {hasPrice ? formatPrice(lowestPrice) : 'Paid Event'}
-                            </span>
-                        )}
-                        {isSoon && (
-                            <span className="text-sm bg-orange-100 text-orange-800 px-3 py-1 rounded-full font-medium">
-                                Soon
-                            </span>
-                        )}
-                        {!isUpcoming && (
-                            <span className="text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
-                                Past Event
-                            </span>
-                        )}
+                    <div className="h-20 flex items-center pt-4 w-full">
+                        <CardTitle 
+                            as="h2" 
+                            className="text-xl line-clamp-2 leading-6 w-full"
+                        >
+                            {event.title}
+                        </CardTitle>
                     </div>
                 </div>
-                <CardDescription className="text-base line-clamp-2 min-h-[3rem] leading-relaxed">
-                    {getEventCardDescription(event.description, event.short_description)}
-                </CardDescription>
+                <div className="min-h-[4.5rem] flex items-center">
+                    <CardDescription className="text-base line-clamp-3 leading-relaxed w-full">
+                        {event.short_description || event.description || ''}
+                    </CardDescription>
+                </div>
             </CardHeader>
 
             <CardContent>
+                {/* Separator line */}
+                <div className="border-t border-muted-foreground/20 my-3"></div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div className="space-y-3">
                         <div className="flex items-center gap-3 text-foreground">
                             <Calendar className="w-5 h-5 flex-shrink-0 text-blue-600" />
                             <div>
-                                <div className="font-medium">{formatDateTime(event.start_time)}</div>
+                                <ClientDateTime date={event.start_time} format="full" className="font-medium" />
                                 <div className="text-muted-foreground">
                                     Duration: {Math.round((new Date(event.end_time).getTime() - new Date(event.start_time).getTime()) / (1000 * 60 * 60))} hours
                                 </div>
@@ -473,12 +484,21 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
                         <div className="flex items-center gap-3 text-foreground">
                             <Users className="w-5 h-5 flex-shrink-0 text-blue-600" />
                             <div>
-                                <div className="font-medium">{event.rsvp_count} attending</div>
+                                <div className="font-medium">
+                                    {event.is_paid 
+                                        ? `${event.rsvp_count} tickets sold`
+                                        : `${event.rsvp_count} attending`
+                                    }
+                                </div>
                                 {spotsRemaining && spotsRemaining > 0 && (
-                                    <div className="text-muted-foreground">{spotsRemaining} spots remaining</div>
+                                    <div className="text-muted-foreground">
+                                        {spotsRemaining} {event.is_paid ? 'tickets' : 'spots'} remaining
+                                    </div>
                                 )}
                                 {event.capacity && spotsRemaining === 0 && (
-                                    <div className="text-red-500">Event is full</div>
+                                    <div className="text-red-500">
+                                        {event.is_paid ? 'Sold out' : 'Event is full'}
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -513,43 +533,39 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
 }
 
 // Compact Card Style - Minimal information for dense layouts
-function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcoming, isSoon }: Readonly<CardComponentProps>) {
+function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcoming }: Readonly<CardComponentProps>) {
+    const urgencyClass = 'border-l-blue-600'
     return (
         <Card
             size="sm"
-            variant="ghost"
-            className={`hover:bg-muted transition-colors cursor-pointer group border-l-4 border-l-blue-600 ${className}`}
+            variant="elevated"
+            className={`shadow-sm hover:shadow-md hover:bg-muted transition-all cursor-pointer group border-l-4 ${urgencyClass} ${className}`}
             onClick={onClick}
         >
             <div className="flex items-center justify-between p-3">
                 <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-sm text-foreground truncate">
+                    <h4 className="font-medium text-sm text-foreground truncate pt-4">
                         {event.title}
                     </h4>
+                    {/* Separator line */}
+                    <div className="border-t border-muted-foreground/20 my-2"></div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                        <span>{new Date(event.start_time).toLocaleDateString()}</span>
+                        <ClientDateTime date={event.start_time} format="short-date" className="truncate" />
                         <span>•</span>
-                        <span>{truncateText(formatLocationForCard(event.location), 20)}</span>
+                        <span className="truncate">{formatLocationForCard(event.location)}</span>
                         <span>•</span>
-                        <span>{event.rsvp_count} attending</span>
+                        <span className="truncate">{event.rsvp_count} attending</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-2 ml-3">
-                    {!event.is_paid && isUpcoming && (
-                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                            Free
-                        </span>
-                    )}
-                    {event.is_paid && (
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                            {hasPrice ? formatPrice(lowestPrice) : 'Paid'}
-                        </span>
-                    )}
-                    {isSoon && (
-                        <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">
-                            Soon
-                        </span>
-                    )}
+                    <div>
+                        <EventBadges 
+                            event={event}
+                            isUpcoming={isUpcoming}
+                            priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
+                            className="flex gap-2"
+                        />
+                    </div>
                     <ExternalLink className="w-3 h-3 text-muted-foreground group-hover:text-foreground" />
                 </div>
             </div>
@@ -558,65 +574,67 @@ function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcom
 }
 
 // Timeline Card Style - Vertical timeline layout
-function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpcoming, isSoon }: Readonly<CardComponentProps>) {
+function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpcoming }: Readonly<CardComponentProps>) {
     const eventDate = new Date(event.start_time);
     const day = eventDate.getDate();
-    const month = eventDate.toLocaleDateString('en-US', { month: 'short' });
+    const urgencyClass = ''
+    
 
     return (
         <Card
-            variant="outlined"
-            className={`hover:shadow-md transition-shadow cursor-pointer group ${className}`}
+            variant="elevated"
+            className={`shadow-sm hover:shadow-md transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
             onClick={onClick}
         >
+
             <div className="flex gap-4 p-4">
                 {/* Date Circle */}
                 <div className="flex-shrink-0 w-16 h-16 bg-blue-600 text-white rounded-full flex flex-col items-center justify-center">
                     <div className="text-lg font-bold leading-none">{day}</div>
-                    <div className="text-xs uppercase leading-none">{month}</div>
+                    <ClientDateTime date={event.start_time} format="month-short" className="text-xs uppercase leading-none" />
                 </div>
 
                 {/* Event Details */}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-semibold text-base text-foreground group-hover:text-blue-600 transition-colors line-clamp-2 min-h-[3rem] leading-relaxed">
-                            {event.title}
-                        </h3>
-                        <div className="flex gap-1 ml-2">
-                            {!event.is_paid && isUpcoming && (
-                                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                                    Free
-                                </span>
-                            )}
-                            {event.is_paid && (
-                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                                    {hasPrice ? formatPrice(lowestPrice) : 'Paid'}
-                                </span>
-                            )}
-                            {isSoon && (
-                                <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
-                                    Soon
-                                </span>
-                            )}
+                        {/* Responsive title sizing for timeline cards */}
+                        <div className="h-auto sm:h-16 flex items-center pt-4 flex-1">
+                            <h3 className="font-semibold text-base text-foreground group-hover:text-blue-600 transition-colors line-clamp-2 leading-6 w-full">
+                                {event.title}
+                            </h3>
+                        </div>
+                        <div>
+                            <EventBadges 
+                                event={event}
+                                isUpcoming={isUpcoming}
+                                priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
+                                className="flex gap-1 ml-2"
+                            />
                         </div>
                     </div>
 
-                    <p className="text-sm text-gray-600 mb-2 line-clamp-2 min-h-[2.5rem] leading-relaxed">
-                        {getEventCardDescription(event.description, event.short_description, 80)}
-                    </p>
+                    {/* Responsive description sizing for timeline cards */}
+                    <div className="min-h-0 sm:min-h-[2.5rem] flex items-center mb-2">
+                        <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed w-full">
+                            {getEventCardDescription(event.description, event.short_description, 80)}
+                        </p>
+                    </div>
+
+                    {/* Separator line */}
+                    <div className="border-t border-muted-foreground/20 my-3"></div>
 
                     <div className="flex items-center gap-4 text-xs text-gray-500">
                         <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                            <Clock className="w-3 h-3 flex-shrink-0" />
+                            <ClientDateTime date={event.start_time} format="time-only" className="truncate" />
+                        </span>
+                        <span className="flex items-center gap-1 min-w-0">
+                            <MapPin className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">{formatLocationForCard(event.location)}</span>
                         </span>
                         <span className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {truncateText(formatLocationForCard(event.location), 25)}
-                        </span>
-                        <span className="flex items-center gap-1">
-                            <Users className="w-3 h-3" />
-                            {event.rsvp_count}
+                            <Users className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">{event.rsvp_count}</span>
                         </span>
                     </div>
                 </div>

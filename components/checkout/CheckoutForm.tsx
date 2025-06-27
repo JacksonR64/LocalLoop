@@ -8,7 +8,7 @@ import {
     useStripe,
     useElements
 } from '@stripe/react-stripe-js'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
+import { Card, CardContent, IconCard } from '@/components/ui'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
@@ -20,9 +20,9 @@ import {
     AlertCircle,
     ArrowLeft,
     Mail,
-    User,
-    Receipt
+    User
 } from 'lucide-react'
+import { useTheme } from 'next-themes'
 import GoogleCalendarAddButton from './GoogleCalendarAddButton'
 
 // Initialize Stripe
@@ -116,23 +116,23 @@ function PaymentForm({
                 : process.env.NEXT_PUBLIC_SITE_URL || 'https://localloop.app';
             const returnUrl = `${baseUrl}/events/${orderDetails.event.id}?payment=success`;
 
-            console.log('Confirming payment with return URL:', returnUrl);
 
-            const { error, paymentIntent } = await stripe.confirmPayment({
+            const result = await stripe.confirmPayment({
                 elements,
                 confirmParams: {
                     return_url: returnUrl,
                     receipt_email: customerDetails.email,
                 },
-                redirect: 'if_required'
+                redirect: 'always'  // Always redirect to show payment success
             })
 
-            if (error) {
-                console.error('Stripe payment error:', error);
-                console.error('Error type:', error.type);
-                console.error('Error code:', error.code);
-                setPaymentError(error.message || 'An error occurred during payment processing')
-            } else if (paymentIntent) {
+            if (result.error) {
+                console.error('Stripe payment error:', result.error);
+                console.error('Error type:', result.error.type);
+                console.error('Error code:', result.error.code);
+                setPaymentError(result.error.message || 'An error occurred during payment processing')
+            } else if ('paymentIntent' in result && result.paymentIntent) {
+                const paymentIntent = result.paymentIntent as any;
                 // Update customer information in our system if it changed
                 if (customerDetails.email !== customerInfo.email || customerDetails.name !== customerInfo.name) {
                     try {
@@ -167,17 +167,13 @@ function PaymentForm({
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             {/* Order Summary */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Receipt className="h-5 w-5" />
-                        Order Summary
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                    <div className="text-sm font-medium text-foreground">
-                        {orderDetails.event.title}
-                    </div>
+            <IconCard 
+                cardType="order-summary"
+                contentProps={{ className: "space-y-3" }}
+            >
+                <div className="text-sm font-medium text-foreground">
+                    {orderDetails.event.title}
+                </div>
 
                     {orderDetails.ticket_items.map((item, index) => (
                         <div key={index} className="flex justify-between text-sm text-foreground">
@@ -202,19 +198,14 @@ function PaymentForm({
                             <span>{formatPrice(orderDetails.amount)}</span>
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+            </IconCard>
 
             {/* Customer Information */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <User className="h-5 w-5" />
-                        Customer Information
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <IconCard 
+                cardType="customer-info"
+                contentProps={{ className: "space-y-4" }}
+            >
+                <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium mb-1" htmlFor="customer-email">
                                 Email Address *
@@ -228,6 +219,7 @@ function PaymentForm({
                                     onChange={(e) => setCustomerDetails(prev => ({ ...prev, email: e.target.value }))}
                                     className="w-full pl-10 pr-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
                                     placeholder="your@email.com"
+                                    autoComplete="email"
                                     required
                                 />
                             </div>
@@ -247,6 +239,7 @@ function PaymentForm({
                                     value={customerDetails.name}
                                     onChange={(e) => setCustomerDetails(prev => ({ ...prev, name: e.target.value }))}
                                     className="w-full pl-10 pr-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
+                                    autoComplete="name"
                                     placeholder="Your full name"
                                     required
                                 />
@@ -256,18 +249,10 @@ function PaymentForm({
                             </p>
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+            </IconCard>
 
             {/* Payment Information */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <CreditCard className="h-5 w-5" />
-                        Payment Information
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
+            <IconCard cardType="payment-info">
                     <PaymentElement
                         options={{
                             layout: 'tabs',
@@ -287,38 +272,37 @@ function PaymentForm({
                         </Alert>
                     )}
 
-                    <div className="flex gap-3 mt-6">
+                    <div className="flex flex-col sm:flex-row lg:flex-col gap-3 mt-6">
                         <Button
                             type="button"
                             variant="outline"
                             onClick={onCancel}
                             disabled={processing}
-                            className="flex-1"
+                            className="flex-1 min-w-0"
                         >
-                            <ArrowLeft className="h-4 w-4 mr-2" />
-                            Back to Tickets
+                            <ArrowLeft className="h-4 w-4 mr-2 flex-shrink-0" />
+                            <span className="truncate">Back to Tickets</span>
                         </Button>
 
                         <Button
                             type="submit"
                             disabled={!stripe || processing || !customerDetails.email || !customerDetails.name}
-                            className="flex-1"
+                            className="flex-1 min-w-0"
                         >
                             {processing ? (
                                 <>
-                                    <LoadingSpinner size="sm" className="mr-2" />
-                                    Processing...
+                                    <LoadingSpinner size="sm" className="mr-2 flex-shrink-0" />
+                                    <span className="truncate">Processing...</span>
                                 </>
                             ) : (
                                 <>
-                                    <CreditCard className="h-4 w-4 mr-2" />
-                                    Pay {formatPrice(orderDetails.amount)}
+                                    <CreditCard className="h-4 w-4 mr-2 flex-shrink-0" />
+                                    <span className="truncate">Pay {formatPrice(orderDetails.amount)}</span>
                                 </>
                             )}
                         </Button>
                     </div>
-                </CardContent>
-            </Card>
+            </IconCard>
         </form>
     )
 }
@@ -363,16 +347,18 @@ function PaymentSuccess({
                     Please save this email as it contains important information for event entry.
                 </div>
 
-                <GoogleCalendarAddButton
-                    eventTitle={orderDetails.event.title}
-                    eventTime={orderDetails.event.start_time}
-                    eventLocation={orderDetails.event.location || 'Online Event'}
-                    className="mb-6"
-                />
+                <div className="overflow-hidden mb-6">
+                    <GoogleCalendarAddButton
+                        eventTitle={orderDetails.event.title}
+                        eventTime={orderDetails.event.start_time}
+                        eventLocation={orderDetails.event.location || 'Online Event'}
+                        className="w-full max-w-full"
+                    />
+                </div>
 
-                <Button onClick={onContinue} className="w-full">
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Continue to Event
+                <Button onClick={onContinue} className="w-full min-w-0">
+                    <CheckCircle className="h-4 w-4 mr-2 flex-shrink-0" />
+                    <span className="truncate">Continue to Event</span>
                 </Button>
             </CardContent>
         </Card>
@@ -399,6 +385,64 @@ export default function CheckoutForm({
         email: guestInfo?.email || user?.email || '',
         name: guestInfo?.name || user?.user_metadata?.full_name || user?.user_metadata?.name || ''
     }), [guestInfo?.email, guestInfo?.name, user?.email, user?.user_metadata?.full_name, user?.user_metadata?.name])
+
+    // Get current theme for Stripe appearance
+    const { resolvedTheme } = useTheme()
+    const isDark = resolvedTheme === 'dark'
+
+    // Memoize stripe options to prevent clientSecret mutation warnings
+    const stripeOptions = useMemo(() => {
+        if (!clientSecret) return undefined;
+        
+        return {
+            clientSecret,
+            appearance: {
+                theme: isDark ? 'night' as const : 'stripe' as const,
+                variables: {
+                    // Use only valid Stripe appearance variables
+                    colorPrimary: isDark ? '#64748b' : '#475569',
+                    // Note: colorBackground removed - using rules for transparency instead
+                    colorText: isDark ? '#f8fafc' : '#1f2937',
+                    colorTextSecondary: isDark ? '#94a3b8' : '#6b7280',
+                    colorTextPlaceholder: isDark ? '#64748b' : '#9ca3af',
+                    colorDanger: '#dc2626',
+                    fontFamily: 'system-ui, sans-serif',
+                    spacingUnit: '4px',
+                    borderRadius: '8px',
+                    fontSizeBase: '14px',
+                    fontWeightNormal: '500',
+                },
+                rules: {
+                    // Clear/transparent styling for all elements
+                    '.Input': {
+                        backgroundColor: 'transparent',
+                        border: isDark ? '1px solid #334155' : '1px solid #e2e8f0',
+                        color: isDark ? '#f8fafc' : '#1f2937'
+                    },
+                    '.Input:focus': {
+                        backgroundColor: 'transparent',
+                        border: isDark ? '1px solid #64748b' : '1px solid #475569',
+                        boxShadow: isDark ? '0 0 0 1px #64748b' : '0 0 0 1px #475569'
+                    },
+                    '.Tab': {
+                        backgroundColor: 'transparent',
+                        border: isDark ? '1px solid #334155' : '1px solid #e2e8f0'
+                    },
+                    '.Tab:hover': {
+                        backgroundColor: isDark ? 'rgba(100, 116, 139, 0.1)' : 'rgba(71, 85, 105, 0.05)'
+                    },
+                    '.Tab--selected': {
+                        backgroundColor: 'transparent',
+                        border: isDark ? '1px solid #64748b' : '1px solid #475569'
+                    },
+                    // Note: TabIcon doesn't support backgroundColor, removed to prevent warnings
+                    '.Block': {
+                        backgroundColor: 'transparent'
+                    }
+                }
+            },
+        };
+    }, [clientSecret, isDark])
 
     // Create checkout session
     useEffect(() => {
@@ -525,32 +569,22 @@ export default function CheckoutForm({
         )
     }
 
-    const stripeOptions = {
-        clientSecret,
-        appearance: {
-            theme: 'stripe' as const,
-            variables: {
-                colorPrimary: '#4f46e5',
-                colorBackground: '#ffffff',
-                colorText: '#1f2937',
-                colorDanger: '#dc2626',
-                fontFamily: 'system-ui, sans-serif',
-                spacingUnit: '4px',
-                borderRadius: '6px',
-            },
-        },
-    }
-
     return (
-        <div className="max-w-2xl mx-auto">
-            <Elements stripe={stripePromise} options={stripeOptions}>
-                <PaymentForm
-                    orderDetails={orderDetails}
-                    customerInfo={customerInfo}
-                    onSuccess={handlePaymentSuccess}
-                    onCancel={onCancel}
-                />
-            </Elements>
+        <div className="w-full lg:max-w-2xl lg:mx-auto">
+            {clientSecret && (
+                <Elements 
+                    stripe={stripePromise} 
+                    options={stripeOptions}
+                    key={clientSecret} // Force remount when clientSecret changes
+                >
+                    <PaymentForm
+                        orderDetails={orderDetails}
+                        customerInfo={customerInfo}
+                        onSuccess={handlePaymentSuccess}
+                        onCancel={onCancel}
+                    />
+                </Elements>
+            )}
         </div>
     )
 } 

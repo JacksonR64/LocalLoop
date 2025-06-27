@@ -1,7 +1,12 @@
-import { test, expect, devices } from '@playwright/test';
+import { test, expect, devices, Page } from '@playwright/test';
 
 // Configure device at the top level to avoid worker issues
 test.use({ ...devices['iPhone 14'] });
+
+interface Viewport {
+    width: number;
+    height: number;
+}
 
 const VIEWPORTS = {
     mobile: { width: 375, height: 667 },
@@ -9,7 +14,7 @@ const VIEWPORTS = {
     desktop: { width: 1280, height: 720 }
 };
 
-async function testTouchInteraction(page: any, selector: string) {
+async function testTouchInteraction(page: Page, selector: string) {
     const element = page.locator(selector);
     if (await element.count() > 0) {
         const box = await element.first().boundingBox();
@@ -21,7 +26,7 @@ async function testTouchInteraction(page: any, selector: string) {
     }
 }
 
-async function testNavigationResponsiveness(page: any, viewport: any) {
+async function testNavigationResponsiveness(page: Page, viewport: Viewport) {
     await page.setViewportSize(viewport);
 
     // Test navigation elements using data-test-id
@@ -31,7 +36,7 @@ async function testNavigationResponsiveness(page: any, viewport: any) {
     }
 }
 
-async function testFormResponsiveness(page: any, formSelector: string, viewport: any) {
+async function testFormResponsiveness(page: Page, formSelector: string, viewport: Viewport) {
     await page.setViewportSize(viewport);
     const form = page.locator(formSelector);
     if (await form.count() > 0) {
@@ -45,7 +50,7 @@ async function testFormResponsiveness(page: any, formSelector: string, viewport:
     }
 }
 
-async function checkResponsiveImages(page: any) {
+async function checkResponsiveImages(page: Page) {
     const images = page.locator('img');
     const imageCount = await images.count();
 
@@ -61,7 +66,7 @@ async function checkResponsiveImages(page: any) {
     }
 }
 
-async function testScrollBehavior(page: any, viewport: any) {
+async function testScrollBehavior(page: Page, viewport: Viewport) {
     await page.setViewportSize(viewport);
 
     // Test scroll behavior

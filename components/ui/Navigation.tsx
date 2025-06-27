@@ -10,6 +10,61 @@ import { useAuth as useAuthHook } from '@/lib/hooks/useAuth'
 import { ProfileDropdown } from '@/components/auth/ProfileDropdown'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
+// Mobile Role Badge Component with hover/click expansion
+function MobileRoleBadge({ isAdmin }: { isAdmin: boolean }) {
+    const [isExpanded, setIsExpanded] = React.useState(false);
+    const [timeoutId, setTimeoutId] = React.useState<NodeJS.Timeout | null>(null);
+
+    const handleInteraction = () => {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+        
+        setIsExpanded(true);
+        
+        const newTimeoutId = setTimeout(() => {
+            setIsExpanded(false);
+        }, 5000);
+        
+        setTimeoutId(newTimeoutId);
+    };
+
+    React.useEffect(() => {
+        return () => {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        };
+    }, [timeoutId]);
+
+    return (
+        <div 
+            className={`xl:hidden absolute top-1 right-1 z-[60] flex items-center justify-center gap-1 rounded-full text-[10px] font-medium transition-all duration-300 ease-in-out cursor-pointer ${
+                isExpanded 
+                    ? (isAdmin 
+                        ? 'bg-red-100 text-red-700 border border-red-200 shadow-sm px-2 py-0.5' 
+                        : 'bg-blue-100 text-blue-700 border border-blue-200 shadow-sm px-2 py-0.5')
+                    : (isAdmin ? 'text-red-600' : 'text-blue-600')
+            } ${isExpanded ? '' : 'w-6 h-6'}`}
+            aria-label={`Current user role: ${isAdmin ? 'Administrator' : 'Staff member'}`}
+            data-test-id="mobile-user-role-badge"
+            onClick={handleInteraction}
+            onMouseEnter={handleInteraction}
+        >
+            {isAdmin ? (
+                <Settings className="w-2.5 h-2.5 flex-shrink-0 translate-x-[0.5px]" aria-hidden="true" />
+            ) : (
+                <Shield className="w-2.5 h-2.5 flex-shrink-0" aria-hidden="true" />
+            )}
+            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+                isExpanded ? 'max-w-[50px] opacity-100 ml-1' : 'max-w-0 opacity-0 ml-0'
+            }`}>
+                {isAdmin ? 'Admin' : 'Staff'}
+            </span>
+        </div>
+    );
+}
+
 interface NavigationProps {
     className?: string
 }
@@ -18,6 +73,8 @@ export function Navigation({
     className = ''
 }: NavigationProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const [isMenuAnimating, setIsMenuAnimating] = useState(false)
+    const [menuAnimationType, setMenuAnimationType] = useState<'enter' | 'exit'>('enter')
     const { user, loading: authLoading } = useAuth()
     const { isStaff, isAdmin } = useAuthHook()
     const router = useRouter()
@@ -35,6 +92,27 @@ export function Navigation({
     }
 
 
+    const handleMobileMenuToggle = () => {
+        if (isMobileMenuOpen) {
+            // Trigger exit animation
+            setMenuAnimationType('exit')
+            setIsMenuAnimating(true)
+            setTimeout(() => {
+                setIsMobileMenuOpen(false)
+                setIsMenuAnimating(false)
+            }, 300) // Match animation duration
+        } else {
+            // Trigger enter animation
+            setMenuAnimationType('enter')
+            setIsMobileMenuOpen(true)
+            setIsMenuAnimating(true)
+            setTimeout(() => {
+                setIsMenuAnimating(false)
+            }, 300) // Match animation duration
+        }
+    }
+
+
     return (
         <>
             {/* Skip link for keyboard navigation */}
@@ -45,27 +123,26 @@ export function Navigation({
             >
                 Skip to main content
             </a>
-            <header className={`bg-card shadow-sm border-b border-border sticky top-0 z-50 ${className}`} data-test-id="homepage-header">
+            <header className={`bg-card shadow-sm border-b border-border fixed top-0 left-0 right-0 z-50 ${className}`} data-test-id="homepage-header">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
-                    {/* Left side - Logo and Admin/Staff Badge */}
-                    <div className="flex items-center gap-3">
-                        <Link href="/" className="flex items-center gap-2" data-test-id="homepage-logo">
+                    {/* Left side - Logo with responsive text */}
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <Link href="/" className="flex items-center gap-2 md:gap-4 min-w-0" data-test-id="homepage-logo">
                             <Image 
                                 src="/logo.svg" 
                                 alt="LocalLoop logo" 
-
-                                width={48}
-                                height={48}
-                                className="w-12 h-12" 
+                                width={200}
+                                height={60}
+                                className="h-8 md:h-10 w-auto flex-shrink-0" 
                             />
-                            <span className="text-xl font-bold text-card-foreground" data-test-id="homepage-title">LocalLoop</span>
+                            <span className="text-2xl md:text-3xl text-card-foreground min-[350px]:inline hidden whitespace-nowrap" data-test-id="homepage-title">LocalLoop</span>
                         </Link>
                         
-                        {/* Admin/Staff Badge */}
+                        {/* Admin/Staff Badge - Hidden on mobile and small tablets, shown on large screens */}
                         {user && (isAdmin || isStaff) && (
                             <div 
-                                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                                className={`hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
                                     isAdmin 
                                         ? 'bg-red-100 text-red-700 border border-red-200' 
                                         : 'bg-blue-100 text-blue-700 border border-blue-200'
@@ -78,7 +155,7 @@ export function Navigation({
                                 ) : (
                                     <Shield className="w-3 h-3" aria-hidden="true" />
                                 )}
-                                <span className="hidden sm:inline">
+                                <span>
                                     {isAdmin ? 'Admin' : 'Staff'}
                                 </span>
                             </div>
@@ -88,10 +165,10 @@ export function Navigation({
                     {/* Right side - Navigation */}
                     <>
                         {/* Desktop Navigation */}
-                        <nav className="hidden md:flex items-center gap-6" aria-label="Primary navigation" data-test-id="desktop-navigation">
+                        <nav className="hidden lg:flex items-center gap-3 xl:gap-6 flex-shrink-0" aria-label="Primary navigation" data-test-id="desktop-navigation">
 
                             {(isStaff || isAdmin) && (
-                                <Link href="/staff" className="text-muted-foreground hover:text-foreground transition-colors" data-test-id="staff-link">
+                                <Link href="/staff" className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap" data-test-id="staff-link">
                                     Staff
                                 </Link>
                             )}
@@ -99,65 +176,72 @@ export function Navigation({
                             {(isStaff || isAdmin) && (
                                 <Link
                                     href="/create-event"
-                                    className="text-muted-foreground hover:text-foreground transition-colors"
+                                    className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
                                     data-test-id="create-event-link"
                                 >
                                     Create Event
                                 </Link>
                             )}
 
-                            <Link
-                                href="/my-events"
-                                className="text-muted-foreground hover:text-foreground transition-colors"
-                                data-test-id="my-events-link"
-                            >
-                                My Events
-                            </Link>
+                            {user && (
+                                <Link
+                                    href="/my-events"
+                                    className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+                                    data-test-id="my-events-link"
+                                >
+                                    My Events
+                                </Link>
+                            )}
 
                             <button
                                 onClick={handleBrowseEvents}
-                                className="text-muted-foreground hover:text-foreground transition-colors"
+                                className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
                                 data-test-id="browse-events-button"
                             >
                                 Browse Events
                             </button>
 
-                            <ThemeToggle />
-
-                            {/* Auth state conditional rendering - Optimistic UI */}
-                            {user ? (
-                                <ProfileDropdown testIdPrefix="desktop-" />
-                            ) : (
-                                <Link
-                                    href="/auth/login"
-                                    className={`bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-all duration-200 ${
-                                        authLoading ? 'opacity-75 pointer-events-none' : 'opacity-100'
-                                    }`}
-                                    data-testid="sign-in-link"
-                                >
-                                    Sign In
-                                </Link>
-                            )}
+                            <div className="flex items-center gap-2 xl:gap-3 flex-shrink-0">
+                                <ThemeToggle />
+                                {/* Auth state conditional rendering - Optimistic UI */}
+                                {user ? (
+                                    <ProfileDropdown testIdPrefix="desktop-" />
+                                ) : (
+                                    <Link
+                                        href="/auth/login?force_logout=true"
+                                        className={`bg-primary text-primary-foreground px-3 xl:px-4 py-2 rounded-lg hover:bg-primary/90 transition-all duration-200 text-sm whitespace-nowrap ${
+                                            authLoading ? 'opacity-75 pointer-events-none' : 'opacity-100'
+                                        }`}
+                                        data-testid="sign-in-link"
+                                    >
+                                        Sign In
+                                    </Link>
+                                )}
+                            </div>
                         </nav>
 
-                        {/* Mobile - Profile and Menu Button */}
-                        <div className="md:hidden flex items-center gap-2">
-                            {/* Theme Toggle for mobile */}
-                            <ThemeToggle />
+                        {/* Mobile/Tablet - Profile and Menu Button */}
+                        <div className="lg:hidden flex items-center gap-1 min-w-0 flex-shrink-0">
+
+                            {/* Theme Toggle for mobile/tablet */}
+                            <div className="flex-shrink-0">
+                                <ThemeToggle />
+                            </div>
                             
-                            {/* Always visible auth state in mobile top bar */}
+                            {/* Always visible auth state in mobile/tablet top bar */}
                             {user ? (
-                                <ProfileDropdown 
-                                    testIdPrefix="mobile-" 
-                                    mobileIconOnly={true}
-                                    onOpenChange={(isOpen) => {
-                                        if (isOpen) setIsMobileMenuOpen(false)
-                                    }}
-                                />
+                                <div className="flex-shrink-0">
+                                    <ProfileDropdown 
+                                        testIdPrefix="mobile-" 
+                                        onOpenChange={(isOpen) => {
+                                            if (isOpen) setIsMobileMenuOpen(false)
+                                        }}
+                                    />
+                                </div>
                             ) : (
                                 <Link
-                                    href="/auth/login"
-                                    className={`bg-primary text-primary-foreground px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-all duration-200 text-sm ${
+                                    href="/auth/login?force_logout=true"
+                                    className={`bg-primary text-primary-foreground px-2 md:px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-all duration-200 text-xs md:text-sm flex-shrink-0 whitespace-nowrap ${
                                         authLoading ? 'opacity-75 pointer-events-none' : 'opacity-100'
                                     }`}
                                     data-testid="mobile-sign-in-link"
@@ -166,17 +250,17 @@ export function Navigation({
                                 </Link>
                             )}
 
-                            {/* Mobile Menu Button with symmetrical padding */}
+                            {/* Mobile Menu Button with responsive sizing */}
                             <button
-                                className="p-2 rounded-lg hover:bg-accent transition-colors mr-1"
-                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                                className="p-1.5 md:p-2 rounded-lg hover:bg-accent transition-colors flex-shrink-0"
+                                onClick={handleMobileMenuToggle}
                                 aria-label="Toggle mobile menu"
                                 data-test-id="mobile-menu-button"
                             >
                                 {isMobileMenuOpen ? (
-                                    <X className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
+                                    <X className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground" aria-hidden="true" />
                                 ) : (
-                                    <Menu className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
+                                    <Menu className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground" aria-hidden="true" />
                                 )}
                             </button>
                         </div>
@@ -184,8 +268,16 @@ export function Navigation({
                 </div>
 
                 {/* Mobile Navigation */}
-                {isMobileMenuOpen && (
-                    <div className="md:hidden border-t border-border py-4" data-test-id="mobile-navigation">
+                {(isMobileMenuOpen || isMenuAnimating) && (
+                    <div 
+                        className="lg:hidden border-t border-border py-4 transform transition-all duration-300 ease-out" 
+                        data-test-id="mobile-navigation"
+                        style={{
+                            animation: menuAnimationType === 'enter' 
+                                ? 'slideInFromTop 300ms ease-out forwards' 
+                                : 'slideOutToTop 300ms ease-out forwards'
+                        }}
+                    >
                         <nav className="flex flex-col space-y-4" aria-label="Mobile navigation">
                             {(isStaff || isAdmin) && (
                                 <Link
@@ -209,14 +301,16 @@ export function Navigation({
                                 </Link>
                             )}
 
-                            <Link
-                                href="/my-events"
-                                className="text-muted-foreground hover:text-foreground transition-colors py-2"
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                data-test-id="mobile-my-events-link"
-                            >
-                                My Events
-                            </Link>
+                            {user && (
+                                <Link
+                                    href="/my-events"
+                                    className="text-muted-foreground hover:text-foreground transition-colors py-2"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    data-test-id="mobile-my-events-link"
+                                >
+                                    My Events
+                                </Link>
+                            )}
 
                             <button
                                 onClick={() => {
@@ -232,6 +326,11 @@ export function Navigation({
                     </div>
                 )}
             </div>
+            
+            {/* Admin/Staff Badge - Mobile Only, positioned within header */}
+            {user && (isAdmin || isStaff) && (
+                <MobileRoleBadge isAdmin={isAdmin} />
+            )}
         </header>
         </>
     )
