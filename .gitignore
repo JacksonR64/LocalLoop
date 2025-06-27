@@ -106,8 +106,13 @@ lighthouse-report/
 .env.test.local
 .env.production.local
 settings.local.json
+
+# Claude AI assistant files (keep local only)
 .claude/
 claude/
+*.claude.md
+CLAUDE*.md
+claude.*.md
 
 # ESLint cache
 .eslintcache
