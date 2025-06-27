@@ -4,7 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { Calendar, MapPin, Users, Clock, Tag, ExternalLink, ImageIcon } from 'lucide-react';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui';
-import { formatDateTime, truncateText, getEventCardDescription, formatLocationForCard } from '@/lib/utils';
+import { formatDateTime, getEventCardDescription, formatLocationForCard } from '@/lib/utils';
 import { getEventTimingInfo } from '@/lib/utils/event-timing';
 import { EventBadges } from '@/lib/utils/event-badges';
 
@@ -564,7 +564,7 @@ function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcom
 }
 
 // Timeline Card Style - Vertical timeline layout
-function TimelineCard({ event, featured, className, onClick, hasPrice, lowestPrice, isUpcoming }: Readonly<CardComponentProps>) {
+function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpcoming }: Readonly<CardComponentProps>) {
     const eventDate = new Date(event.start_time);
     const day = eventDate.getDate();
     const month = eventDate.toLocaleDateString('en-US', { month: 'short' });

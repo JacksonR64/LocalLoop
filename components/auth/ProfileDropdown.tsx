@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { User, LogOut, ChevronDown, Settings, Calendar, BarChart3, Link as LinkIcon, Unlink, Loader2 } from 'lucide-react'
+import { User, LogOut, Settings, Calendar, BarChart3, Link as LinkIcon, Unlink, Loader2 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { useAuth as useAuthHook } from '@/lib/hooks/useAuth'
 import Link from 'next/link'
