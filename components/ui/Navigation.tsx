@@ -233,7 +233,6 @@ export function Navigation({
                                 <div className="flex-shrink-0">
                                     <ProfileDropdown 
                                         testIdPrefix="mobile-" 
-                                        mobileIconOnly={true}
                                         onOpenChange={(isOpen) => {
                                             if (isOpen) setIsMobileMenuOpen(false)
                                         }}

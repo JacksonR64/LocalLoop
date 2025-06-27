@@ -8,11 +8,10 @@ import Link from 'next/link'
 
 interface ProfileDropdownProps {
   testIdPrefix?: string;
-  mobileIconOnly?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
 }
 
-export function ProfileDropdown({ testIdPrefix = "", mobileIconOnly = false, onOpenChange }: ProfileDropdownProps) {
+export function ProfileDropdown({ testIdPrefix = "", onOpenChange }: ProfileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
   const [animationType, setAnimationType] = useState<'enter' | 'exit'>('enter')
@@ -26,7 +25,7 @@ export function ProfileDropdown({ testIdPrefix = "", mobileIconOnly = false, onO
       setIsAnimating(true)
       setTimeout(() => {
         setIsAnimating(false)
-      }, mobileIconOnly ? 300 : 200) // Match animation duration
+      }, 200) // Match animation duration
     } else if (isOpen) {
       // Closing - trigger exit animation
       setAnimationType('exit')
@@ -34,10 +33,10 @@ export function ProfileDropdown({ testIdPrefix = "", mobileIconOnly = false, onO
       setTimeout(() => {
         setIsOpen(false)
         setIsAnimating(false)
-      }, mobileIconOnly ? 300 : 200) // Match animation duration
+      }, 200) // Match animation duration
     }
     onOpenChange?.(newIsOpen)
-  }, [onOpenChange, isOpen, mobileIconOnly])
+  }, [onOpenChange, isOpen])
   const [calendarConnected, setCalendarConnected] = useState(false)
   const [calendarLoading, setCalendarLoading] = useState(false)
   const [calendarCheckLoading, setCalendarCheckLoading] = useState(true)
@@ -173,33 +172,21 @@ export function ProfileDropdown({ testIdPrefix = "", mobileIconOnly = false, onO
       {/* Profile Button */}
       <button
         onClick={() => updateOpenState(!isOpen)}
-        className={`flex items-center ${mobileIconOnly ? 'gap-0 p-2' : 'gap-2 px-3 py-2'} bg-muted hover:bg-accent rounded-lg transition-colors`}
+        className="flex items-center p-2 bg-muted hover:bg-accent rounded-lg transition-colors"
         data-testid={`${testIdPrefix}profile-dropdown-button`}
         aria-label={`Profile menu for ${getUserDisplayName()}`}
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        <User className={`${mobileIconOnly ? 'w-5 h-5' : 'w-4 h-4'} text-muted-foreground`} />
-        {!mobileIconOnly && (
-          <span className="text-sm font-medium text-foreground" data-testid="profile-display-name">{getUserDisplayName()}</span>
-        )}
-        {!mobileIconOnly && (
-          <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-        )}
+        <User className="w-5 h-5 text-muted-foreground" />
       </button>
 
       {/* Dropdown Menu */}
       {(isOpen || isAnimating) && (
         <div 
-          className={`${
-            mobileIconOnly 
-              ? 'fixed top-16 left-0 right-0 bg-card border-t border-border py-4 z-50 transform transition-all duration-300 ease-out' // Full width mobile like burger menu
-              : 'absolute right-0 mt-2 bg-card rounded-lg shadow-lg border border-border py-2 z-50 w-56 transform transition-all duration-200 ease-out' // Fixed width on desktop
-          }`}
+          className="lg:absolute lg:right-0 lg:mt-2 lg:w-56 lg:rounded-lg lg:shadow-lg fixed top-16 left-0 right-0 lg:static bg-card border border-border lg:border-border py-2 lg:py-2 z-50 transform transition-all duration-200 ease-out"
           style={{
-            animation: mobileIconOnly 
-              ? (animationType === 'enter' ? 'slideInFromTop 300ms ease-out forwards' : 'slideOutToTop 300ms ease-out forwards')
-              : (animationType === 'enter' ? 'fadeInScale 200ms ease-out forwards' : 'scaleOutFade 200ms ease-out forwards')
+            animation: animationType === 'enter' ? 'fadeInScale 200ms ease-out forwards' : 'scaleOutFade 200ms ease-out forwards'
           }}
           data-testid="profile-dropdown-menu"
           role="menu"
@@ -207,7 +194,7 @@ export function ProfileDropdown({ testIdPrefix = "", mobileIconOnly = false, onO
         >
           <div className="px-4 py-2 border-b border-border" data-testid="profile-info-section">
             <p className="text-sm font-medium text-foreground truncate" data-testid="profile-name">{getUserDisplayName()}</p>
-            <p className="text-xs text-muted-foreground truncate" title={user.email} data-testid="profile-email">{user.email}</p>
+            <p className="text-xs font-normal text-muted-foreground truncate" title={user.email} data-testid="profile-email">{user.email}</p>
             {userProfile?.role && (
               <p className="text-xs text-primary capitalize font-medium mt-1" data-testid="profile-role">
                 {userProfile.role}

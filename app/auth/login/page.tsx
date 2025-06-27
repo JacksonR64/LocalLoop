@@ -135,7 +135,7 @@ export default function LoginPage() {
         <div className="min-h-screen flex items-center justify-center bg-background px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full space-y-8 p-6 sm:p-8 border border-border rounded-lg shadow-sm bg-card">
                 <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">
+                    <h2 className="mt-6 text-center text-3xl font-normal text-foreground">
                         Sign in to LocalLoop
                     </h2>
                     <p className="mt-2 text-center text-sm text-muted-foreground">
