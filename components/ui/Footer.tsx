@@ -13,7 +13,11 @@ export function Footer() {
                             alt="LocalLoop logo" 
                             width={200}
                             height={60}
-                            className="h-12 w-auto" 
+                            className="h-12 w-auto object-contain" 
+                            style={{
+                                objectPosition: 'left center',
+                                maxWidth: '120px'
+                            }}
                         />
                         <span className="ml-2 text-xl font-bold text-foreground" data-test-id="footer-title">LocalLoop</span>
                     </Link>

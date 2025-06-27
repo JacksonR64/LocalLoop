@@ -134,7 +134,11 @@ export function Navigation({
                                 alt="LocalLoop logo" 
                                 width={200}
                                 height={60}
-                                className="h-12 w-auto" 
+                                className="h-12 w-auto object-contain" 
+                                style={{
+                                    objectPosition: 'left center',
+                                    maxWidth: '120px'
+                                }}
                             />
                             <span className="text-xl font-bold text-card-foreground min-[400px]:inline hidden" data-test-id="homepage-title">LocalLoop</span>
                         </Link>
