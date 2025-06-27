@@ -4,7 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { Calendar, MapPin, Users, Clock, Tag, ExternalLink, ImageIcon } from 'lucide-react';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui';
-import { formatDateTime, getEventCardDescription, formatLocationForCard } from '@/lib/utils';
+import { formatDateTime, formatDate, getEventCardDescription, formatLocationForCard } from '@/lib/utils';
 import { getEventTimingInfo } from '@/lib/utils/event-timing';
 import { EventBadges } from '@/lib/utils/event-badges';
 
@@ -217,7 +217,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
 
 
             {/* Badges positioned to overlap image and content */}
-            <div className={`absolute ${size === 'lg' ? 'right-6' : 'right-4'} z-10`} style={{ top: size === 'lg' ? 'calc(12rem + 16px)' : 'calc(12rem + 8px)' }}>
+            <div className={`absolute ${size === 'lg' ? 'right-6' : 'right-4'} z-10`} style={{ top: size === 'lg' ? 'calc(12rem + 16px)' : 'calc(12rem + 8px)' }} suppressHydrationWarning>
                 <EventBadges 
                     event={event}
                     isUpcoming={isUpcoming}
@@ -356,12 +356,14 @@ function PreviewListCard({ event, featured, className, onClick, isUpcoming, hasP
                                 {event.title}
                             </h3>
                         </div>
-                        <EventBadges 
-                            event={event}
-                            isUpcoming={isUpcoming}
-                            priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
-                            className="flex gap-1 flex-shrink-0"
-                        />
+                        <div suppressHydrationWarning>
+                            <EventBadges 
+                                event={event}
+                                isUpcoming={isUpcoming}
+                                priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
+                                className="flex gap-1 flex-shrink-0"
+                            />
+                        </div>
                     </div>
 
                     {/* Responsive description sizing for preview cards */}
@@ -377,7 +379,7 @@ function PreviewListCard({ event, featured, className, onClick, isUpcoming, hasP
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3 flex-shrink-0" />
-                            <span className="truncate">{new Date(event.start_time).toLocaleDateString()}</span>
+                            <span className="truncate">{formatDate(event.start_time, { month: 'short', day: 'numeric' })}</span>
                         </span>
                         <span className="flex items-center gap-1 min-w-0">
                             <MapPin className="w-3 h-3 flex-shrink-0" />
@@ -426,7 +428,7 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
             )}
 
             {/* Badges positioned to overlap image and content */}
-            <div className="absolute right-4 z-10" style={{ top: 'calc(14rem + 8px)' }}>
+            <div className="absolute right-4 z-10" style={{ top: 'calc(14rem + 8px)' }} suppressHydrationWarning>
                 <EventBadges 
                     event={event}
                     isUpcoming={isUpcoming}
@@ -547,7 +549,7 @@ function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcom
                     {/* Separator line */}
                     <div className="border-t border-muted-foreground/20 my-2"></div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                        <span className="truncate">{new Date(event.start_time).toLocaleDateString()}</span>
+                        <span className="truncate">{formatDate(event.start_time, { month: 'short', day: 'numeric' })}</span>
                         <span>•</span>
                         <span className="truncate">{formatLocationForCard(event.location)}</span>
                         <span>•</span>
@@ -555,12 +557,14 @@ function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcom
                     </div>
                 </div>
                 <div className="flex items-center gap-2 ml-3">
-                    <EventBadges 
-                        event={event}
-                        isUpcoming={isUpcoming}
-                        priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
-                        className="flex gap-2"
-                    />
+                    <div suppressHydrationWarning>
+                        <EventBadges 
+                            event={event}
+                            isUpcoming={isUpcoming}
+                            priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
+                            className="flex gap-2"
+                        />
+                    </div>
                     <ExternalLink className="w-3 h-3 text-muted-foreground group-hover:text-foreground" />
                 </div>
             </div>
@@ -572,7 +576,7 @@ function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcom
 function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpcoming }: Readonly<CardComponentProps>) {
     const eventDate = new Date(event.start_time);
     const day = eventDate.getDate();
-    const month = eventDate.toLocaleDateString('en-US', { month: 'short' });
+    const month = formatDate(event.start_time, { month: 'short' });
     const urgencyClass = ''
     
 
@@ -599,12 +603,14 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpco
                                 {event.title}
                             </h3>
                         </div>
-                        <EventBadges 
-                            event={event}
-                            isUpcoming={isUpcoming}
-                            priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
-                            className="flex gap-1 ml-2"
-                        />
+                        <div suppressHydrationWarning>
+                            <EventBadges 
+                                event={event}
+                                isUpcoming={isUpcoming}
+                                priceInfo={hasPrice ? { hasPrice, lowestPrice } : undefined}
+                                className="flex gap-1 ml-2"
+                            />
+                        </div>
                     </div>
 
                     {/* Responsive description sizing for timeline cards */}
@@ -620,7 +626,7 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpco
                     <div className="flex items-center gap-4 text-xs text-gray-500">
                         <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3 flex-shrink-0" />
-                            <span className="truncate">{eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</span>
+                            <span className="truncate">{formatDate(event.start_time, { hour: 'numeric', minute: '2-digit', hour12: true })}</span>
                         </span>
                         <span className="flex items-center gap-1 min-w-0">
                             <MapPin className="w-3 h-3 flex-shrink-0" />
