@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { Calendar, MapPin, Users, Clock, Tag, ExternalLink, ImageIcon } from 'lucide-react';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui';
 import { formatDateTime, getEventCardDescription, formatLocationForCard } from '@/lib/utils';
-import { getEventTimingInfo } from '@/lib/utils/event-timing';
+import { useEventTiming } from '@/lib/utils/hydration-safe-timing';
 import { EventBadges } from '@/lib/utils/event-badges';
 
 // Event interface (simplified from database types)
@@ -135,14 +135,9 @@ export function EventCard({
     const hasPrice = Boolean(event.is_paid && event.ticket_types && event.ticket_types.length > 0);
     const lowestPrice = hasPrice ? Math.min(...event.ticket_types!.map(t => t.price)) : 0;
     
-    // Default to upcoming for SSR consistency, will update on client
-    const [isUpcoming, setIsUpcoming] = React.useState(true);
-    
-    React.useEffect(() => {
-        // Only calculate timing on client to avoid hydration mismatch
-        const timingInfo = getEventTimingInfo(event.start_time);
-        setIsUpcoming(timingInfo.isUpcoming);
-    }, [event.start_time]);
+    // Use hydration-safe timing hook to prevent SSR/client mismatches
+    const timingInfo = useEventTiming(event.start_time);
+    const isUpcoming = timingInfo.isUpcoming;
 
     const commonProps: CardComponentProps = {
         event,
@@ -312,7 +307,9 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
 }
 
 // Preview List Style - Compact horizontal layout for list views
-function PreviewListCard({ event, featured, className, onClick, isUpcoming, hasPrice, lowestPrice }: Readonly<CardComponentProps>) {
+function PreviewListCard({ event, featured, className, onClick, hasPrice, lowestPrice }: Readonly<CardComponentProps>) {
+    const timingInfo = useEventTiming(event.start_time);
+    const isUpcoming = timingInfo.isUpcoming;
     const urgencyClass = ''
     
     return (
@@ -395,7 +392,9 @@ function PreviewListCard({ event, featured, className, onClick, isUpcoming, hasP
 }
 
 // Full List Style - Detailed view with all information
-function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, hasPrice, lowestPrice }: Readonly<CardComponentProps>) {
+function FullListCard({ event, className, onClick, spotsRemaining, hasPrice, lowestPrice }: Readonly<CardComponentProps>) {
+    const timingInfo = useEventTiming(event.start_time);
+    const isUpcoming = timingInfo.isUpcoming;
     const urgencyClass = ''
     
     return (
@@ -530,7 +529,9 @@ function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, h
 }
 
 // Compact Card Style - Minimal information for dense layouts
-function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcoming }: Readonly<CardComponentProps>) {
+function CompactCard({ event, className, onClick, hasPrice, lowestPrice }: Readonly<CardComponentProps>) {
+    const timingInfo = useEventTiming(event.start_time);
+    const isUpcoming = timingInfo.isUpcoming;
     const urgencyClass = 'border-l-blue-600'
     return (
         <Card
@@ -569,7 +570,9 @@ function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcom
 }
 
 // Timeline Card Style - Vertical timeline layout
-function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpcoming }: Readonly<CardComponentProps>) {
+function TimelineCard({ event, className, onClick, hasPrice, lowestPrice }: Readonly<CardComponentProps>) {
+    const timingInfo = useEventTiming(event.start_time);
+    const isUpcoming = timingInfo.isUpcoming;
     const eventDate = new Date(event.start_time);
     const day = eventDate.getDate();
     const month = eventDate.toLocaleDateString('en-US', { month: 'short' });

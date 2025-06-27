@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useSyncExternalStore } from 'react'
 import { formatDateTime, formatDate } from '@/lib/utils'
 
 interface ClientDateTimeProps {
@@ -10,20 +10,19 @@ interface ClientDateTimeProps {
 }
 
 export function ClientDateTime({ date, format = 'full', className }: ClientDateTimeProps) {
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted) {
-    // Return a placeholder during SSR to prevent hydration mismatch
-    return <span className={className}>Loading...</span>
-  }
-
-  const formattedDate = format === 'full' 
-    ? formatDateTime(date)
-    : formatDate(date)
+  const formattedDate = useSyncExternalStore(
+    () => () => {}, // No subscription needed for static dates
+    () => {
+      // Client snapshot: format the date
+      return format === 'full' ? formatDateTime(date) : formatDate(date)
+    },
+    () => {
+      // Server snapshot: return consistent placeholder
+      const dateObj = typeof date === 'string' ? new Date(date) : date
+      const timeStr = dateObj.toISOString().split('T')[0] // YYYY-MM-DD format for consistency
+      return format === 'full' ? `${timeStr} 12:00 PM` : timeStr
+    }
+  )
 
   return <span className={className}>{formattedDate}</span>
 }
