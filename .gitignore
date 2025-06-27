@@ -109,6 +109,13 @@ settings.local.json
 .claude/
 claude/
 
+# Claude AI assistant files (keep local only)
+CLAUDE*.md
+*.claude.md
+claude.*.md
+SQUASH_COMMIT_MESSAGE.md
+RESUBMISSION_EMAIL_DRAFT.md
+
 # ESLint cache
 .eslintcache
 
