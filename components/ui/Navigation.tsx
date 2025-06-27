@@ -132,10 +132,9 @@ export function Navigation({
                             <Image 
                                 src="/logo.svg" 
                                 alt="LocalLoop logo" 
-
-                                width={48}
-                                height={48}
-                                className="w-12 h-12" 
+                                width={200}
+                                height={60}
+                                className="w-12 h-auto" 
                             />
                             <span className="text-xl font-bold text-card-foreground min-[400px]:inline hidden" data-test-id="homepage-title">LocalLoop</span>
                         </Link>
