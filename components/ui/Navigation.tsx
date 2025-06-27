@@ -128,7 +128,7 @@ export function Navigation({
                 <div className="flex items-center justify-between h-16">
                     {/* Left side - Logo only on mobile, Logo + Badge on desktop */}
                     <div className="flex items-center gap-3">
-                        <Link href="/" className="flex items-center gap-2" data-test-id="homepage-logo">
+                        <Link href="/" className="flex items-center gap-1" data-test-id="homepage-logo">
                             <Image 
                                 src="/logo.svg" 
                                 alt="LocalLoop logo" 
