@@ -143,6 +143,8 @@ export function EventFilters({
                         <Search className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <input
+                        id="event-search"
+                        name="event-search"
                         type="text"
                         placeholder="Search events..."
                         value={searchQuery}
@@ -154,6 +156,7 @@ export function EventFilters({
                         aria-autocomplete="list"
                         aria-controls={isSearchFocused && suggestions.length > 0 ? "search-suggestions" : undefined}
                         aria-activedescendant={highlightedIndex >= 0 ? `suggestion-${highlightedIndex}` : undefined}
+                        aria-label="Search events by title, category, or location"
                     />
                     {/* Autocomplete Suggestions Dropdown */}
                     {isSearchFocused && suggestions.length > 0 && (

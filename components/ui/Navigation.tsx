@@ -128,15 +128,15 @@ export function Navigation({
                 <div className="flex items-center justify-between h-16">
                     {/* Left side - Logo only on mobile, Logo + Badge on desktop */}
                     <div className="flex items-center gap-3">
-                        <Link href="/" className="flex items-center gap-2" data-test-id="homepage-logo">
+                        <Link href="/" className="flex items-center gap-4" data-test-id="homepage-logo">
                             <Image 
                                 src="/logo.svg" 
                                 alt="LocalLoop logo" 
                                 width={200}
                                 height={60}
-                                className="h-12 w-auto" 
+                                className="h-10 w-auto" 
                             />
-                            <span className="text-xl font-bold text-card-foreground min-[400px]:inline hidden" data-test-id="homepage-title">LocalLoop</span>
+                            <span className="text-3xl text-card-foreground min-[400px]:inline hidden" data-test-id="homepage-title">LocalLoop</span>
                         </Link>
                         
                         {/* Admin/Staff Badge - Hidden on mobile, shown on desktop */}
@@ -183,13 +183,15 @@ export function Navigation({
                                 </Link>
                             )}
 
-                            <Link
-                                href="/my-events"
-                                className="text-muted-foreground hover:text-foreground transition-colors"
-                                data-test-id="my-events-link"
-                            >
-                                My Events
-                            </Link>
+                            {user && (
+                                <Link
+                                    href="/my-events"
+                                    className="text-muted-foreground hover:text-foreground transition-colors"
+                                    data-test-id="my-events-link"
+                                >
+                                    My Events
+                                </Link>
+                            )}
 
                             <button
                                 onClick={handleBrowseEvents}
@@ -295,14 +297,16 @@ export function Navigation({
                                 </Link>
                             )}
 
-                            <Link
-                                href="/my-events"
-                                className="text-muted-foreground hover:text-foreground transition-colors py-2"
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                data-test-id="mobile-my-events-link"
-                            >
-                                My Events
-                            </Link>
+                            {user && (
+                                <Link
+                                    href="/my-events"
+                                    className="text-muted-foreground hover:text-foreground transition-colors py-2"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    data-test-id="mobile-my-events-link"
+                                >
+                                    My Events
+                                </Link>
+                            )}
 
                             <button
                                 onClick={() => {

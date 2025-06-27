@@ -59,7 +59,7 @@ function getTimingColors(status: string): string {
         case 'today':
             return 'bg-red-50 text-red-700'
         case 'tomorrow':
-            return 'bg-emerald-50 text-emerald-700'
+            return 'bg-orange-50 text-orange-700'
         case 'soon':
             return 'bg-yellow-50 text-yellow-700'
         case 'past':
