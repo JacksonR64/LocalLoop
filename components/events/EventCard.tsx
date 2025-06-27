@@ -172,6 +172,7 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
     const cardId = `event-card-${event.id}`
     const urgencyClass = ''
     
+    
 
     return (
         <Card
@@ -209,8 +210,9 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
                 </div>
             )}
 
+
             {/* Badges positioned to overlap image and content */}
-            <div className={`absolute ${size === 'lg' ? 'right-6' : 'right-4'} z-10`} style={{ top: 'calc(12rem + 8px)' }}>
+            <div className={`absolute ${size === 'lg' ? 'right-6' : 'right-4'} z-10`} style={{ top: size === 'lg' ? 'calc(12rem + 16px)' : 'calc(12rem + 8px)' }}>
                 <EventBadges 
                     event={event}
                     isUpcoming={isUpcoming}
@@ -221,22 +223,36 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
 
             <CardHeader>
                 <div className="flex items-start justify-between">
-                    <div className={`${featured ? 'h-20' : 'h-16'} flex items-center pr-2 pt-6 w-full`}>
+                    {/* 
+                        Responsive card sizing:
+                        - Mobile (< 640px): Dynamic height (h-auto) for natural content sizing
+                        - Desktop (640px+): Fixed height for grid alignment
+                        
+                        Future admin configuration can be added here:
+                        - Replace responsive classes with utility function
+                        - Add configuration context/props for different sizing modes
+                    */}
+                    <div className="h-auto sm:h-16 flex items-center pr-2 pt-6 w-full">
                         <CardTitle 
                             as={featured ? 'h2' : 'h3'} 
-                            className={`${featured ? 'text-lg' : 'text-base'} line-clamp-2 leading-6 w-full`}
+                            className="text-base line-clamp-2 leading-6 w-full"
                             id={`${cardId}-title`}
                         >
                             {event.title}
                         </CardTitle>
                     </div>
                 </div>
-                <div className="min-h-[4.5rem] flex items-center">
+                {/* 
+                    Responsive description sizing:
+                    - Mobile: No minimum height (min-h-0) for compact display
+                    - Desktop: Fixed minimum height for grid alignment
+                */}
+                <div className="min-h-0 sm:min-h-[3rem] flex items-center">
                     <CardDescription 
-                        className="line-clamp-3 text-sm leading-relaxed w-full"
+                        className="line-clamp-2 text-sm leading-relaxed w-full"
                         id={`${cardId}-description`}
                     >
-                        {event.short_description || event.description || ''}
+                        {getEventCardDescription(event.description, event.short_description, 80)}
                     </CardDescription>
                 </div>
             </CardHeader>
@@ -291,14 +307,16 @@ function DefaultCard({ event, size, featured, showImage, className, onClick, spo
 }
 
 // Preview List Style - Compact horizontal layout for list views
-function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowestPrice }: Readonly<CardComponentProps>) {
+function PreviewListCard({ event, featured, className, onClick, isUpcoming, hasPrice, lowestPrice }: Readonly<CardComponentProps>) {
     const urgencyClass = ''
+    
     return (
         <Card
             variant="outlined"
             className={`hover:shadow-md transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
             onClick={onClick}
         >
+
             <div className="flex items-start gap-4 p-4">
                 {event.image_url && (
                     <div className="relative w-20 h-20 flex-shrink-0 overflow-hidden rounded-lg">
@@ -311,12 +329,24 @@ function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowe
                             placeholder="blur"
                             blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
                         />
+                        {featured && (
+                            <div className="absolute top-1 left-1">
+                                <span 
+                                    className="bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full text-xs font-medium"
+                                    aria-label="Featured event"
+                                    data-test-id="featured-badge"
+                                >
+                                    Featured
+                                </span>
+                            </div>
+                        )}
                     </div>
                 )}
 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between mb-2">
-                        <div className="h-16 flex items-center pr-2 pt-4 flex-1">
+                        {/* Responsive title sizing for preview cards */}
+                        <div className="h-auto sm:h-16 flex items-center pr-2 pt-4 flex-1">
                             <h3 className="font-semibold text-base text-foreground line-clamp-2 leading-6 w-full">
                                 {event.title}
                             </h3>
@@ -329,9 +359,10 @@ function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowe
                         />
                     </div>
 
-                    <div className="min-h-[3.75rem] flex items-center mb-3">
-                        <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed w-full">
-                            {event.short_description || event.description || ''}
+                    {/* Responsive description sizing for preview cards */}
+                    <div className="min-h-0 sm:min-h-[2.5rem] flex items-center mb-3">
+                        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed w-full">
+                            {getEventCardDescription(event.description, event.short_description, 80)}
                         </p>
                     </div>
 
@@ -361,6 +392,7 @@ function PreviewListCard({ event, className, onClick, isUpcoming, hasPrice, lowe
 // Full List Style - Detailed view with all information
 function FullListCard({ event, className, onClick, spotsRemaining, isUpcoming, hasPrice, lowestPrice }: Readonly<CardComponentProps>) {
     const urgencyClass = ''
+    
     return (
         <Card
             variant="default"
@@ -532,11 +564,12 @@ function CompactCard({ event, className, onClick, hasPrice, lowestPrice, isUpcom
 }
 
 // Timeline Card Style - Vertical timeline layout
-function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpcoming }: Readonly<CardComponentProps>) {
+function TimelineCard({ event, featured, className, onClick, hasPrice, lowestPrice, isUpcoming }: Readonly<CardComponentProps>) {
     const eventDate = new Date(event.start_time);
     const day = eventDate.getDate();
     const month = eventDate.toLocaleDateString('en-US', { month: 'short' });
     const urgencyClass = ''
+    
 
     return (
         <Card
@@ -544,6 +577,7 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpco
             className={`hover:shadow-md transition-shadow cursor-pointer group ${urgencyClass} ${className}`}
             onClick={onClick}
         >
+
             <div className="flex gap-4 p-4">
                 {/* Date Circle */}
                 <div className="flex-shrink-0 w-16 h-16 bg-blue-600 text-white rounded-full flex flex-col items-center justify-center">
@@ -554,7 +588,8 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpco
                 {/* Event Details */}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between mb-2">
-                        <div className="h-16 flex items-center pt-4 flex-1">
+                        {/* Responsive title sizing for timeline cards */}
+                        <div className="h-auto sm:h-16 flex items-center pt-4 flex-1">
                             <h3 className="font-semibold text-base text-foreground group-hover:text-blue-600 transition-colors line-clamp-2 leading-6 w-full">
                                 {event.title}
                             </h3>
@@ -567,9 +602,10 @@ function TimelineCard({ event, className, onClick, hasPrice, lowestPrice, isUpco
                         />
                     </div>
 
-                    <div className="min-h-[3.75rem] flex items-center mb-2">
-                        <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed w-full">
-                            {event.short_description || event.description || ''}
+                    {/* Responsive description sizing for timeline cards */}
+                    <div className="min-h-0 sm:min-h-[2.5rem] flex items-center mb-2">
+                        <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed w-full">
+                            {getEventCardDescription(event.description, event.short_description, 80)}
                         </p>
                     </div>
 

@@ -208,26 +208,46 @@ const nextConfig: NextConfig = {
       }
     }
 
-    // Enhanced production optimizations for performance
-    if (!dev && !isServer) {
+    // Enhanced optimizations for both dev and production
+    if (!isServer) {
       config.optimization = {
         ...config.optimization,
         sideEffects: false,
-        minimize: true,
+        minimize: !dev, // Only minimize in production
         splitChunks: {
           chunks: 'all',
+          maxInitialRequests: 25,
+          maxAsyncRequests: 25,
           cacheGroups: {
+            // Separate Stripe into its own chunk for lazy loading
+            stripe: {
+              test: /[\\/]node_modules[\\/]@stripe/,
+              name: 'stripe',
+              chunks: 'all',
+              maxSize: 150000,
+              priority: 20,
+            },
+            // Separate large UI libraries
+            radix: {
+              test: /[\\/]node_modules[\\/]@radix-ui/,
+              name: 'radix-ui',
+              chunks: 'all',
+              maxSize: 100000,
+              priority: 15,
+            },
             vendor: {
               test: /[\\/]node_modules[\\/]/,
               name: 'vendors',
               chunks: 'all',
-              maxSize: 244000, // 244KB max chunk size
+              maxSize: 200000, // Reduced from 244KB
+              priority: 10,
             },
             common: {
               name: 'common',
               minChunks: 2,
               chunks: 'all',
-              maxSize: 244000,
+              maxSize: 150000, // Reduced from 244KB
+              priority: 5,
             },
           },
         },
@@ -260,7 +280,14 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-label',
       '@radix-ui/react-switch',
       '@radix-ui/react-tabs',
+      '@stripe/stripe-js',
+      '@stripe/react-stripe-js',
+      '@supabase/ssr',
     ],
+    // Enable Next.js compiler optimizations
+    optimizeCss: true,
+    // Reduce JavaScript bundle size
+    serverComponentsExternalPackages: ['@supabase/supabase-js'],
   },
 
   // Turbopack configuration - properly typed resolveAlias

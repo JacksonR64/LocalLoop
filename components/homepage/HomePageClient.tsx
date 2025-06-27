@@ -212,6 +212,7 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
                     <EventCard
                       event={event}
                       size="md"
+                      featured={event.featured}
                       onClick={() => handleEventClick(event.id)}
                     />
                   </div>
@@ -261,6 +262,7 @@ export function HomePageClient({ featuredEvents, upcomingEvents, pastEvents }: H
                       <EventCard
                         event={event}
                         size="md"
+                        featured={event.featured}
                         onClick={() => handleEventClick(event.id)}
                       />
                     </div>
