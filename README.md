@@ -70,7 +70,6 @@
 - **📊 Real-time Analytics Dashboard** - Live event performance tracking
 - **🎫 Advanced Ticketing System** - Multiple ticket types, pricing tiers, early bird discounts
 - **⏰ Automated Reminder System** - Smart email reminders and notifications
-- **👥 Capacity Management** - Waitlists, capacity limits, and overflow handling
 - **🔒 Role-Based Access Control** - Staff, organizer, and admin permission levels
 - **📈 Revenue Tracking** - Comprehensive financial reporting and analytics
 - **🔄 Real-time Updates** - Live event status and attendance updates
