@@ -116,6 +116,9 @@ claude.*.md
 SQUASH_COMMIT_MESSAGE.md
 RESUBMISSION_EMAIL_DRAFT.md
 
+# Local backup directory (keep local only)
+.local-backup/
+
 # ESLint cache
 .eslintcache
 
