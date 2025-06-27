@@ -39,7 +39,7 @@ function MobileRoleBadge({ isAdmin }: { isAdmin: boolean }) {
 
     return (
         <div 
-            className={`md:hidden absolute top-1 right-1 z-[60] flex items-center justify-center gap-1 rounded-full text-[10px] font-medium transition-all duration-300 ease-in-out cursor-pointer ${
+            className={`xl:hidden absolute top-1 right-1 z-[60] flex items-center justify-center gap-1 rounded-full text-[10px] font-medium transition-all duration-300 ease-in-out cursor-pointer ${
                 isExpanded 
                     ? (isAdmin 
                         ? 'bg-red-100 text-red-700 border border-red-200 shadow-sm px-2 py-0.5' 
@@ -126,23 +126,23 @@ export function Navigation({
             <header className={`bg-card shadow-sm border-b border-border fixed top-0 left-0 right-0 z-50 ${className}`} data-test-id="homepage-header">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
-                    {/* Left side - Logo only on mobile, Logo + Badge on desktop */}
-                    <div className="flex items-center gap-3">
-                        <Link href="/" className="flex items-center gap-4" data-test-id="homepage-logo">
+                    {/* Left side - Logo with responsive text */}
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <Link href="/" className="flex items-center gap-2 md:gap-4 min-w-0" data-test-id="homepage-logo">
                             <Image 
                                 src="/logo.svg" 
                                 alt="LocalLoop logo" 
                                 width={200}
                                 height={60}
-                                className="h-10 w-auto" 
+                                className="h-8 md:h-10 w-auto flex-shrink-0" 
                             />
-                            <span className="text-3xl text-card-foreground min-[400px]:inline hidden" data-test-id="homepage-title">LocalLoop</span>
+                            <span className="text-2xl md:text-3xl text-card-foreground min-[400px]:inline hidden whitespace-nowrap" data-test-id="homepage-title">LocalLoop</span>
                         </Link>
                         
-                        {/* Admin/Staff Badge - Hidden on mobile, shown on desktop */}
+                        {/* Admin/Staff Badge - Hidden on mobile and small tablets, shown on large screens */}
                         {user && (isAdmin || isStaff) && (
                             <div 
-                                className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                                className={`hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
                                     isAdmin 
                                         ? 'bg-red-100 text-red-700 border border-red-200' 
                                         : 'bg-blue-100 text-blue-700 border border-blue-200'
@@ -155,7 +155,7 @@ export function Navigation({
                                 ) : (
                                     <Shield className="w-3 h-3" aria-hidden="true" />
                                 )}
-                                <span className="hidden sm:inline">
+                                <span>
                                     {isAdmin ? 'Admin' : 'Staff'}
                                 </span>
                             </div>
@@ -165,10 +165,10 @@ export function Navigation({
                     {/* Right side - Navigation */}
                     <>
                         {/* Desktop Navigation */}
-                        <nav className="hidden md:flex items-center gap-6" aria-label="Primary navigation" data-test-id="desktop-navigation">
+                        <nav className="hidden lg:flex items-center gap-3 xl:gap-6 flex-shrink-0" aria-label="Primary navigation" data-test-id="desktop-navigation">
 
                             {(isStaff || isAdmin) && (
-                                <Link href="/staff" className="text-muted-foreground hover:text-foreground transition-colors" data-test-id="staff-link">
+                                <Link href="/staff" className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap" data-test-id="staff-link">
                                     Staff
                                 </Link>
                             )}
@@ -176,7 +176,7 @@ export function Navigation({
                             {(isStaff || isAdmin) && (
                                 <Link
                                     href="/create-event"
-                                    className="text-muted-foreground hover:text-foreground transition-colors"
+                                    className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
                                     data-test-id="create-event-link"
                                 >
                                     Create Event
@@ -186,7 +186,7 @@ export function Navigation({
                             {user && (
                                 <Link
                                     href="/my-events"
-                                    className="text-muted-foreground hover:text-foreground transition-colors"
+                                    className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
                                     data-test-id="my-events-link"
                                 >
                                     My Events
@@ -195,49 +195,54 @@ export function Navigation({
 
                             <button
                                 onClick={handleBrowseEvents}
-                                className="text-muted-foreground hover:text-foreground transition-colors"
+                                className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
                                 data-test-id="browse-events-button"
                             >
                                 Browse Events
                             </button>
 
-
-                            <ThemeToggle />
-                            {/* Auth state conditional rendering - Optimistic UI */}
-                            {user ? (
-                                <ProfileDropdown testIdPrefix="desktop-" />
-                            ) : (
-                                <Link
-                                    href="/auth/login?force_logout=true"
-                                    className={`bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-all duration-200 ${
-                                        authLoading ? 'opacity-75 pointer-events-none' : 'opacity-100'
-                                    }`}
-                                    data-testid="sign-in-link"
-                                >
-                                    Sign In
-                                </Link>
-                            )}
+                            <div className="flex items-center gap-2 xl:gap-3 flex-shrink-0">
+                                <ThemeToggle />
+                                {/* Auth state conditional rendering - Optimistic UI */}
+                                {user ? (
+                                    <ProfileDropdown testIdPrefix="desktop-" />
+                                ) : (
+                                    <Link
+                                        href="/auth/login?force_logout=true"
+                                        className={`bg-primary text-primary-foreground px-3 xl:px-4 py-2 rounded-lg hover:bg-primary/90 transition-all duration-200 text-sm whitespace-nowrap ${
+                                            authLoading ? 'opacity-75 pointer-events-none' : 'opacity-100'
+                                        }`}
+                                        data-testid="sign-in-link"
+                                    >
+                                        Sign In
+                                    </Link>
+                                )}
+                            </div>
                         </nav>
 
-                        {/* Mobile - Profile and Menu Button */}
-                        <div className="md:hidden flex items-center gap-2">
+                        {/* Mobile/Tablet - Profile and Menu Button */}
+                        <div className="lg:hidden flex items-center gap-1 min-w-0 flex-shrink-0">
 
-                            {/* Theme Toggle for mobile */}
-                            <ThemeToggle />
+                            {/* Theme Toggle for mobile/tablet */}
+                            <div className="flex-shrink-0">
+                                <ThemeToggle />
+                            </div>
                             
-                            {/* Always visible auth state in mobile top bar */}
+                            {/* Always visible auth state in mobile/tablet top bar */}
                             {user ? (
-                                <ProfileDropdown 
-                                    testIdPrefix="mobile-" 
-                                    mobileIconOnly={true}
-                                    onOpenChange={(isOpen) => {
-                                        if (isOpen) setIsMobileMenuOpen(false)
-                                    }}
-                                />
+                                <div className="flex-shrink-0">
+                                    <ProfileDropdown 
+                                        testIdPrefix="mobile-" 
+                                        mobileIconOnly={true}
+                                        onOpenChange={(isOpen) => {
+                                            if (isOpen) setIsMobileMenuOpen(false)
+                                        }}
+                                    />
+                                </div>
                             ) : (
                                 <Link
                                     href="/auth/login?force_logout=true"
-                                    className={`bg-primary text-primary-foreground px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-all duration-200 text-sm ${
+                                    className={`bg-primary text-primary-foreground px-2 md:px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-all duration-200 text-xs md:text-sm flex-shrink-0 whitespace-nowrap ${
                                         authLoading ? 'opacity-75 pointer-events-none' : 'opacity-100'
                                     }`}
                                     data-testid="mobile-sign-in-link"
@@ -246,17 +251,17 @@ export function Navigation({
                                 </Link>
                             )}
 
-                            {/* Mobile Menu Button with symmetrical padding */}
+                            {/* Mobile Menu Button with responsive sizing */}
                             <button
-                                className="p-2 rounded-lg hover:bg-accent transition-colors mr-1"
+                                className="p-1.5 md:p-2 rounded-lg hover:bg-accent transition-colors flex-shrink-0"
                                 onClick={handleMobileMenuToggle}
                                 aria-label="Toggle mobile menu"
                                 data-test-id="mobile-menu-button"
                             >
                                 {isMobileMenuOpen ? (
-                                    <X className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
+                                    <X className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground" aria-hidden="true" />
                                 ) : (
-                                    <Menu className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
+                                    <Menu className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground" aria-hidden="true" />
                                 )}
                             </button>
                         </div>
@@ -266,7 +271,7 @@ export function Navigation({
                 {/* Mobile Navigation */}
                 {(isMobileMenuOpen || isMenuAnimating) && (
                     <div 
-                        className="md:hidden border-t border-border py-4 transform transition-all duration-300 ease-out" 
+                        className="lg:hidden border-t border-border py-4 transform transition-all duration-300 ease-out" 
                         data-test-id="mobile-navigation"
                         style={{
                             animation: menuAnimationType === 'enter' 
