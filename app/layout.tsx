@@ -105,6 +105,58 @@ export default function RootLayout({
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icon.svg" />
         <link rel="manifest" href="/manifest.json" />
+{process.env.NODE_ENV === 'development' && (
+          <script 
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  if (typeof window !== 'undefined') {
+                    const originalWarn = console.warn;
+                    const originalError = console.error;
+                    const originalLog = console.log;
+                    
+                    const shouldSuppress = function(msg) {
+                      var message = (msg || '').toString().toLowerCase();
+                      return message.includes('stripe.js') && (
+                        message.includes('apple pay') || 
+                        message.includes('google pay') || 
+                        message.includes('payment method types are not activated') ||
+                        message.includes('not registered or verified the domain') ||
+                        message.includes('is not a supported property') ||
+                        message.includes('appearance') ||
+                        message.includes('https') ||
+                        message.includes('elements-inner-loader-ui.html')
+                      );
+                    };
+                    
+                    console.warn = function() {
+                      var message = (arguments[0] || '').toString();
+                      if (!shouldSuppress(message)) {
+                        originalWarn.apply(console, arguments);
+                      }
+                    };
+                    
+                    console.error = function() {
+                      var message = (arguments[0] || '').toString();
+                      if (!shouldSuppress(message)) {
+                        originalError.apply(console, arguments);
+                      }
+                    };
+                    
+                    console.log = function() {
+                      var message = (arguments[0] || '').toString();
+                      if (!shouldSuppress(message)) {
+                        originalLog.apply(console, arguments);
+                      }
+                    };
+                    
+                    console.log('🔇 Early console filter initialized');
+                  }
+                })();
+              `
+            }}
+          />
+        )}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground w-full overflow-x-hidden`}

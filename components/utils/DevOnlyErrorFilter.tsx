@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 
 /**
+ * Comprehensive development console warning filter
  * Filters out development-only console messages that cannot be fixed
  * Only active in development mode and only suppresses specific known dev-only warnings
  * 
@@ -11,7 +12,10 @@ import { useEffect } from 'react'
  * 
  * SUPPRESSED VIOLATIONS (External Libraries Only - Verified via Investigation):
  * 1. Stripe - HTTPS development warnings (expected in dev mode)
- * 2. Stripe - Network fetch errors to r.stripe.com/b (analytics endpoint, non-critical)
+ * 2. Stripe - Appearance API warnings for unsupported properties
+ * 3. Stripe - Payment method activation warnings (dashboard configuration)
+ * 4. Stripe - Domain registration warnings (deployment configuration)
+ * 5. Stripe - Network fetch errors to r.stripe.com/b (analytics endpoint, non-critical)
  * 
  * INVESTIGATION COMPLETED: Our application code is clean:
  * - No touchstart/touchmove/wheel event listeners in our code
@@ -26,128 +30,111 @@ import { useEffect } from 'react'
  * - These are external library violations beyond our control
  * - Attempted fixes: default-passive-events library, addEventListener monkey patching
  * - Result: All attempts failed due to iframe isolation
- * 
- * TO INVESTIGATE NEW VIOLATIONS:
- * 1. Check browser console for full stack trace
- * 2. Look for library names in the stack trace 
- * 3. Search codebase: grep -r "addEventListener.*touchstart\|wheel\|touchmove"
- * 4. If found in our code, add { passive: true } option
- * 
- * ARIA-HIDDEN ACCESSIBILITY WARNING (External Component):
- * If you see "Blocked aria-hidden on an element because its descendant retained focus"
- * with CodePuncher component, this is from Stripe's payment verification input.
- * This is an external component accessibility issue that we cannot fix in our code.
- * 
- * STRIPE PAYMENT METHOD WARNINGS:
- * If you see "payment method types are not activated" warnings, these are 
- * CONFIGURATION issues in your Stripe Dashboard, not code issues. 
- * Go to: Stripe Dashboard > Settings > Payment methods to activate needed methods.
- * 
- * STRIPE NETWORK FETCH ERRORS (r.stripe.com/b):
- * The r.stripe.com/b endpoint is used for Stripe's internal analytics/telemetry.
- * These fetch errors are common in development environments due to:
- * - Browser extensions blocking requests
- * - Network connectivity issues
- * - Development environment restrictions
- * These errors don't affect payment functionality and are safely suppressed.
  */
 export function DevOnlyErrorFilter() {
     useEffect(() => {
         // Only active in development
         if (process.env.NODE_ENV !== 'development') return
 
-        // Store original console methods
-        const originalLog = console.log
-        const originalWarn = console.warn
-        const originalError = console.error
-
-        // Override console.log to filter Stripe development warnings
-        console.log = (...args) => {
-            const message = args[0]?.toString() || ''
-            
-            // Suppress Stripe HTTPS development warning (unfixable in dev)
-            if (message.includes('You may test your Stripe.js integration over HTTP') ||
-                message.includes('However, live Stripe.js integrations must use HTTPS')) {
-                return // Silently ignore - this is expected in development
-            }
-
-            // Call original for all other logs
-            originalLog.apply(console, args)
+        // Store original console methods for all possible console outputs
+        const originalMethods = {
+            log: console.log,
+            warn: console.warn,
+            error: console.error,
+            info: console.info,
+            debug: console.debug,
+            trace: console.trace
         }
 
-        // Store original console.info for passive event listener violations
-        const originalInfo = console.info
+        // Helper function to check if a message should be suppressed
+        const shouldSuppressMessage = (message: string): boolean => {
+            // Convert to string and lowercase for easier matching
+            const msg = message.toLowerCase()
 
-        // Override console.warn for development warnings
-        console.warn = (...args) => {
-            const message = args[0]?.toString() || ''
-            
-            // Suppress Stripe HTTPS development warning (unfixable in dev)
-            if (message.includes('You may test your Stripe.js integration over HTTP') ||
-                message.includes('However, live Stripe.js integrations must use HTTPS')) {
-                return // Silently ignore - this is expected in development
+            // Stripe HTTPS development warnings (expected in dev)
+            if (msg.includes('you may test your stripe.js integration over http') ||
+                msg.includes('however, live stripe.js integrations must use https') ||
+                msg.includes('if you are testing apple pay or google pay, you must serve this page over https') ||
+                msg.includes('will not work over http') ||
+                msg.includes('please read https://stripe.com/docs/stripe-js/elements/payment-request-button')) {
+                return true
             }
 
-            // Suppress Stripe Apple Pay/Google Pay HTTPS warnings (expected in dev)
-            if (message.includes('If you are testing Apple Pay or Google Pay, you must serve this page over HTTPS') ||
-                message.includes('will not work over HTTP') ||
-                message.includes('Please read https://stripe.com/docs/stripe-js/elements/payment-request-button')) {
-                return // Silently ignore - Apple/Google Pay requires HTTPS, expected in dev
+            // Stripe appearance API warnings for unsupported properties
+            if (msg.includes('is not a supported property') ||
+                msg.includes('elements-inner-loader-ui.html') ||
+                msg.includes('stripe.elements():') && msg.includes('not a supported property')) {
+                return true
             }
 
-            // Suppress Stripe payment method activation warnings (configuration, not code)
-            if (message.includes('The following payment method types are not activated') ||
-                message.includes('They will be displayed in test mode, but hidden in live mode') ||
-                message.includes('Please activate the payment method types in your dashboard')) {
-                return // Silently ignore - Dashboard configuration, not code issue
+            // Stripe payment method activation warnings (dashboard configuration)
+            if (msg.includes('the following payment method types are not activated') ||
+                msg.includes('they will be displayed in test mode, but hidden in live mode') ||
+                msg.includes('please activate the payment method types in your dashboard') ||
+                msg.includes('https://dashboard.stripe.com/settings/payment_methods')) {
+                return true
             }
 
-            // Suppress domain registration warnings for Apple Pay (configuration, not code)
-            if (message.includes('You have not registered or verified the domain') ||
-                message.includes('Please follow https://stripe.com/docs/payments/payment-methods/pmd-registration')) {
-                return // Silently ignore - Domain registration is deployment config, not code
+            // Stripe domain registration warnings (deployment configuration)
+            if (msg.includes('you have not registered or verified the domain') ||
+                msg.includes('please follow https://stripe.com/docs/payments/payment-methods/pmd-registration') ||
+                msg.includes('the following payment methods are not enabled in the payment element')) {
+                return true
             }
 
-            // Suppress Stripe appearance API help links (not actionable warnings)
-            if (message.includes('For more information on using the `appearance` option') ||
-                message.includes('see https://stripe.com/docs/stripe-js/appearance-api')) {
-                return // Silently ignore - Just informational link, not a warning
+            // Stripe appearance API help links (informational, not actionable)
+            if (msg.includes('for more information on using the `appearance` option') ||
+                msg.includes('see https://stripe.com/docs/stripe-js/appearance-api')) {
+                return true
             }
 
-            // Call original for all other warnings
-            originalWarn.apply(console, args)
+            // Stripe network fetch errors (analytics endpoint, non-critical)
+            if (msg.includes('fetcherror: error fetching https://r.stripe.com/b') ||
+                msg.includes('error fetching https://r.stripe.com/b') ||
+                (msg.includes('fetcherror') && msg.includes('r.stripe.com'))) {
+                return true
+            }
+
+            return false
         }
 
-        // Override console.error to filter Stripe network errors
-        console.error = (...args) => {
-            const message = args[0]?.toString() || ''
-            
-            // Suppress Stripe network fetch errors (common in development)
-            if (message.includes('FetchError: Error fetching https://r.stripe.com/b: Failed to fetch') ||
-                message.includes('Error fetching https://r.stripe.com/b') ||
-                (message.includes('FetchError') && message.includes('r.stripe.com'))) {
-                return // Silently ignore - Stripe analytics endpoint failures are non-critical
+        // Create wrapper function for console methods
+        const createFilterWrapper = (originalMethod: typeof console.log) => {
+            return (...args: any[]) => {
+                const message = args[0]?.toString() || ''
+                
+                // Check if this message should be suppressed
+                if (shouldSuppressMessage(message)) {
+                    return // Silently ignore
+                }
+
+                // Call original method for all other messages
+                originalMethod.apply(console, args)
             }
-
-            // Call original for all other errors
-            originalError.apply(console, args)
         }
 
-        // Override console.info to catch violation messages that might come through info
-        console.info = (...args) => {
-            // const message = args[0]?.toString() || ''
-            
+        // Override all console methods with filtered versions
+        console.log = createFilterWrapper(originalMethods.log)
+        console.warn = createFilterWrapper(originalMethods.warn)
+        console.error = createFilterWrapper(originalMethods.error)
+        console.info = createFilterWrapper(originalMethods.info)
+        console.debug = createFilterWrapper(originalMethods.debug)
+        console.trace = createFilterWrapper(originalMethods.trace)
 
-            // Call original for all other info messages
-            originalInfo.apply(console, args)
+        // Additional debug logging to verify filter is working (only in dev)
+        if (typeof window !== 'undefined') {
+            const debugLog = originalMethods.log
+            debugLog('🔇 Console warning filter initialized - Stripe development warnings will be suppressed')
         }
 
-        // Cleanup function
+        // Cleanup function to restore original console methods
         return () => {
-            console.log = originalLog
-            console.warn = originalWarn
-            console.error = originalError
-            console.info = originalInfo
+            console.log = originalMethods.log
+            console.warn = originalMethods.warn
+            console.error = originalMethods.error
+            console.info = originalMethods.info
+            console.debug = originalMethods.debug
+            console.trace = originalMethods.trace
         }
     }, [])
 

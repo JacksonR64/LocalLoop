@@ -435,9 +435,7 @@ export default function CheckoutForm({
                         backgroundColor: 'transparent',
                         border: isDark ? '1px solid #64748b' : '1px solid #475569'
                     },
-                    '.TabIcon': {
-                        backgroundColor: 'transparent'
-                    },
+                    // Note: TabIcon doesn't support backgroundColor, removed to prevent warnings
                     '.Block': {
                         backgroundColor: 'transparent'
                     }
