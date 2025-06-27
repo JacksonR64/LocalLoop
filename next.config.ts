@@ -284,11 +284,10 @@ const nextConfig: NextConfig = {
       '@stripe/react-stripe-js',
       '@supabase/ssr',
     ],
-    // Enable Next.js compiler optimizations
-    optimizeCss: true,
-    // Reduce JavaScript bundle size
-    serverComponentsExternalPackages: ['@supabase/supabase-js'],
   },
+
+  // Server external packages for better tree shaking
+  serverExternalPackages: ['@supabase/supabase-js'],
 
   // Turbopack configuration - properly typed resolveAlias
   turbopack: {
