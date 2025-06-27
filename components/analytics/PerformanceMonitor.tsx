@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect } from 'react'
-import { Analytics } from '@vercel/analytics/react'
 import { initWebVitals, trackPageLoad } from '@/lib/utils/performance'
 
 interface PerformanceMonitorProps {
@@ -24,12 +23,7 @@ export function PerformanceMonitor({ pageName }: PerformanceMonitorProps) {
         }
     }, [pageName])
 
-    return (
-        <>
-            {/* Vercel Analytics for additional insights */}
-            <Analytics />
-        </>
-    )
+    return null // No analytics component needed
 }
 
 // Higher-order component to wrap pages with performance monitoring
