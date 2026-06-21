@@ -42,7 +42,8 @@ export const redirectUrlSchema = z.string()
             process.env.NEXT_PUBLIC_APP_URL,
             process.env.NEXT_PUBLIC_BASE_URL,
             'http://localhost:3000',
-            'https://local-loop-qa.vercel.app'
+            'https://local-loop-qa.vercel.app',
+            'https://localloop.jacksonrhoden.co.uk'
         ].filter(Boolean)
         
         return allowedOrigins.some(origin => url.startsWith(origin!))
